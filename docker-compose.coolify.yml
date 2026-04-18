@@ -1,0 +1,108 @@
+# ─── Coolify deployment: backend + frontend + postgres ───────────────────────
+# Use this file ONLY on the Coolify server (set "Docker Compose Location" to
+# `docker-compose.coolify.yml` in the Coolify app config). Local development
+# is untouched — keep using `backend/.env` and `npm run start:dev`.
+#
+# Coolify magic variables used here:
+#   SERVICE_FQDN_BACKEND_1488  → FQDN for backend, proxied to container port 1488.
+#                                User overrides in Coolify UI (Domains field).
+#   SERVICE_FQDN_FRONTEND_80   → FQDN for frontend, proxied to container port 80.
+#   Other values come from Coolify "Environment Variables" (paste from
+#   .env.coolify.example and edit).
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      POSTGRES_DB: ${POSTGRES_DB:?required}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Coolify injects FQDN from the user-provided backend domain. Coolify
+      # proxies this FQDN → container port 1488 (defined after _ suffix).
+      SERVICE_FQDN_BACKEND_1488:
+      BACKEND_URL: ${SERVICE_FQDN_BACKEND_1488}
+
+      # DB wiring — Prisma reads DATABASE_URL, the legacy POSTGRES_* keep
+      # build-time scripts (prisma generate) happy.
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+
+      # App
+      NODE_ENV: production
+      PORT: 1488
+      JWT_SECRET: ${JWT_SECRET:?required}
+      EXPIRATION_TIME: ${EXPIRATION_TIME:-7d}
+
+      # "true" wipes + reseeds the DB on every deploy; "false" preserves data
+      # and only applies pending migrations.
+      RESET_DB_ON_DEPLOY: ${RESET_DB_ON_DEPLOY:-true}
+    # Override the Dockerfile CMD with a Coolify-aware bootstrap:
+    #   1. wait for postgres healthcheck (handled by depends_on)
+    #   2. reset+reseed OR migrate deploy, based on RESET_DB_ON_DEPLOY
+    #   3. optionally run seed if prisma/seed.(ts|js) exists
+    #   4. exec node dist/main
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        if [ "$$RESET_DB_ON_DEPLOY" = "true" ]; then
+          echo "[entrypoint] RESET_DB_ON_DEPLOY=true — wiping DB and re-applying migrations"
+          npx prisma migrate reset --force --skip-generate --skip-seed
+        else
+          echo "[entrypoint] applying pending migrations (preserving data)"
+          npx prisma migrate deploy
+        fi
+        if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then
+          echo "[entrypoint] seeding database"
+          npx prisma db seed || echo "[entrypoint] seed failed (non-fatal)"
+        else
+          echo "[entrypoint] no seed script found — skipping"
+        fi
+        echo "[entrypoint] starting app on port 1488"
+        exec node dist/main
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:1488/api || exit 0"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      # Coolify assigns the frontend its own FQDN, proxied to container port 80.
+      SERVICE_FQDN_FRONTEND_80:
+      # Backend URL exposed to the browser at runtime via window.__ENV__.
+      # Reuses the backend's FQDN so no separate var to paste.
+      VITE_API_URL: ${SERVICE_FQDN_BACKEND_1488}
+
+volumes:
+  postgres_data:
