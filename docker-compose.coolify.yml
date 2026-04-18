@@ -70,12 +70,12 @@ services:
       - |
         set -e
         if [ "$$RESET_DB_ON_DEPLOY" = "true" ]; then
-          echo "[entrypoint] RESET_DB_ON_DEPLOY=true — wiping DB and re-applying migrations"
-          npx prisma migrate reset --force --skip-generate --skip-seed
+          echo "[entrypoint] RESET_DB_ON_DEPLOY=true — dropping public schema and re-applying migrations"
+          node -e "const{Client}=require('pg');const c=new Client({connectionString:process.env.DATABASE_URL});c.connect().then(()=>c.query('DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public AUTHORIZATION CURRENT_USER;')).then(()=>c.end()).catch(e=>{console.error(e);process.exit(1);});"
         else
           echo "[entrypoint] applying pending migrations (preserving data)"
-          npx prisma migrate deploy
         fi
+        npx prisma migrate deploy
         if [ -f prisma/seed.ts ] || [ -f prisma/seed.js ]; then
           echo "[entrypoint] seeding database"
           npx prisma db seed || echo "[entrypoint] seed failed (non-fatal)"
