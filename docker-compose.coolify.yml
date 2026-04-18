@@ -36,8 +36,8 @@ services:
         condition: service_healthy
     environment:
       # Coolify reverse-proxies the user-set backend domain → container port 1488.
-      # SERVICE_FQDN_BACKEND_1488 → just the FQDN (e.g. api.main.notfounds.dev)
-      # SERVICE_URL_BACKEND_1488  → full URL with scheme (e.g. https://api.main.notfounds.dev)
+      # SERVICE_FQDN_BACKEND_1488 → just the FQDN (e.g. api.notfounds.dev)
+      # SERVICE_URL_BACKEND_1488  → full URL with scheme (e.g. https://api.notfounds.dev)
       SERVICE_FQDN_BACKEND_1488:
       BACKEND_URL: ${SERVICE_URL_BACKEND_1488}
 
