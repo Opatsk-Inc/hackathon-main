@@ -1,8 +1,8 @@
 import { useState, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, X, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, FileText, X, AlertCircle, CheckCircle2, Package } from "lucide-react";
 import { AdminService } from "@/lib/api/admin.service";
 
 export function ImportPage() {
@@ -10,6 +10,12 @@ export function ImportPage() {
   const [taxRate, setTaxRate] = useState<string>("100");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
+
+  const { data: batches, isLoading: batchesLoading } = useQuery({
+    queryKey: ['batches'],
+    queryFn: () => AdminService.getBatches(),
+  });
 
   const importMutation = useMutation({
     mutationFn: async () => {
@@ -17,7 +23,8 @@ export function ImportPage() {
       return AdminService.importRealEstate(file, Number(taxRate) || 100);
     },
     onSuccess: () => {
-      setFile(null); // Clear file on success
+      setFile(null);
+      queryClient.invalidateQueries({ queryKey: ['batches'] });
     }
   });
 
@@ -172,10 +179,29 @@ export function ImportPage() {
               Останні імпортовані файли та результати звірки
             </p>
           </div>
-          <div className="p-6">
-            <p className="text-sm text-muted-foreground">
-              Файли ще не завантажувались
-            </p>
+          <div className="divide-y">
+            {batchesLoading ? (
+              <div className="p-6 text-sm text-muted-foreground">Завантаження...</div>
+            ) : !batches || batches.length === 0 ? (
+              <div className="p-6 text-sm text-muted-foreground">Файли ще не завантажувались</div>
+            ) : (
+              batches.map((batch) => (
+                <div key={batch.id} className="flex items-center gap-4 px-6 py-4">
+                  <div className="rounded-md bg-primary/10 p-2 shrink-0">
+                    <Package className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{batch.fileName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {batch.rowsCount} записів · {batch.anomalyCount ?? 0} аномалій
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground shrink-0">
+                    {new Date(batch.createdAt).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

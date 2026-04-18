@@ -59,3 +59,11 @@ export interface Inspector {
   name: string
   phone: string
 }
+
+export interface ImportBatch {
+  id: string
+  fileName: string
+  rowsCount: number
+  anomalyCount: number
+  createdAt: string
+}

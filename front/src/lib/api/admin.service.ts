@@ -1,5 +1,5 @@
 import { ApiClient } from './client'
-import type { DashboardMetrics, AnomalyListResponse, Inspector } from './types'
+import type { DashboardMetrics, AnomalyListResponse, Inspector, ImportBatch } from './types'
 
 export class AdminService {
   static getDashboardMetrics(): Promise<DashboardMetrics> {
@@ -11,8 +11,8 @@ export class AdminService {
     return ApiClient.get<AnomalyListResponse>(`/api/admin/discrepancies${query}`)
   }
 
-  static getBatches() {
-    return ApiClient.get('/api/admin/batches')
+  static getBatches(): Promise<ImportBatch[]> {
+    return ApiClient.get<ImportBatch[]>('/api/admin/batches')
   }
 
   static getInspectors(): Promise<Inspector[]> {
