@@ -3,7 +3,7 @@ import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { AdminService } from "@/lib/api/admin.service";
 import type { Anomaly, Inspector } from "@/lib/api/types";
-import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, UserCheck, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, UserCheck, Loader2, Copy, Check } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -57,13 +57,15 @@ function AssignPanel({
   onAssigned,
 }: {
   anomalyId: string;
-  onAssigned: (inspectorId: string, inspectorName: string) => void;
+  onAssigned: (inspectorId: string, inspectorName: string, magicLink: string) => void;
 }) {
   const [inspectors, setInspectors] = useState<Inspector[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState("");
   const [assigning, setAssigning] = useState(false);
   const [done, setDone] = useState(false);
+  const [magicLink, setMagicLink] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     AdminService.getInspectors()
@@ -79,9 +81,12 @@ function AssignPanel({
       if (result?.assigned === 0) {
         console.warn("assignTask returned 0 updated rows — possible hromadaId mismatch");
       }
-      setDone(true);
+
       const inspector = inspectors.find((i) => i.id === selectedId);
-      onAssigned(selectedId, inspector?.name ?? selectedId);
+      const link = `${window.location.origin}/inspector/task/${anomalyId}?token=${inspector?.magicToken || ''}`;
+      setMagicLink(link);
+      setDone(true);
+      onAssigned(selectedId, inspector?.name ?? selectedId, link);
     } catch (e) {
       console.error("Failed to assign inspector:", e);
     } finally {
@@ -89,22 +94,54 @@ function AssignPanel({
     }
   };
 
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(magicLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (done) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 px-3 py-2">
-        <UserCheck className="h-4 w-4 text-green-600" />
-        <p className="text-xs font-semibold text-green-700 dark:text-green-400">
-          Інспектора призначено. Завдання відправлено.
-        </p>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 px-3 py-2">
+          <UserCheck className="h-4 w-4 text-green-600" />
+          <p className="text-xs font-semibold text-green-700 dark:text-green-400">
+            Інспектора призначено. Завдання відправлено.
+          </p>
+        </div>
+        <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 space-y-2">
+          <p className="text-xs font-semibold text-slate-900">Magic Link для інспектора:</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={magicLink}
+              readOnly
+              className="flex-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-mono text-slate-900 select-all"
+              onClick={(e) => e.currentTarget.select()}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={copyToClipboard}
+              className="shrink-0 bg-slate-100 border-slate-300 hover:bg-slate-200 hover:text-slate-900 text-slate-700 px-2"
+              title="Копіювати"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+            </Button>
+          </div>
+          <p className="text-xs text-slate-600">
+            Відправте це посилання інспектору через SMS або Telegram
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3 space-y-2">
-      <p className="text-xs font-semibold text-foreground">Призначити польового інспектора</p>
+    <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 space-y-2">
+      <p className="text-xs font-semibold text-slate-900">Призначити польового інспектора</p>
       {loadingList ? (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-slate-600">
           <Loader2 className="h-3 w-3 animate-spin" /> Завантаження списку...
         </div>
       ) : (
@@ -112,7 +149,7 @@ function AssignPanel({
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            className="flex-1 rounded-md border bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+            className="flex-1 rounded-md border border-slate-300 bg-white text-slate-900 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="">— Оберіть інспектора —</option>
             {inspectors.map((ins) => (
@@ -148,70 +185,104 @@ function AnomalyModal({
 }) {
   const [showAssign, setShowAssign] = useState(false);
   const [assignedName, setAssignedName] = useState<string | null>(null);
+  const [magicLink, setMagicLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [inspectors, setInspectors] = useState<Inspector[]>([]);
   const currentStatus = assignedName ? "IN_PROGRESS" : a.status;
 
-  const handleAssigned = (inspectorId: string, name: string) => {
+  // Завантажуємо інспекторів для генерації лінка для існуючих завдань
+  useEffect(() => {
+    console.log('AnomalyModal useEffect:', { status: a.status, inspectorId: a.inspectorId, hasMagicLink: !!magicLink });
+    if (a.status === "IN_PROGRESS" && a.inspectorId && !magicLink) {
+      AdminService.getInspectors().then((list) => {
+        console.log('Inspectors loaded:', list);
+        setInspectors(list);
+        const inspector = list.find((i) => i.id === a.inspectorId);
+        console.log('Found inspector:', inspector);
+        if (inspector?.magicToken) {
+          const link = `${window.location.origin}/inspector/task/${a.id}?token=${inspector.magicToken}`;
+          console.log('Generated magic link:', link);
+          setMagicLink(link);
+        } else {
+          console.warn('Inspector found but no magicToken:', inspector);
+        }
+      }).catch(err => {
+        console.error('Failed to load inspectors:', err);
+      });
+    }
+  }, [a.status, a.inspectorId, a.id, magicLink]);
+
+  const handleAssigned = (inspectorId: string, name: string, link: string) => {
     setAssignedName(name);
+    setMagicLink(link);
     onAssigned(a.id, inspectorId, name);
+  };
+
+  const copyToClipboard = () => {
+    if (magicLink) {
+      navigator.clipboard.writeText(magicLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-2xl border bg-card shadow-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-lg rounded-2xl border border-white/60 bg-white/95 backdrop-blur-md shadow-xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold">{a.suspectName}</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">{a.address}</p>
+            <h2 className="text-lg font-bold text-slate-800">{a.suspectName}</h2>
+            <p className="text-sm text-slate-600 mt-0.5">{a.address}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl leading-none shrink-0">&times;</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-800 text-2xl leading-none shrink-0">&times;</button>
         </div>
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2 text-xs">
           <RiskBadge level={a.enrichment.riskLevel} />
           <StatusBadge status={currentStatus} />
-          <span className="rounded-md bg-muted px-2 py-0.5 font-medium">{TYPE_LABELS[a.type] ?? a.type}</span>
-          {a.taxId && <span className="rounded-md bg-muted px-2 py-0.5">ІПН: {a.taxId}</span>}
+          <span className="rounded-md bg-slate-100 text-slate-700 px-2 py-0.5 font-medium">{TYPE_LABELS[a.type] ?? a.type}</span>
+          {a.taxId && <span className="rounded-md bg-slate-100 text-slate-700 px-2 py-0.5">ІПН: {a.taxId}</span>}
         </div>
 
         {/* Кримінальна відповідальність */}
-        <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/30 p-3 space-y-1">
-          <p className="text-xs font-bold text-red-700 dark:text-red-400">⚖ Кримінальна відповідальність</p>
-          <p className="text-sm font-bold text-red-800 dark:text-red-300">{a.enrichment.criminalArticle}</p>
-          <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">{a.enrichment.legalBasis}</p>
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1">
+          <p className="text-xs font-bold text-red-700">⚖ Кримінальна відповідальність</p>
+          <p className="text-sm font-bold text-red-800">{a.enrichment.criminalArticle}</p>
+          <p className="text-xs text-red-700 leading-relaxed">{a.enrichment.legalBasis}</p>
         </div>
 
         {/* Рекомендовані дії */}
-        <div className="rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 p-3 space-y-2">
-          <p className="text-xs font-bold text-blue-700 dark:text-blue-400">📋 Рекомендовані дії інспектору</p>
-          <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">{a.enrichment.inspectorAction}</p>
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 space-y-2">
+          <p className="text-xs font-bold text-blue-700">📋 Рекомендовані дії інспектору</p>
+          <p className="text-xs text-blue-800 leading-relaxed">{a.enrichment.inspectorAction}</p>
           <div className="flex items-center gap-3 pt-1 flex-wrap">
             {a.enrichment.shouldVisit ? (
               <span className="text-xs font-bold text-red-600">🔴 Потрібен виїзд на об'єкт</span>
             ) : (
-              <span className="text-xs text-muted-foreground">⚪ Документальна перевірка</span>
+              <span className="text-xs text-slate-600">⚪ Документальна перевірка</span>
             )}
-            <span className="text-xs text-muted-foreground">Термін: {a.enrichment.urgencyDays} дн.</span>
+            <span className="text-xs text-slate-600">Термін: {a.enrichment.urgencyDays} дн.</span>
           </div>
         </div>
 
         {/* Штраф */}
         {a.potentialFine ? (
-          <div className="rounded-lg border bg-amber-50 dark:bg-amber-950/20 p-3">
-            <p className="text-xs text-muted-foreground">Потенційний штраф / недоотримані кошти</p>
-            <p className="text-xl font-bold text-amber-700 dark:text-amber-400">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <p className="text-xs text-slate-600">Потенційний штраф / недоотримані кошти</p>
+            <p className="text-xl font-bold text-amber-700">
               {a.potentialFine.toLocaleString("uk-UA")} ₴
             </p>
           </div>
         ) : null}
 
         {/* Опис + кнопка Викликати інспектора */}
-        <div className="border-t pt-3 space-y-3">
-          <p className="text-xs text-muted-foreground leading-relaxed">{a.description}</p>
+        <div className="border-t border-slate-200 pt-3 space-y-3">
+          <p className="text-xs text-slate-600 leading-relaxed">{a.description}</p>
 
           {currentStatus === "NEW" && !showAssign && (
             <Button
@@ -224,9 +295,9 @@ function AnomalyModal({
           )}
 
           {currentStatus === "IN_PROGRESS" && !assignedName && (
-            <div className="flex items-center gap-2 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 px-3 py-2">
+            <div className="flex items-center gap-2 rounded-lg bg-blue-50 border border-blue-200 px-3 py-2">
               <UserCheck className="h-4 w-4 text-blue-600" />
-              <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">Інспектора вже призначено. Завдання в роботі.</p>
+              <p className="text-xs font-semibold text-blue-700">Інспектора вже призначено. Завдання в роботі.</p>
             </div>
           )}
 
@@ -235,10 +306,38 @@ function AnomalyModal({
           )}
 
           {assignedName && (
-            <div className="flex items-center gap-2 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 px-3 py-2">
+            <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
               <UserCheck className="h-4 w-4 text-green-600" />
-              <p className="text-xs font-semibold text-green-700 dark:text-green-400">
+              <p className="text-xs font-semibold text-green-700">
                 Призначено: {assignedName}
+              </p>
+            </div>
+          )}
+
+          {/* Magic Link для завдань в роботі - показується в самому низу */}
+          {currentStatus === "IN_PROGRESS" && magicLink && (
+            <div className="rounded-lg border border-slate-300 bg-slate-50 p-3 space-y-2">
+              <p className="text-xs font-semibold text-slate-900">Magic Link для інспектора:</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={magicLink}
+                  readOnly
+                  className="flex-1 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-mono text-slate-900 select-all"
+                  onClick={(e) => e.currentTarget.select()}
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={copyToClipboard}
+                  className="shrink-0 bg-slate-100 border-slate-300 hover:bg-slate-200 hover:text-slate-900 text-slate-700 px-2"
+                  title="Копіювати"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
+                </Button>
+              </div>
+              <p className="text-xs text-slate-600">
+                Відправте це посилання інспектору через SMS або Telegram
               </p>
             </div>
           )}
@@ -421,7 +520,7 @@ export function DiscrepanciesPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="bg-white text-slate-800 border-slate-300 hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
+                            className="bg-white text-slate-800 border-slate-300 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-400 transition-colors"
                             onClick={() => setSelected(a)}
                           >
                             Деталі

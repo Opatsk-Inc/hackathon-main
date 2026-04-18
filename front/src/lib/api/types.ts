@@ -58,6 +58,8 @@ export interface Inspector {
   id: string
   name: string
   phone: string
+  magicToken?: string
+  magicLink?: string
 }
 
 export interface ImportBatch {

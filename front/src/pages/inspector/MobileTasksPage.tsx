@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useSearchParams } from "react-router-dom"
 import { AdminService } from "@/lib/api/admin.service"
 import { InspectorMobileLayout } from "@/components/layouts"
 import { Button } from "@/components/ui/button"
@@ -72,6 +73,9 @@ const tasks: Task[] = [
 ]
 
 export function MobileTasksPage() {
+  const [searchParams] = useSearchParams()
+  const autoTaskId = searchParams.get("taskId")
+
   const { data: apiTasks = [] } = useQuery({
     queryKey: ['myTasks'],
     queryFn: AdminService.getMyTasks,
@@ -233,6 +237,16 @@ export function MobileTasksPage() {
     setIsNavigating(false)
     setRouteCoordinates([])
   }
+
+  // Автоматичне прокладання маршруту при переході з DirectTaskPage
+  useEffect(() => {
+    if (autoTaskId && tasks.length > 0 && userLocation) {
+      const targetTask = tasks.find((t) => t.id === autoTaskId)
+      if (targetTask) {
+        handleNavigate(targetTask)
+      }
+    }
+  }, [autoTaskId, tasks.length, userLocation])
 
   return (
     <InspectorMobileLayout title="Мої завдання">
@@ -467,7 +481,7 @@ export function MobileTasksPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full gap-2 text-base"
+                  className="w-full gap-2 text-base hover:bg-primary/10 hover:text-primary"
                   onClick={() => selectedTask && handleNavigate(selectedTask)}
                 >
                   <Navigation className="h-5 w-5" />

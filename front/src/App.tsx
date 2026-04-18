@@ -7,6 +7,7 @@ import {
 } from "@/pages/head";
 import { MobileTasksPage, TaskInspectionPage } from "@/pages/inspector";
 import { InspectorAuthPage } from "@/pages/inspector/InspectorAuthPage";
+import { DirectTaskPage } from "@/pages/inspector/DirectTaskPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { SignupPage } from "@/pages/SignupPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -33,6 +34,7 @@ export function App() {
 
         {/* Public inspector magic link */}
         <Route path="/inspector/auth" element={<InspectorAuthPage />} />
+        <Route path="/inspector/task/:id" element={<DirectTaskPage />} />
 
         {/* Protected Inspector (Mobile) Routes */}
         <Route element={<InspectorRoute />}>
