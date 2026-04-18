@@ -3,13 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AnomalyStatus } from '@prisma/client';
 import { MobileTaskResponseDto } from './dto/response/mobile-task.response.dto';
 import { ResolveTaskRequestDto } from './dto/request/resolve-task.request.dto';
+import { enrichAnomaly } from '../common/anomaly-enrichment';
 
 @Injectable()
 export class MobileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAssignedTasks(inspectorId: string): Promise<MobileTaskResponseDto[]> {
-    return this.prisma.anomaly.findMany({
+    const raw = await this.prisma.anomaly.findMany({
       where: { inspectorId, status: { not: AnomalyStatus.RESOLVED } },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -22,8 +23,16 @@ export class MobileService {
         lng: true,
         severity: true,
         createdAt: true,
+        potentialFine: true,
+        suspectName: true,
+        taxId: true,
       },
     });
+
+    return raw.map((a) => ({
+      ...a,
+      enrichment: enrichAnomaly(a.type, a.severity, a.potentialFine),
+    }));
   }
 
   async resolveTask(anomalyId: string, dto: ResolveTaskRequestDto) {

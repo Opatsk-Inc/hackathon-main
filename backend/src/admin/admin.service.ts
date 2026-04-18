@@ -5,6 +5,7 @@ import { AnomalyStatus } from '@prisma/client';
 import { DashboardMetricsResponseDto } from './dto/response/dashboard-metrics.response.dto';
 import { AnomalyListResponseDto } from './dto/response/anomaly-list.response.dto';
 import { AssignTaskRequestDto } from './dto/request/assign-task.request.dto';
+import { enrichAnomaly } from '../common/anomaly-enrichment';
 
 @Injectable()
 export class AdminService {
@@ -58,10 +59,15 @@ export class AdminService {
       ...(batchId ? { batchId } : {}),
     };
 
-    const [items, total] = await Promise.all([
+    const [raw, total] = await Promise.all([
       this.prisma.anomaly.findMany({ where, orderBy: { createdAt: 'desc' } }),
       this.prisma.anomaly.count({ where }),
     ]);
+
+    const items = raw.map((a) => ({
+      ...a,
+      enrichment: enrichAnomaly(a.type, a.severity, a.potentialFine),
+    }));
 
     return { items, total };
   }

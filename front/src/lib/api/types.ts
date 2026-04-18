@@ -12,14 +12,32 @@ export interface DashboardMetrics {
   byType: AnomalyTypeCount[]
 }
 
+export interface AnomalyEnrichment {
+  riskLevel: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+  criminalArticle: string
+  legalBasis: string
+  inspectorAction: string
+  shouldVisit: boolean
+  urgencyDays: number
+}
+
 export interface Anomaly {
   id: string
   type: string
+  severity: string
   status: 'NEW' | 'IN_PROGRESS' | 'RESOLVED'
-  potentialFine: number
-  createdAt: string
+  taxId: string
+  suspectName: string
+  address: string
+  lat: number | null
+  lng: number | null
+  potentialFine: number | null
+  description: string
   batchId: string
-  inspectorId?: number
+  createdAt: string
+  inspectorId?: string | null
+  comment?: string | null
+  enrichment: AnomalyEnrichment
 }
 
 export interface AnomalyListResponse {
