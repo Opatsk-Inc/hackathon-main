@@ -3,18 +3,36 @@ import { Button } from "@/components/ui/button"
 import {
   Plus,
 } from "lucide-react"
-import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber"
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
 import { TopViolationsTable } from "@/features/discrepancies/components"
 import { KPIStatCard, ViolationsBarChart, InspectionAreaChart } from "./components"
+import { formatLargeNumber } from "@/lib/utils/formatNumber"
+import { useEffect } from "react"
+import { useMotionValue, useTransform, animate } from "framer-motion"
 
 export function DashboardPage() {
   const { data: metrics, isLoading } = useDashboardMetrics()
 
-  const budgetLoss = useAnimatedNumber(metrics?.totalPotentialFine ?? 0, 2, 0)
-  const discrepancies = useAnimatedNumber(metrics?.totalAnomalies ?? 0, 2, 0.2)
-  const inProgress = useAnimatedNumber(metrics?.inProgressCount ?? 0, 2, 0.4)
-  const resolved = useAnimatedNumber(metrics?.resolvedCount ?? 0, 2, 0.6)
+  // Animated motion values
+  const budgetLossMotion = useMotionValue(0)
+  const discrepanciesMotion = useMotionValue(0)
+  const inProgressMotion = useMotionValue(0)
+  const resolvedMotion = useMotionValue(0)
+
+  // Transform to formatted strings
+  const budgetLoss = useTransform(budgetLossMotion, (v) => `${formatLargeNumber(v)} ₴`)
+  const discrepancies = useTransform(discrepanciesMotion, (v) => formatLargeNumber(v))
+  const inProgress = useTransform(inProgressMotion, (v) => formatLargeNumber(v, 0))
+  const resolved = useTransform(resolvedMotion, (v) => formatLargeNumber(v, 0))
+
+  // Animate on data change
+  useEffect(() => {
+    if (!metrics) return
+    animate(budgetLossMotion, metrics.totalPotentialFine, { duration: 2, delay: 0, ease: "easeOut" })
+    animate(discrepanciesMotion, metrics.totalAnomalies, { duration: 2, delay: 0.2, ease: "easeOut" })
+    animate(inProgressMotion, metrics.inProgressCount, { duration: 2, delay: 0.4, ease: "easeOut" })
+    animate(resolvedMotion, metrics.resolvedCount, { duration: 2, delay: 0.6, ease: "easeOut" })
+  }, [metrics, budgetLossMotion, discrepanciesMotion, inProgressMotion, resolvedMotion])
 
   return (
     <HeadDesktopLayout currentPath="/head/dashboard">

@@ -100,64 +100,33 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
 
       <div className="px-6 pb-6">
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <BarChart data={chartData}>
+          <BarChart data={chartData} margin={{ left: 50, right: 50 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
             <XAxis
               dataKey="name"
-              className="text-base font-semibold"
-              tick={{ fill: 'hsl(var(--foreground))' }}
-              interval={0}
-              angle={0}
-              textAnchor="middle"
+              tick={false}
+              axisLine={false}
             />
             <YAxis
               className="text-xs"
-              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tick={false}
+              axisLine={false}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Bar dataKey="value" radius={[8, 8, 0, 0]} />
           </BarChart>
         </ChartContainer>
 
-        {/* Мікротаблиця під графіком */}
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-muted/30">
-                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Тип порушення
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
-                  onClick={handleSort}
-                >
-                  <div className="flex items-center">
-                    Кількість
-                    <SortIcon />
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {chartData.map((item, idx) => (
-                <tr
-                  key={idx}
-                  className={`transition-colors hover:bg-muted/50 ${
-                    idx % 2 === 0 ? "bg-card" : "bg-muted/20"
-                  }`}
-                >
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-medium">{item.name}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm font-semibold" style={{ color: item.fill }}>
-                      {item.value.toLocaleString("uk-UA")}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* Компактний список під графіком */}
+        <div className="mt-6 space-y-2">
+          {chartData.map((item, idx) => (
+            <div key={idx} className="flex items-center justify-between text-sm">
+              <span className="font-medium">{item.name}</span>
+              <span className="font-semibold tabular-nums" style={{ color: item.fill }}>
+                {item.value.toLocaleString("uk-UA")}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
