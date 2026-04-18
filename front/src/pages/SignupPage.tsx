@@ -196,10 +196,11 @@ export function SignupPage() {
                           <button
                             key={h.id}
                             type="button"
-                            onClick={() => handleSelect(h)}
-                            className={`w-full text-left px-4 py-3 hover:bg-muted transition-colors flex items-center justify-between gap-2 ${
+                            disabled={!!h.email}
+                            onClick={() => !h.email && handleSelect(h)}
+                            className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between gap-2 ${
                               hromada?.id === h.id ? 'bg-muted' : ''
-                            }`}
+                            } ${h.email ? 'opacity-60 cursor-not-allowed' : 'hover:bg-muted'}`}
                           >
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-foreground truncate">{h.name}</p>
@@ -208,9 +209,11 @@ export function SignupPage() {
                               </p>
                             </div>
                             {h.email && (
-                              <span className="shrink-0 text-xs bg-destructive/10 text-destructive rounded-md px-2 py-0.5">
-                                зайнята
-                              </span>
+                              <div className="flex flex-col items-end gap-1">
+                                <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive rounded-md px-2 py-0.5 border border-destructive/20">
+                                  зайнята
+                                </span>
+                              </div>
                             )}
                           </button>
                         ))
