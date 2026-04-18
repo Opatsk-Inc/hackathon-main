@@ -7,7 +7,6 @@ import { AdminService } from "@/lib/api/admin.service";
 
 export function ImportPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [taxRate, setTaxRate] = useState<string>("100");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -20,13 +19,25 @@ export function ImportPage() {
   const importMutation = useMutation({
     mutationFn: async () => {
       if (!file) throw new Error("Файл не вибрано");
-      return AdminService.importRealEstate(file, Number(taxRate) || 100);
+      return AdminService.importRealEstate(file);
     },
     onSuccess: () => {
       setFile(null);
       queryClient.invalidateQueries({ queryKey: ['batches'] });
     }
   });
+
+  const fixEncoding = (str: any) => {
+    if (!str) return str;
+    try {
+      // escape() перетворює символи ISO-8859-1 у байтовий формат (наприклад, %D0)
+      // decodeURIComponent() збирає ці байти назад у нормальний UTF-8 рядок (кирилицю)
+      return decodeURIComponent(escape(str));
+    } catch (e: any) {
+      console.log(e)
+      return str;
+    }
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -41,7 +52,7 @@ export function ImportPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const droppedFile = e.dataTransfer.files[0];
       // Check extension
@@ -80,10 +91,9 @@ export function ImportPage() {
             </div>
             <div className="p-6 space-y-6">
               {!file ? (
-                <div 
-                  className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${
-                    isDragging ? "border-primary bg-primary/5" : "hover:bg-muted/50"
-                  }`}
+                <div
+                  className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${isDragging ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                    }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -118,31 +128,14 @@ export function ImportPage() {
                   </Button>
                 </div>
               )}
-              
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={handleFileChange}
               />
-              
-              <div className="space-y-2">
-                <label htmlFor="taxRate" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Базова ставка податку (грн/м²)
-                </label>
-                <input
-                  id="taxRate"
-                  type="number"
-                  value={taxRate}
-                  onChange={(e) => setTaxRate(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Наприклад: 100"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Використовується для розрахунку потенційного недоотриманого податку (штрафу)
-                </p>
-              </div>
 
               {importMutation.isError && (
                 <div className="flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
@@ -159,9 +152,9 @@ export function ImportPage() {
               )}
 
               <div className="flex justify-end pt-4">
-                <Button 
-                  size="lg" 
-                  className="w-full sm:w-auto" 
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto"
                   disabled={!file || importMutation.isPending}
                   onClick={() => importMutation.mutate()}
                 >
@@ -191,13 +184,19 @@ export function ImportPage() {
                     <Package className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{batch.fileName}</p>
+                    <p className="text-sm font-medium truncate">{fixEncoding(batch.fileName)}</p>
                     <p className="text-xs text-muted-foreground">
                       {batch.rowsCount} записів · {batch.anomalyCount ?? 0} аномалій
                     </p>
                   </div>
                   <div className="text-xs text-muted-foreground shrink-0">
-                    {new Date(batch.createdAt).toLocaleDateString('uk-UA', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    {new Date(batch.createdAt).toLocaleString('uk-UA', {
+                      day: '2-digit',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
                   </div>
                 </div>
               ))

@@ -23,10 +23,9 @@ export class AdminService {
     return ApiClient.patch('/api/admin/tasks/assign', { anomalyIds, inspectorId })
   }
 
-  static importRealEstate(file: File, baseTaxRate: number): Promise<{ message: string; batchId: string }> {
+  static importRealEstate(file: File): Promise<{ message: string; batchId: string }> {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('baseTaxRate', baseTaxRate.toString())
 
     return ApiClient.postFormData<{ message: string; batchId: string }>('/api/import/real-estate', formData)
   }

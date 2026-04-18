@@ -148,8 +148,8 @@ export class ImportService {
   async importRealEstate(
     hromadaId: string,
     file: Express.Multer.File,
-    baseTaxRate: number,
   ) {
+    const baseTaxRate = 120;
     if (!file?.buffer) throw new BadRequestException('File is required');
 
     const isXlsx =
