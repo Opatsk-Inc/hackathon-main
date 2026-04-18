@@ -9,9 +9,15 @@ import { KPIStatCard, ViolationsBarChart, InspectionAreaChart } from "./componen
 import { formatLargeNumber } from "@/lib/utils/formatNumber"
 import { useEffect } from "react"
 import { useMotionValue, useTransform, animate } from "framer-motion"
+import { useAuthStore } from "@/features/auth/store/auth.store"
+import { useNavigate } from "react-router-dom"
+
 
 export function DashboardPage() {
+  const { user } = useAuthStore()
   const { data: metrics, isLoading } = useDashboardMetrics()
+
+  const navigate = useNavigate();
 
   // Animated motion values
   const budgetLossMotion = useMotionValue(0)
@@ -41,8 +47,9 @@ export function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold tracking-tight text-slate-800">
-              Огляд аудиту громади
+              Огляд аудиту {user?.name ? `громади ${user.name}` : "громади"}
             </h1>
+
             <p className="mt-1 text-slate-500">
               Аналітика податкових розбіжностей та фінансових втрат
             </p>
@@ -50,6 +57,7 @@ export function DashboardPage() {
           <Button
             size="lg"
             className="gap-2 shadow-lg transition-all hover:shadow-xl"
+            onClick={() => navigate("/head/import")}
           >
             <Plus className="h-5 w-5" />
             Новий аудит
