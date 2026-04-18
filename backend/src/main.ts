@@ -14,7 +14,7 @@ async function bootstrap() {
       'http://localhost:3002',
       'http://localhost:5173',
       'http://localhost:5174',
-      'https://api.main.notfounds.dev',
+      'https://api.notfounds.dev',
       'https://main.notfounds.dev',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
