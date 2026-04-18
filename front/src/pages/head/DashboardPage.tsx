@@ -79,14 +79,14 @@ export function DashboardPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Огляд аудиту громади
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mt-1">
               Аналітика податкових розбіжностей та фінансових втрат
             </p>
           </div>
-          <Button size="lg" className="gap-2">
+          <Button size="lg" className="gap-2 shadow-lg hover:shadow-xl transition-all">
             <Plus className="h-5 w-5" />
             Новий аудит
           </Button>
@@ -95,72 +95,124 @@ export function DashboardPage() {
         {/* KPI Metrics Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {/* Card 1: Budget Losses - Primary Value Prop */}
-          <div className="relative overflow-hidden rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <Wallet className="h-8 w-8 text-rose-600 dark:text-rose-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0 }}
+            className="group relative overflow-hidden rounded-xl border-2 border-rose-200/50 dark:border-rose-900/50 bg-gradient-to-br from-rose-50 to-white dark:from-rose-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-rose-300 dark:hover:border-rose-800"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-rose-400 to-pink-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="relative flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
                   Орієнтовні втрати бюджету
                 </p>
-                <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">
+                <p className="text-4xl font-bold bg-gradient-to-br from-rose-600 to-rose-500 bg-clip-text text-transparent dark:from-rose-400 dark:to-rose-300">
                   <motion.span>{budgetLoss}</motion.span> ₴
                 </p>
               </div>
+              <motion.div
+                whileHover={{ rotate: 15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="rounded-lg bg-rose-100 dark:bg-rose-900/30 p-3"
+              >
+                <Wallet className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 2: Discrepancies Found */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="group relative overflow-hidden rounded-xl border-2 border-amber-200/50 dark:border-amber-900/50 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-amber-300 dark:hover:border-amber-800"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="relative flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
                   Виявлено розбіжностей
                 </p>
-                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                <p className="text-4xl font-bold bg-gradient-to-br from-amber-600 to-amber-500 bg-clip-text text-transparent dark:from-amber-400 dark:to-amber-300">
                   <motion.span>{discrepancies}</motion.span>
                 </p>
               </div>
+              <motion.div
+                whileHover={{ rotate: -15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="rounded-lg bg-amber-100 dark:bg-amber-900/30 p-3"
+              >
+                <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 3: Total Objects */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <Building2 className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="group relative overflow-hidden rounded-xl border-2 border-indigo-200/50 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-indigo-300 dark:hover:border-indigo-800"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="relative flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
                   Всього об'єктів
                 </p>
-                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+                <p className="text-4xl font-bold bg-gradient-to-br from-indigo-600 to-indigo-500 bg-clip-text text-transparent dark:from-indigo-400 dark:to-indigo-300">
                   <motion.span>{totalObjects}</motion.span>
                 </p>
               </div>
+              <motion.div
+                whileHover={{ rotate: 15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="rounded-lg bg-indigo-100 dark:bg-indigo-900/30 p-3"
+              >
+                <Building2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Card 4: Recovered to Budget */}
-          <div className="rounded-lg border bg-card p-6 shadow-sm">
-            <div className="flex items-center gap-4">
-              <TrendingUp className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="group relative overflow-hidden rounded-xl border-2 border-emerald-200/50 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-emerald-300 dark:hover:border-emerald-800"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="relative flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground">
+                <p className="text-sm font-medium text-muted-foreground mb-2">
                   Повернуто до бюджету
                 </p>
-                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+                <p className="text-4xl font-bold bg-gradient-to-br from-emerald-600 to-emerald-500 bg-clip-text text-transparent dark:from-emerald-400 dark:to-emerald-300">
                   <motion.span>{recovered}</motion.span> ₴
                 </p>
               </div>
+              <motion.div
+                whileHover={{ rotate: -15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 300 }}
+                className="rounded-lg bg-emerald-100 dark:bg-emerald-900/30 p-3"
+              >
+                <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* Charts Section */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Pie Chart: Violation Structure */}
-          <div className="flex flex-col rounded-lg border bg-card shadow-sm">
+          <div className="flex flex-col rounded-xl border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm">
             <div className="p-6 pb-4">
-              <h3 className="text-lg font-semibold">Структура порушень</h3>
+              <h3 className="text-xl font-bold">Структура порушень</h3>
               <p className="text-sm text-muted-foreground">
                 Січень - Квітень 2026
               </p>
@@ -220,23 +272,23 @@ export function DashboardPage() {
                 {violationData.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between gap-2"
+                    className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-2">
                       <div
-                        className="h-3 w-3 rounded-full"
+                        className="h-3 w-3 rounded-full shadow-sm"
                         style={{ backgroundColor: item.fill }}
                       />
                       <span className="text-sm text-muted-foreground">
                         {item.name}
                       </span>
                     </div>
-                    <span className="text-sm font-medium">{item.value}</span>
+                    <span className="text-sm font-semibold">{item.value}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="mt-auto border-t px-6 py-4">
+            <div className="mt-auto border-t bg-muted/30 px-6 py-4">
               <div className="flex items-center gap-2 text-sm leading-none font-medium">
                 Зростання на 12.3% цього місяця{" "}
                 <TrendingUp className="h-4 w-4" />
@@ -248,9 +300,9 @@ export function DashboardPage() {
           </div>
 
           {/* Area Chart: Inspection Dynamics */}
-          <div className="rounded-lg border bg-card shadow-sm">
+          <div className="rounded-xl border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm">
             <div className="p-6">
-              <h3 className="mb-1 text-lg font-semibold">Динаміка інспекцій</h3>
+              <h3 className="mb-1 text-xl font-bold">Динаміка інспекцій</h3>
               <p className="text-sm text-muted-foreground">
                 Показує тренд створених та перевірених завдань за останні 6
                 місяців
@@ -345,7 +397,7 @@ export function DashboardPage() {
                 </AreaChart>
               </ChartContainer>
             </div>
-            <div className="border-t px-6 py-4">
+            <div className="border-t bg-muted/30 px-6 py-4">
               <div className="flex items-center gap-2 text-sm">
                 <div className="flex items-center gap-1 leading-none font-medium">
                   Зростання на 5.2% цього місяця
