@@ -24,39 +24,39 @@ function TaskCard({ anomaly, status }: { anomaly: Anomaly; status: string }) {
   const daysLeft = anomaly.enrichment?.urgencyDays ?? 30;
 
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3 hover:shadow-md transition-shadow">
+    <div className="rounded-xl border border-white/60 bg-white/50 backdrop-blur-md p-4 shadow-sm space-y-3 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full shrink-0 ${risk.dot}`} />
-          <span className="text-xs font-semibold text-muted-foreground">{risk.label}</span>
+          <span className="text-xs font-semibold text-slate-600">{risk.label}</span>
         </div>
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
+        <span className="text-xs text-slate-500 whitespace-nowrap">
           {new Date(anomaly.createdAt).toLocaleDateString("uk-UA")}
         </span>
       </div>
 
       <div>
-        <p className="text-sm font-semibold leading-tight">{anomaly.suspectName}</p>
-        {anomaly.taxId && <p className="text-xs text-muted-foreground">ІПН: {anomaly.taxId}</p>}
+        <p className="text-sm font-semibold leading-tight text-slate-800">{anomaly.suspectName}</p>
+        {anomaly.taxId && <p className="text-xs text-slate-500">ІПН: {anomaly.taxId}</p>}
       </div>
 
       <div className="flex items-start gap-1.5">
-        <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-        <p className="text-xs text-muted-foreground leading-tight line-clamp-2">{anomaly.address}</p>
+        <MapPin className="h-3.5 w-3.5 text-slate-500 shrink-0 mt-0.5" />
+        <p className="text-xs text-slate-500 leading-tight line-clamp-2">{anomaly.address}</p>
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs">
+        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
           {TYPE_LABELS[anomaly.type] ?? anomaly.type}
         </span>
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1 text-xs text-slate-500">
           <Clock className="h-3 w-3" />
           <span>{daysLeft} дн.</span>
         </div>
       </div>
 
       {anomaly.potentialFine ? (
-        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 border-t pt-2">
+        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 border-t border-white/60 pt-2">
           {anomaly.potentialFine.toLocaleString("uk-UA")} ₴
         </p>
       ) : null}
@@ -89,19 +89,19 @@ function Column({
   headerCls: string;
 }) {
   return (
-    <div className="flex flex-col rounded-xl border bg-muted/20 overflow-hidden">
-      <div className={`border-b px-5 py-4 ${headerCls}`}>
+    <div className="flex flex-col rounded-xl border border-white/60 bg-white/30 backdrop-blur-md overflow-hidden">
+      <div className={`border-b border-white/60 px-5 py-4 ${headerCls}`}>
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold">{title}</h3>
-          <span className="rounded-full bg-background/80 px-2.5 py-0.5 text-xs font-bold">
+          <h3 className="font-semibold text-slate-800">{title}</h3>
+          <span className="rounded-full bg-white/80 px-2.5 py-0.5 text-xs font-bold text-slate-800">
             {items.length}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-0.5">завдань</p>
+        <p className="text-xs text-slate-600 mt-0.5">завдань</p>
       </div>
       <div className="flex-1 space-y-3 p-4 min-h-[200px]">
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-6">
+          <p className="text-sm text-slate-500 text-center py-6">
             Немає завдань з цим статусом
           </p>
         ) : (
@@ -140,8 +140,8 @@ export function TasksKanbanPage() {
       <div className="mx-auto w-full space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Завдання</h1>
-            <p className="text-muted-foreground">Керування завданнями для інспекторів</p>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-800">Завдання</h1>
+            <p className="text-slate-500">Керування завданнями для інспекторів</p>
           </div>
           <Button
             variant="outline"
@@ -156,7 +156,7 @@ export function TasksKanbanPage() {
         </div>
 
         {loading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Завантаження...</div>
+          <div className="p-8 text-center text-sm text-slate-500">Завантаження...</div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3">
             <Column

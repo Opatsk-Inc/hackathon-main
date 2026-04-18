@@ -134,7 +134,7 @@ export function TopViolationsTable() {
   const columns = [
     columnHelper.accessor("address", {
       header: "Адреса",
-      cell: (info) => <span className="font-medium">{extractStreetAddress(info.getValue())}</span>,
+      cell: (info) => <span className="font-medium text-slate-800">{extractStreetAddress(info.getValue())}</span>,
     }),
     columnHelper.accessor("type", {
       header: "Тип порушення",
@@ -154,7 +154,7 @@ export function TopViolationsTable() {
     columnHelper.accessor("potentialFine", {
       header: "Потенційний дохід",
       cell: (info) => (
-        <span className="font-semibold text-[#A27B5C]">
+        <span className="font-semibold text-orange-600">
           {info.getValue()?.toLocaleString("uk-UA") || "0"} ₴
         </span>
       ),
@@ -166,7 +166,7 @@ export function TopViolationsTable() {
         <Button
           variant="outline"
           size="sm"
-          className="hover:bg-[#A27B5C] hover:text-white hover:border-[#A27B5C] transition-colors"
+          className="hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
           onClick={() => setSelected(info.row.original)}
         >
           Деталі
@@ -183,19 +183,19 @@ export function TopViolationsTable() {
 
   return (
     <>
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        <div className="border-b px-6 py-5">
-          <h3 className="text-lg font-semibold">
+      <div className="rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm overflow-hidden">
+        <div className="border-b border-white/60 px-6 py-5">
+          <h3 className="text-lg font-semibold text-slate-800">
             Топ-5 найкритичніших порушень
           </h3>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-500 mt-1">
             Об'єкти з найбільшим потенційним доходом для бюджету
           </p>
         </div>
         {isLoading ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">Завантаження...</div>
+          <div className="p-8 text-center text-sm text-slate-500">Завантаження...</div>
         ) : topViolations.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">
+          <div className="p-8 text-center text-sm text-slate-500">
             Немає даних для відображення
           </div>
         ) : (
@@ -205,10 +205,10 @@ export function TopViolationsTable() {
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr
                     key={headerGroup.id}
-                    className="border-b bg-muted/30"
+                    className="border-b border-white/60 bg-slate-50/50"
                   >
                     {headerGroup.headers.map((header) => (
-                      <th key={header.id} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      <th key={header.id} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -220,16 +220,16 @@ export function TopViolationsTable() {
                   </tr>
                 ))}
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-white/60">
                 {table.getRowModel().rows.map((row, idx) => (
                   <tr
                     key={row.id}
-                    className={`transition-colors hover:bg-muted/50 ${
-                      idx % 2 === 0 ? "bg-card" : "bg-muted/20"
+                    className={`transition-colors hover:bg-slate-50/50 ${
+                      idx % 2 === 0 ? "bg-transparent" : "bg-white/20"
                     }`}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} className="px-6 py-4 text-sm">
+                      <td key={cell.id} className="px-6 py-4 text-sm text-slate-700">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()

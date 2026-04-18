@@ -75,17 +75,17 @@ export function ImportPage() {
     <HeadDesktopLayout currentPath="/head/import">
       <div className="mx-auto w-full max-w-screen-2xl space-y-6 p-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Імпорт даних</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-800">Імпорт даних</h1>
+          <p className="text-slate-500">
             Завантажте реєстр нерухомості для проведення аудиту
           </p>
         </div>
 
         <div className="max-w-2xl">
-          <div className="rounded-lg border bg-card shadow-sm">
-            <div className="border-b p-6">
-              <h3 className="text-lg font-semibold">Реєстр нерухомості</h3>
-              <p className="text-sm text-muted-foreground">
+          <div className="rounded-lg border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
+            <div className="border-b border-white/60 p-6">
+              <h3 className="text-lg font-semibold text-slate-800">Реєстр нерухомості</h3>
+              <p className="text-sm text-slate-500">
                 Завантажте файл з даними про нерухомість для звірки
               </p>
             </div>
@@ -99,11 +99,11 @@ export function ImportPage() {
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload className={`mb-4 h-12 w-12 ${isDragging ? "text-primary" : "text-muted-foreground"}`} />
-                  <p className="mb-2 text-sm font-medium">
+                  <Upload className={`mb-4 h-12 w-12 ${isDragging ? "text-primary" : "text-slate-500"}`} />
+                  <p className="mb-2 text-sm font-medium text-slate-800">
                     Перетягніть файл сюди або натисніть для вибору
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-500">
                     Підтримувані формати: CSV, XLSX
                   </p>
                   <Button type="button" className="mt-6" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
@@ -117,8 +117,8 @@ export function ImportPage() {
                       <FileText className="h-6 w-6 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{file.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-sm font-medium truncate text-slate-800">{file.name}</p>
+                      <p className="text-xs text-slate-500">
                         {(file.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
@@ -165,18 +165,18 @@ export function ImportPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b p-6">
-            <h3 className="text-lg font-semibold">Історія завантажень</h3>
-            <p className="text-sm text-muted-foreground">
+        <div className="rounded-lg border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
+          <div className="border-b border-white/60 p-6">
+            <h3 className="text-lg font-semibold text-slate-800">Історія завантажень</h3>
+            <p className="text-sm text-slate-500">
               Останні імпортовані файли та результати звірки
             </p>
           </div>
-          <div className="divide-y">
+          <div className="divide-y divide-white/60">
             {batchesLoading ? (
-              <div className="p-6 text-sm text-muted-foreground">Завантаження...</div>
+              <div className="p-6 text-sm text-slate-500">Завантаження...</div>
             ) : !batches || batches.length === 0 ? (
-              <div className="p-6 text-sm text-muted-foreground">Файли ще не завантажувались</div>
+              <div className="p-6 text-sm text-slate-500">Файли ще не завантажувались</div>
             ) : (
               batches.map((batch) => (
                 <div key={batch.id} className="flex items-center gap-4 px-6 py-4">
@@ -184,12 +184,12 @@ export function ImportPage() {
                     <Package className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{fixEncoding(batch.fileName)}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium truncate text-slate-800">{fixEncoding(batch.fileName)}</p>
+                    <p className="text-xs text-slate-500">
                       {batch.rowsCount} записів · {batch.anomalyCount ?? 0} аномалій
                     </p>
                   </div>
-                  <div className="text-xs text-muted-foreground shrink-0">
+                  <div className="text-xs text-slate-500 shrink-0">
                     {new Date(batch.createdAt).toLocaleString('uk-UA', {
                       day: '2-digit',
                       month: 'short',

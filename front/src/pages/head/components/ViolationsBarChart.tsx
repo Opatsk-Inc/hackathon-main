@@ -16,11 +16,11 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const chartColors = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+  "#3b82f6",  // Синій
+  "#0d9488",  // Бірюзовий
+  "#f97316",  // Помаранчевий
+  "#16a34a",  // Зелений
+  "#8b5cf6",  // Фіолетовий
 ]
 
 interface ViolationsBarChartProps {
@@ -71,13 +71,13 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
 
   if (isLoading || chartData.length === 0) {
     return (
-      <div className="flex flex-col rounded-2xl border border-border bg-card">
+      <div className="flex flex-col rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
         <div className="p-6 pb-4">
-          <h3 className="text-lg font-semibold">Структура порушень</h3>
-          <p className="text-sm text-muted-foreground">Завантаження...</p>
+          <h3 className="text-lg font-semibold text-slate-800">Структура порушень</h3>
+          <p className="text-sm text-slate-500">Завантаження...</p>
         </div>
         <div className="flex items-center justify-center h-[400px]">
-          <div className="animate-pulse text-muted-foreground">Завантаження даних...</div>
+          <div className="animate-pulse text-slate-500">Завантаження даних...</div>
         </div>
       </div>
     )
@@ -92,10 +92,10 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
   }, {} as Record<string, { label: string; color: string }>)
 
   return (
-    <div className="flex flex-col rounded-2xl border border-border bg-card">
+    <div className="flex flex-col rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
       <div className="p-6 pb-4">
-        <h3 className="text-lg font-semibold">Структура порушень</h3>
-        <p className="text-sm text-muted-foreground">Розподіл за типами</p>
+        <h3 className="text-lg font-semibold text-slate-800">Структура порушень</h3>
+        <p className="text-sm text-slate-500">Розподіл за типами</p>
       </div>
 
       <div className="px-6 pb-6">
@@ -121,7 +121,7 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
         <div className="mt-6 space-y-2">
           {chartData.map((item, idx) => (
             <div key={idx} className="flex items-center justify-between text-sm">
-              <span className="font-medium">{item.name}</span>
+              <span className="font-medium text-slate-700">{item.name}</span>
               <span className="font-semibold tabular-nums" style={{ color: item.fill }}>
                 {item.value.toLocaleString("uk-UA")}
               </span>
