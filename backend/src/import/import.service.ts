@@ -50,9 +50,9 @@ function parseExcelDate(val: unknown): Date | null {
 // ── Row interface ─────────────────────────────────────────────────────────────
 
 interface RealEstateRow {
-  taxId: string;       // normalized
+  taxId: string;
   ownerNameRaw: string;
-  ownerNameNorm: string; // normalized
+  ownerNameNorm: string;
   objectType: string;
   address: string;
   area: number;
@@ -97,7 +97,7 @@ export class ImportService {
         };
       })
       .filter((row) => {
-        if (!row.taxId && !row.ownerNameNorm) return false; // nothing to identify the owner
+        if (!row.taxId && !row.ownerNameNorm) return false;
         if (!row.address) {
           this.logger.warn(`Skipping row — no address: taxId=${row.taxId} name=${row.ownerNameRaw}`);
           return false;
@@ -146,10 +146,9 @@ export class ImportService {
   }
 
   async importRealEstate(
-    userId: number,
+    hromadaId: string,
     file: Express.Multer.File,
     baseTaxRate: number,
-    hromadaId?: string,
   ) {
     if (!file?.buffer) throw new BadRequestException('File is required');
 
@@ -164,21 +163,19 @@ export class ImportService {
     if (!rows.length) throw new BadRequestException('File contains no valid rows');
 
     const batch = await this.prisma.importBatch.create({
-      data: { userId, fileName: file.originalname, rowsCount: rows.length, hromadaId: hromadaId ?? null },
+      data: { hromadaId, fileName: file.originalname, rowsCount: rows.length },
     });
 
-    // Load land record identifiers for the target hromada into memory — avoids N+1 queries
     const landRecords = await this.prisma.landRecord.findMany({
-      where: hromadaId ? { hromadaId } : {},
+      where: { hromadaId },
       select: { taxId: true, ownerNameNorm: true },
     });
 
     const landTaxIds = new Set(landRecords.map((r) => r.taxId).filter(Boolean));
     const landNames = new Set(landRecords.map((r) => r.ownerNameNorm).filter(Boolean));
 
-    this.logger.log(`Loaded ${landRecords.length} land records for matching (hromadaId=${hromadaId ?? 'all'})`);
+    this.logger.log(`Loaded ${landRecords.length} land records for matching (hromadaId=${hromadaId})`);
 
-    // Bulk insert real estate records
     const BATCH = 500;
     for (let i = 0; i < rows.length; i += BATCH) {
       await this.prisma.realEstateRecord.createMany({
@@ -195,9 +192,8 @@ export class ImportService {
       });
     }
 
-    // Detect anomalies using in-memory Sets — O(1) lookup per row
     const anomalyData: {
-      batchId: string; hromadaId: string | null; type: AnomalyType; severity: string;
+      batchId: string; hromadaId: string; type: AnomalyType; severity: string;
       description: string; status: AnomalyStatus; taxId: string; suspectName: string;
       address: string; lat: number | null; lng: number | null; potentialFine: number;
     }[] = [];
@@ -212,7 +208,7 @@ export class ImportService {
 
         anomalyData.push({
           batchId: batch.id,
-          hromadaId: hromadaId ?? null,
+          hromadaId,
           type: AnomalyType.MISSING_IN_LAND,
           severity: potentialFine > 5000 ? 'HIGH' : potentialFine > 1000 ? 'MEDIUM' : 'LOW',
           description: `Нерухомість знайдена для ${row.ownerNameRaw} (ЄДРПОУ: ${row.taxId}), але відповідного земельного запису не існує.`,

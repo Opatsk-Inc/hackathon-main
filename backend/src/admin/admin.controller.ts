@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, UseGuards, Param, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
@@ -22,14 +22,14 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('dashboard/metrics')
-  @ApiOperation({ summary: 'Get dashboard metrics for current user' })
+  @ApiOperation({ summary: 'Get dashboard metrics for current hromada' })
   @ApiResponse({ status: 200, type: DashboardMetricsResponseDto })
   getMetrics(@Usr() user: AuthUser): Promise<DashboardMetricsResponseDto> {
     return this.adminService.getDashboardMetrics(user.id);
   }
 
   @Get('discrepancies')
-  @ApiOperation({ summary: 'List anomalies for current user' })
+  @ApiOperation({ summary: 'List anomalies for current hromada' })
   @ApiQuery({ name: 'batchId', required: false, description: 'Filter by specific batch' })
   @ApiResponse({ status: 200, type: AnomalyListResponseDto })
   getDiscrepancies(
@@ -40,7 +40,7 @@ export class AdminController {
   }
 
   @Get('batches')
-  @ApiOperation({ summary: 'List import batches for current user' })
+  @ApiOperation({ summary: 'List import batches for current hromada' })
   getBatches(@Usr() user: AuthUser) {
     return this.adminService.getBatches(user.id);
   }

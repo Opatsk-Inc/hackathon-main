@@ -23,11 +23,11 @@ export class DocumentService {
   constructor(private readonly prisma: PrismaService) {}
 
   async generateInspectionDirection(
-    userId: number,
+    hromadaId: string,
     anomalyId: string,
   ): Promise<InspectionDirectionDocument> {
     const anomaly = await this.prisma.anomaly.findFirst({
-      where: { id: anomalyId, batch: { userId } },
+      where: { id: anomalyId, hromadaId },
       include: { batch: true },
     });
 
@@ -70,8 +70,7 @@ export class DocumentService {
       severity: anomaly.severity,
       potentialFine: anomaly.potentialFine,
       description: anomaly.description,
-      instructions:
-        'Провести документальну позапланову перевірку відповідно до виявлених ознак порушення.',
+      instructions: 'Провести документальну позапланову перевірку відповідно до виявлених ознак порушення.',
       pdfBase64Stub,
     };
   }
