@@ -1,25 +1,22 @@
 import { motion, MotionValue } from "framer-motion"
-import type { LucideIcon } from "lucide-react"
 import { TrendingUp, TrendingDown } from "lucide-react"
 
-interface KPICardProps {
+interface KPIStatCardProps {
   title: string
   value: string | number | MotionValue<string>
-  icon: LucideIcon
-  delay: number
-  colorScheme: "rose" | "amber" | "indigo" | "emerald"
+  delay?: number
   trend?: {
     value: number
     direction: "up" | "down"
   }
 }
 
-export function KPICard({
+export function KPIStatCard({
   title,
   value,
-  delay,
+  delay = 0,
   trend,
-}: KPICardProps) {
+}: KPIStatCardProps) {
   const TrendIcon = trend?.direction === "up" ? TrendingUp : TrendingDown
   const trendColor = trend?.direction === "up" ? "text-emerald-500" : "text-red-500"
 
@@ -28,13 +25,13 @@ export function KPICard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-slate-900 border border-slate-800 rounded-xl p-6"
+      className="bg-card border border-border rounded-xl p-6"
     >
       <div className="flex flex-col gap-1">
-        <p className="text-4xl font-bold text-white">
+        <p className="text-4xl font-bold text-foreground">
           <motion.span>{value}</motion.span>
         </p>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted-foreground">
           {title}
         </p>
         {trend && (
@@ -43,7 +40,7 @@ export function KPICard({
             <span className={`text-sm font-medium ${trendColor}`}>
               {Math.abs(trend.value)}%
             </span>
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-muted-foreground">
               vs минулий місяць
             </span>
           </div>

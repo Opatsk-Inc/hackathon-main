@@ -2,15 +2,11 @@ import { HeadDesktopLayout } from "@/components/layouts"
 import { Button } from "@/components/ui/button"
 import {
   Plus,
-  AlertTriangle,
-  Building2,
-  Wallet,
-  TrendingUp,
 } from "lucide-react"
 import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber"
 import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
 import { TopViolationsTable } from "@/features/discrepancies/components"
-import { KPICard, ViolationsPieChart, InspectionAreaChart } from "./components"
+import { KPIStatCard, ViolationsBarChart, InspectionAreaChart } from "./components"
 
 export function DashboardPage() {
   const { data: metrics, isLoading } = useDashboardMetrics()
@@ -44,39 +40,35 @@ export function DashboardPage() {
 
         {/* KPI Metrics Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
+          <KPIStatCard
             title="Орієнтовні втрати бюджету"
             value={budgetLoss}
-            icon={Wallet}
             delay={0}
-            colorScheme="rose"
+            trend={{ value: 5.1, direction: "up" }}
           />
-          <KPICard
+          <KPIStatCard
             title="Виявлено розбіжностей"
             value={discrepancies}
-            icon={AlertTriangle}
             delay={0.1}
-            colorScheme="amber"
+            trend={{ value: 3.2, direction: "up" }}
           />
-          <KPICard
+          <KPIStatCard
             title="В роботі"
             value={inProgress}
-            icon={Building2}
             delay={0.2}
-            colorScheme="indigo"
+            trend={{ value: 1.8, direction: "down" }}
           />
-          <KPICard
+          <KPIStatCard
             title="Вирішено"
             value={resolved}
-            icon={TrendingUp}
             delay={0.3}
-            colorScheme="emerald"
+            trend={{ value: 12.5, direction: "up" }}
           />
         </div>
 
         {/* Charts Section */}
         <div className="grid gap-6 lg:grid-cols-2">
-          <ViolationsPieChart data={metrics?.byType} isLoading={isLoading} />
+          <ViolationsBarChart data={metrics?.byType} isLoading={isLoading} />
           <InspectionAreaChart />
         </div>
 

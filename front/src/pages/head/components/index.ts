@@ -1,3 +1,5 @@
 export { KPICard } from "./KPICard"
+export { KPIStatCard } from "./KPIStatCard"
 export { ViolationsPieChart } from "./ViolationsPieChart"
+export { ViolationsBarChart } from "./ViolationsBarChart"
 export { InspectionAreaChart } from "./InspectionAreaChart"
