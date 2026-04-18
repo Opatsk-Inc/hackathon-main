@@ -162,43 +162,59 @@ export class ImportService {
 
     if (!allRows.length) throw new BadRequestException('File contains no valid rows');
 
-    // ── 1. Fetch hromada and filter rows by its name ───────────────────────────
+    // ── 1. Fetch hromada ───────────────────────────────────────────────────────
     const hromada = await this.prisma.hromada.findUnique({ where: { id: hromadaId } });
     if (!hromada) throw new BadRequestException('Громаду не знайдено');
 
-    const cleanHromadaName = hromada.name
-      .toLowerCase()
-      .replace(/сільська рада|міська рада|селищна рада|територіальна громада|м\.|с\.|селище /g, '')
-      .replace(/\(.*?\)/g, '')
-      .trim();
+    // ── 2. Load land records for this hromada (they define who "belongs" here) ─
+    const landRecords = await this.prisma.landRecord.findMany({
+      where: { hromadaId },
+      select: { taxId: true, ownerNameNorm: true, ownerNameRaw: true, address: true, area: true },
+    });
 
-    const rows = allRows.filter((row) =>
-      row.address.toLowerCase().includes(cleanHromadaName)
-    );
-
-    if (!rows.length) {
-      throw new BadRequestException(`У файлі не знайдено записів для вашої громади (${hromada.name})`);
+    if (!landRecords.length) {
+      throw new BadRequestException(`Для громади "${hromada.name}" відсутні земельні записи. Спочатку завантажте дані земельного кадастру.`);
     }
 
-    // ── 2. Clear old data for this hromada to avoid duplicates in dashboard ────
+    this.logger.log(`Loaded ${landRecords.length} land records for hromadaId=${hromadaId}`);
+
+    // ── 3. Build lookup from real estate file (no address filter — real estate
+    //       records contain only street addresses, not community names) ─────────
+    const reByTaxId = new Map<string, RealEstateRow[]>();
+    const reByName  = new Map<string, RealEstateRow[]>();
+
+    for (const row of allRows) {
+      if (row.taxId) {
+        if (!reByTaxId.has(row.taxId)) reByTaxId.set(row.taxId, []);
+        reByTaxId.get(row.taxId)!.push(row);
+      }
+      if (row.ownerNameNorm) {
+        if (!reByName.has(row.ownerNameNorm)) reByName.set(row.ownerNameNorm, []);
+        reByName.get(row.ownerNameNorm)!.push(row);
+      }
+    }
+
+    // ── 4. Scope real estate rows to THIS hromada:
+    //       keep only rows whose owner also appears in the land registry here ───
+    const matchedSet = new Set<RealEstateRow>();
+    for (const land of landRecords) {
+      const byTaxId: RealEstateRow[] = (land.taxId ? reByTaxId.get(land.taxId) : undefined) ?? [];
+      const byName: RealEstateRow[]  = (land.ownerNameNorm ? reByName.get(land.ownerNameNorm) : undefined) ?? [];
+      for (const row of [...byTaxId, ...byName]) matchedSet.add(row);
+    }
+    const rows = [...matchedSet];
+
+    this.logger.log(`Matched ${rows.length} real estate rows for hromadaId=${hromadaId} (file had ${allRows.length} total rows)`);
+
+    // ── 5. Clear old data for this hromada ────────────────────────────────────
     await this.prisma.anomaly.deleteMany({ where: { hromadaId } });
     await this.prisma.realEstateRecord.deleteMany({ where: { batch: { hromadaId } } });
     await this.prisma.importBatch.deleteMany({ where: { hromadaId } });
 
-    // ── 3. Create new batch ────────────────────────────────────────────────────
+    // ── 6. Create new batch ───────────────────────────────────────────────────
     const batch = await this.prisma.importBatch.create({
       data: { hromadaId, fileName: file.originalname, rowsCount: rows.length },
     });
-
-    const landRecords = await this.prisma.landRecord.findMany({
-      where: { hromadaId },
-      select: { taxId: true, ownerNameNorm: true },
-    });
-
-    const landTaxIds = new Set(landRecords.map((r) => r.taxId).filter(Boolean));
-    const landNames = new Set(landRecords.map((r) => r.ownerNameNorm).filter(Boolean));
-
-    this.logger.log(`Loaded ${landRecords.length} land records for matching (hromadaId=${hromadaId})`);
 
     const BATCH = 500;
     for (let i = 0; i < rows.length; i += BATCH) {
@@ -216,33 +232,63 @@ export class ImportService {
       });
     }
 
+    // ── 7. Build sets of real estate owners for fast reverse lookup ───────────
+    const reTaxIds = new Set(rows.map((r) => r.taxId).filter(Boolean));
+    const reNames  = new Set(rows.map((r) => r.ownerNameNorm).filter(Boolean));
+
     const anomalyData: {
       batchId: string; hromadaId: string; type: AnomalyType; severity: string;
       description: string; status: AnomalyStatus; taxId: string; suspectName: string;
       address: string; lat: number | null; lng: number | null; potentialFine: number;
     }[] = [];
 
-    for (const row of rows) {
-      const matched =
-        (row.taxId && landTaxIds.has(row.taxId)) ||
-        (row.ownerNameNorm && landNames.has(row.ownerNameNorm));
+    // ── 8. MISSING_IN_REAL_ESTATE: land owner in this hromada has no real estate
+    const seenLandOwners = new Set<string>();
+    for (const land of landRecords) {
+      const key = land.taxId || land.ownerNameNorm;
+      if (!key || seenLandOwners.has(key)) continue;
+      seenLandOwners.add(key);
 
-      if (!matched) {
-        const potentialFine = row.area > 120 ? (row.area - 120) * baseTaxRate : 0;
+      const hasRE =
+        (land.taxId && reTaxIds.has(land.taxId)) ||
+        (land.ownerNameNorm && reNames.has(land.ownerNameNorm));
 
+      if (!hasRE) {
+        const potentialFine = land.area > 0 ? land.area * 10000 * baseTaxRate : 0;
         anomalyData.push({
           batchId: batch.id,
           hromadaId,
-          type: AnomalyType.MISSING_IN_LAND,
+          type: AnomalyType.MISSING_IN_REAL_ESTATE,
           severity: potentialFine > 5000 ? 'HIGH' : potentialFine > 1000 ? 'MEDIUM' : 'LOW',
-          description: `Нерухомість знайдена для ${row.ownerNameRaw} (ЄДРПОУ: ${row.taxId}), але відповідного земельного запису не існує.`,
+          description: `Землекористувач ${land.ownerNameRaw} (ІПН: ${land.taxId}) має земельну ділянку в громаді, але відсутній у реєстрі нерухомості.`,
+          status: AnomalyStatus.NEW,
+          taxId: land.taxId,
+          suspectName: land.ownerNameRaw,
+          address: land.address,
+          lat: null,
+          lng: null,
+          potentialFine,
+        });
+      }
+    }
+
+    // ── 9. NO_ACTIVE_REAL_RIGHTS: ownership already ended ─────────────────────
+    const now = new Date();
+    for (const row of rows) {
+      if (row.ownershipEnd && row.ownershipEnd < now) {
+        anomalyData.push({
+          batchId: batch.id,
+          hromadaId,
+          type: AnomalyType.NO_ACTIVE_REAL_RIGHTS,
+          severity: 'MEDIUM',
+          description: `Право власності ${row.ownerNameRaw} (ІПН: ${row.taxId}) на об'єкт "${row.objectType}" закінчилось ${row.ownershipEnd.toLocaleDateString('uk-UA')}.`,
           status: AnomalyStatus.NEW,
           taxId: row.taxId,
           suspectName: row.ownerNameRaw,
           address: row.address,
           lat: null,
           lng: null,
-          potentialFine,
+          potentialFine: 0,
         });
       }
     }
