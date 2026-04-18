@@ -4,6 +4,13 @@ import * as XLSX from 'xlsx';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeoService } from '../geo/geo.service';
 import { AnomalyType, AnomalyStatus } from '@prisma/client';
+import {
+  fuzzyNameSimilarity,
+  resolveOwnerKey,
+  detectAreaUnit,
+  tokenSortName,
+  normalizeForFuzzy,
+} from './matching';
 
 // ── Shared normalization (must match seed.ts) ────────────────────────────────
 
@@ -194,13 +201,26 @@ export class ImportService {
       }
     }
 
-    // ── 4. Scope real estate rows to THIS hromada:
-    //       keep only rows whose owner also appears in the land registry here ───
+    // ── 4. Scope real estate rows to THIS hromada ─────────────────────────────
+    //    Keep only RE rows whose owner also appears in the land registry here.
+    //    Priority: IPN match first, fuzzy name fallback (threshold ≥ 0.85).
     const matchedSet = new Set<RealEstateRow>();
     for (const land of landRecords) {
-      const byTaxId: RealEstateRow[] = (land.taxId ? reByTaxId.get(land.taxId) : undefined) ?? [];
-      const byName: RealEstateRow[]  = (land.ownerNameNorm ? reByName.get(land.ownerNameNorm) : undefined) ?? [];
-      for (const row of [...byTaxId, ...byName]) matchedSet.add(row);
+      for (const row of allRows) {
+        // Fast path: exact IPN match (both non-empty and equal)
+        if (land.taxId && row.taxId && land.taxId === row.taxId) {
+          matchedSet.add(row);
+          continue;
+        }
+        // If both have non-empty IPN but they differ → definitively different persons, skip
+        if (land.taxId && row.taxId && land.taxId !== row.taxId) {
+          continue;
+        }
+        // Fuzzy name fallback (one or both lack IPN)
+        if (fuzzyNameSimilarity(land.ownerNameNorm, row.ownerNameNorm) >= 0.85) {
+          matchedSet.add(row);
+        }
+      }
     }
     const rows = [...matchedSet];
 
