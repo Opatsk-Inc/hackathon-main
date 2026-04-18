@@ -1,9 +1,10 @@
-import { Controller, Get, Patch, Param, Body, Headers, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
-  ApiHeader,
+  ApiBearerAuth,
   ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
@@ -12,22 +13,18 @@ import { ResolveTaskRequestDto } from './dto/request/resolve-task.request.dto';
 import { MobileTaskResponseDto } from './dto/response/mobile-task.response.dto';
 
 @ApiTags('Mobile (Inspector)')
-@ApiHeader({ name: 'x-tenant-id', description: 'Tenant identifier', required: true })
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('api/mobile')
 export class MobileController {
   constructor(private readonly mobileService: MobileService) {}
 
   @Get('tasks')
-  @ApiOperation({
-    summary: "Get inspector's assigned tasks — potentialFine is NEVER included",
-  })
+  @ApiOperation({ summary: "Get inspector's assigned tasks" })
   @ApiQuery({ name: 'inspectorId', required: true, description: 'Inspector user ID' })
   @ApiResponse({ status: 200, type: [MobileTaskResponseDto] })
-  getTasks(
-    @Headers('x-tenant-id') tenantId: string,
-    @Query('inspectorId') inspectorId: string,
-  ): Promise<MobileTaskResponseDto[]> {
-    return this.mobileService.getAssignedTasks(tenantId, inspectorId);
+  getTasks(@Query('inspectorId') inspectorId: string): Promise<MobileTaskResponseDto[]> {
+    return this.mobileService.getAssignedTasks(inspectorId);
   }
 
   @Patch('tasks/:id/resolve')
@@ -37,11 +34,7 @@ export class MobileController {
     status: 200,
     schema: { example: { id: 'uuid', status: 'RESOLVED', comment: '...', updatedAt: '...' } },
   })
-  resolveTask(
-    @Headers('x-tenant-id') tenantId: string,
-    @Param('id') anomalyId: string,
-    @Body() dto: ResolveTaskRequestDto,
-  ) {
-    return this.mobileService.resolveTask(tenantId, anomalyId, dto);
+  resolveTask(@Param('id') anomalyId: string, @Body() dto: ResolveTaskRequestDto) {
+    return this.mobileService.resolveTask(anomalyId, dto);
   }
 }

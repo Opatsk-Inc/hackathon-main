@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AnomalyStatus, AnomalyType } from '@prisma/client';
+import { AnomalyStatus } from '@prisma/client';
 import { DashboardMetricsResponseDto } from './dto/response/dashboard-metrics.response.dto';
 import { AnomalyListResponseDto } from './dto/response/anomaly-list.response.dto';
 import { AssignTaskRequestDto } from './dto/request/assign-task.request.dto';
@@ -9,17 +9,22 @@ import { AssignTaskRequestDto } from './dto/request/assign-task.request.dto';
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getDashboardMetrics(tenantId: string): Promise<DashboardMetricsResponseDto> {
+  async getDashboardMetrics(userId: number): Promise<DashboardMetricsResponseDto> {
+    const userBatchFilter = { batch: { userId } };
+
     const [anomalies, fineAgg, statusCounts] = await Promise.all([
-      this.prisma.anomaly.findMany({ where: { tenantId }, select: { type: true } }),
+      this.prisma.anomaly.findMany({
+        where: userBatchFilter,
+        select: { type: true },
+      }),
       this.prisma.anomaly.aggregate({
-        where: { tenantId },
+        where: userBatchFilter,
         _sum: { potentialFine: true },
         _count: true,
       }),
       this.prisma.anomaly.groupBy({
         by: ['status'],
-        where: { tenantId },
+        where: userBatchFilter,
         _count: { status: true },
       }),
     ]);
@@ -43,20 +48,35 @@ export class AdminService {
     };
   }
 
-  async getDiscrepancies(tenantId: string): Promise<AnomalyListResponseDto> {
+  async getDiscrepancies(userId: number, batchId?: string): Promise<AnomalyListResponseDto> {
+    const where = {
+      batch: { userId },
+      ...(batchId ? { batchId } : {}),
+    };
+
     const [items, total] = await Promise.all([
-      this.prisma.anomaly.findMany({
-        where: { tenantId },
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.anomaly.count({ where: { tenantId } }),
+      this.prisma.anomaly.findMany({ where, orderBy: { createdAt: 'desc' } }),
+      this.prisma.anomaly.count({ where }),
     ]);
+
     return { items, total };
   }
 
-  async assignTask(tenantId: string, dto: AssignTaskRequestDto) {
+  async getBatches(userId: number) {
+    const batches = await this.prisma.importBatch.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: { _count: { select: { anomalies: true } } },
+    });
+    return batches.map((b) => ({ ...b, anomalyCount: b._count.anomalies }));
+  }
+
+  async assignTask(userId: number, dto: AssignTaskRequestDto) {
     const updated = await this.prisma.anomaly.updateMany({
-      where: { tenantId, id: { in: dto.anomalyIds } },
+      where: {
+        batch: { userId },
+        id: { in: dto.anomalyIds },
+      },
       data: { inspectorId: dto.inspectorId, status: AnomalyStatus.IN_PROGRESS },
     });
     return { assigned: updated.count };

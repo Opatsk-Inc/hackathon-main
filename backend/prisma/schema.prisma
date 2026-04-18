@@ -23,6 +23,8 @@ model User {
   warehouseId String?
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
 
+  importBatches ImportBatch[]
+
   @@map("user")
 }
 
@@ -131,38 +133,23 @@ model TripPoint {
 
 // ─── LionsShare Models ────────────────────────────────────────────────────────
 
-model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  region    String
-  createdAt DateTime @default(now())
-
-  importBatches     ImportBatch[]
-  landRecords       LandRecord[]
-  realEstateRecords RealEstateRecord[]
-  anomalies         Anomaly[]
-
-  @@map("tenant")
-}
-
 model ImportBatch {
   id        String   @id @default(uuid())
-  tenantId  String
+  userId    Int
   fileName  String
   rowsCount Int
   createdAt DateTime @default(now())
 
-  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
   realEstateRecords RealEstateRecord[]
   anomalies         Anomaly[]
 
-  @@index([tenantId])
+  @@index([userId])
   @@map("import_batch")
 }
 
 model LandRecord {
   id              String @id @default(uuid())
-  tenantId        String
   cadastralNumber String
   koatuu          String
   purpose         String
@@ -172,15 +159,12 @@ model LandRecord {
   ownerNameRaw    String
   ownerNameNorm   String
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-
-  @@index([tenantId, taxId, ownerNameNorm])
+  @@index([taxId, ownerNameNorm])
   @@map("land_record")
 }
 
 model RealEstateRecord {
   id            String    @id @default(uuid())
-  tenantId      String
   batchId       String
   taxId         String
   ownerNameRaw  String
@@ -190,10 +174,9 @@ model RealEstateRecord {
   area          Float
   ownershipEnd  DateTime?
 
-  tenant Tenant      @relation(fields: [tenantId], references: [id])
-  batch  ImportBatch @relation(fields: [batchId], references: [id])
+  batch ImportBatch @relation(fields: [batchId], references: [id])
 
-  @@index([tenantId, taxId, ownerNameNorm])
+  @@index([taxId, ownerNameNorm])
   @@map("real_estate_record")
 }
 
@@ -212,7 +195,6 @@ enum AnomalyStatus {
 
 model Anomaly {
   id            String        @id @default(uuid())
-  tenantId      String
   batchId       String
   type          AnomalyType
   severity      String
@@ -229,9 +211,8 @@ model Anomaly {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  tenant Tenant      @relation(fields: [tenantId], references: [id])
-  batch  ImportBatch @relation(fields: [batchId], references: [id])
+  batch ImportBatch @relation(fields: [batchId], references: [id])
 
-  @@index([tenantId, taxId, suspectName])
+  @@index([batchId, taxId, suspectName])
   @@map("anomaly")
 }
