@@ -15,22 +15,20 @@ export class AdminService {
     private readonly geo: GeoService,
   ) {}
 
-  async getDashboardMetrics(userId: number): Promise<DashboardMetricsResponseDto> {
-    const userBatchFilter = { batch: { userId } };
-
+  async getDashboardMetrics(hromadaId: string): Promise<DashboardMetricsResponseDto> {
     const [anomalies, fineAgg, statusCounts] = await Promise.all([
       this.prisma.anomaly.findMany({
-        where: userBatchFilter,
+        where: { hromadaId },
         select: { type: true },
       }),
       this.prisma.anomaly.aggregate({
-        where: userBatchFilter,
+        where: { hromadaId },
         _sum: { potentialFine: true },
         _count: true,
       }),
       this.prisma.anomaly.groupBy({
         by: ['status'],
-        where: userBatchFilter,
+        where: { hromadaId },
         _count: { status: true },
       }),
     ]);
@@ -54,9 +52,9 @@ export class AdminService {
     };
   }
 
-  async getDiscrepancies(userId: number, batchId?: string): Promise<AnomalyListResponseDto> {
+  async getDiscrepancies(hromadaId: string, batchId?: string): Promise<AnomalyListResponseDto> {
     const where = {
-      batch: { userId },
+      hromadaId,
       ...(batchId ? { batchId } : {}),
     };
 
@@ -68,25 +66,24 @@ export class AdminService {
     return { items, total };
   }
 
-  async getBatches(userId: number) {
+  async getBatches(hromadaId: string) {
     const batches = await this.prisma.importBatch.findMany({
-      where: { userId },
+      where: { hromadaId },
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { anomalies: true } } },
     });
     return batches.map((b) => ({ ...b, anomalyCount: b._count.anomalies }));
   }
 
-  async assignTask(userId: number, dto: AssignTaskRequestDto) {
+  async assignTask(hromadaId: string, dto: AssignTaskRequestDto) {
     const updated = await this.prisma.anomaly.updateMany({
       where: {
-        batch: { userId },
+        hromadaId,
         id: { in: dto.anomalyIds },
       },
       data: { inspectorId: dto.inspectorId, status: AnomalyStatus.IN_PROGRESS },
     });
 
-    // Geocode addresses in background — inspector needs coordinates, don't block the response
     this.geocodeAssignedAnomalies(dto.anomalyIds).catch((e) =>
       this.logger.error(`Background geocoding failed: ${e.message}`),
     );
@@ -101,10 +98,8 @@ export class AdminService {
     });
 
     for (const anomaly of anomalies) {
-      // Nominatim policy: max 1 request per second
       await new Promise((r) => setTimeout(r, 1100));
 
-      // Append hromada name + region so Nominatim has enough context to locate the street
       const fullAddress = [anomaly.address, anomaly.hromada?.name, anomaly.hromada?.region]
         .filter(Boolean)
         .join(', ');

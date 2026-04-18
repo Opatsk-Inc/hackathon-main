@@ -1,7 +1,9 @@
-import { Controller, Get, Param, Query, ParseIntPipe, DefaultValuePipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, ParseIntPipe, DefaultValuePipe, UseGuards, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { HromadaService } from './hromada.service';
+import { Usr } from '../user/user.decorator';
+import type { AuthUser } from '../auth/auth-user';
 
 @ApiTags('Hromada')
 @ApiBearerAuth()
@@ -16,36 +18,34 @@ export class HromadaController {
     return this.hromadaService.findAll();
   }
 
+  @Get('land-records')
+  @ApiOperation({ summary: 'Get paginated land records for the current hromada' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  findMyLandRecords(
+    @Usr() user: AuthUser,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
+  ) {
+    return this.hromadaService.findLandRecords(user.id, page, limit);
+  }
+
+  @Get('anomalies')
+  @ApiOperation({ summary: 'Get paginated anomalies for the current hromada' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  findMyAnomalies(
+    @Usr() user: AuthUser,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
+  ) {
+    return this.hromadaService.findAnomalies(user.id, page, limit);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get hromada by UUID' })
   @ApiParam({ name: 'id', description: 'Hromada UUID' })
   findOne(@Param('id') id: string) {
     return this.hromadaService.findOne(id);
-  }
-
-  @Get(':id/land-records')
-  @ApiOperation({ summary: 'Get paginated land records for a hromada' })
-  @ApiParam({ name: 'id', description: 'Hromada UUID' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findLandRecords(
-    @Param('id') id: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
-  ) {
-    return this.hromadaService.findLandRecords(id, page, limit);
-  }
-
-  @Get(':id/anomalies')
-  @ApiOperation({ summary: 'Get paginated anomalies detected for a hromada' })
-  @ApiParam({ name: 'id', description: 'Hromada UUID' })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  findAnomalies(
-    @Param('id') id: string,
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
-  ) {
-    return this.hromadaService.findAnomalies(id, page, limit);
   }
 }

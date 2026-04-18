@@ -1,11 +1,11 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
 import { JwtPayload } from './jwt-payload';
 import { LoginRequest, SignupRequest } from './models';
 import type { AuthUser } from './auth-user';
@@ -19,81 +19,50 @@ export class AuthService {
   ) {}
 
   async signup(signupRequest: SignupRequest): Promise<string> {
-    let user;
-    try {
-      user = await this.prisma.user.create({
-        data: {
-          email: signupRequest.email.toLowerCase(),
-          passwordHash: await bcrypt.hash(signupRequest.password, 10),
-          firstName: signupRequest.firstName ?? '',
-          lastName: signupRequest.lastName ?? '',
-          role: signupRequest.role,
-          warehouseId: signupRequest.warehouseId ?? null,
-        },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          warehouseId: true,
-        },
-      });
-    } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') {
-          throw new ConflictException('Email already in use');
-        } else throw e;
-      } else throw e;
-    }
+    const hromada = await this.prisma.hromada.findUnique({
+      where: { id: signupRequest.hromadaId },
+    });
 
-    const payload: JwtPayload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      warehouseId: user.warehouseId,
-    };
+    if (!hromada) throw new NotFoundException('Hromada not found');
 
+    if (hromada.email) throw new ConflictException('This hromada already has an account');
+
+    const emailTaken = await this.prisma.hromada.findUnique({
+      where: { email: signupRequest.email.toLowerCase() },
+    });
+    if (emailTaken) throw new ConflictException('Email already in use');
+
+    const updated = await this.prisma.hromada.update({
+      where: { id: signupRequest.hromadaId },
+      data: {
+        email: signupRequest.email.toLowerCase(),
+        passwordHash: await bcrypt.hash(signupRequest.password, 10),
+      },
+    });
+
+    const payload: JwtPayload = { id: updated.id, email: updated.email! };
     return this.jwtService.signAsync(payload);
   }
 
   async login(loginRequest: LoginRequest): Promise<string> {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email: loginRequest.email.toLowerCase(),
-      },
-      select: {
-        id: true,
-        passwordHash: true,
-        email: true,
-        role: true,
-        warehouseId: true,
-      },
+    const hromada = await this.prisma.hromada.findUnique({
+      where: { email: loginRequest.email.toLowerCase() },
     });
 
-    if (
-      user === null ||
-      !bcrypt.compareSync(loginRequest.password, user.passwordHash)
-    ) {
+    if (!hromada?.passwordHash || !bcrypt.compareSync(loginRequest.password, hromada.passwordHash)) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const payload: JwtPayload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      warehouseId: user.warehouseId,
-    };
-
+    const payload: JwtPayload = { id: hromada.id, email: hromada.email! };
     return this.jwtService.signAsync(payload);
   }
 
   async validateUser(payload: JwtPayload): Promise<AuthUser> {
-    const user = await this.prisma.user.findUnique({
+    const hromada = await this.prisma.hromada.findUnique({
       where: { id: payload.id },
     });
 
-    if (user !== null && user.email === payload.email) {
-      return user;
-    }
+    if (hromada?.email === payload.email) return hromada;
     throw new UnauthorizedException();
   }
 }

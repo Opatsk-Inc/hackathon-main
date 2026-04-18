@@ -23,8 +23,6 @@ model User {
   warehouseId String?
   warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
 
-  importBatches ImportBatch[]
-
   @@map("user")
 }
 
@@ -135,18 +133,15 @@ model TripPoint {
 
 model ImportBatch {
   id        String   @id @default(uuid())
-  userId    Int
+  hromadaId String
   fileName  String
   rowsCount Int
   createdAt DateTime @default(now())
-  hromadaId String?
 
-  user              User               @relation(fields: [userId], references: [id])
-  hromada           Hromada?           @relation(fields: [hromadaId], references: [id])
+  hromada           Hromada            @relation(fields: [hromadaId], references: [id])
   realEstateRecords RealEstateRecord[]
   anomalies         Anomaly[]
 
-  @@index([userId])
   @@index([hromadaId])
   @@map("import_batch")
 }
@@ -157,6 +152,8 @@ model Hromada {
   name          String
   region        String
   district      String
+  email         String?       @unique
+  passwordHash  String?
   landRecords   LandRecord[]
   importBatches ImportBatch[]
   anomalies     Anomaly[]

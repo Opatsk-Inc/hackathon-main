@@ -1,8 +1,4 @@
-import { Role } from '@prisma/client';
-
 export interface JwtPayload {
-  id: number;
+  id: string;
   email: string;
-  role: Role;
-  warehouseId: string | null;
 }

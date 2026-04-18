@@ -39,7 +39,6 @@ export class ImportController {
       properties: {
         file: { type: 'string', format: 'binary', description: 'Real estate CSV or XLSX file' },
         baseTaxRate: { type: 'number', description: 'Tax rate per m² (UAH)' },
-        hromadaId: { type: 'string', format: 'uuid', description: 'Hromada UUID to link this batch to' },
       },
     },
   })
@@ -50,6 +49,6 @@ export class ImportController {
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: ImportRealEstateRequestDto,
   ): Promise<ImportBatchResponseDto> {
-    return this.importService.importRealEstate(user.id, file, dto.baseTaxRate, dto.hromadaId);
+    return this.importService.importRealEstate(user.id, file, dto.baseTaxRate);
   }
 }

@@ -1,3 +1,3 @@
-import type { User } from '@prisma/client';
+import type { Hromada } from '@prisma/client';
 
-export type AuthUser = User;
+export type AuthUser = Hromada;
