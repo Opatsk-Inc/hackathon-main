@@ -1,13 +1,12 @@
-declare global {
-  interface Window {
-    __ENV__?: { VITE_API_URL?: string }
-  }
-}
+const PROD_API_URL = 'https://api.notfounds.dev'
 
-const API_BASE_URL =
-  (typeof window !== 'undefined' && window.__ENV__?.VITE_API_URL) ||
-  import.meta.env.VITE_API_URL ||
-  'http://localhost:1488'
+const isLocalHost =
+  typeof window !== 'undefined' &&
+  /^(localhost|127\.0\.0\.1|0\.0\.0\.0)$/.test(window.location.hostname)
+
+const API_BASE_URL = isLocalHost
+  ? import.meta.env.VITE_API_URL || 'http://localhost:1488'
+  : PROD_API_URL
 
 export class ApiClient {
   private static getAuthToken(): string | null {
