@@ -1,0 +1,32 @@
+import { Module } from '@nestjs/common';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { AppController } from './app.controller';
+import { PrismaService } from './prisma/prisma.service';
+import { ConfigModule } from '@nestjs/config';
+import { RealtimeModule } from './common/realtime.module';
+
+// LionsShare modules
+import { GeoModule } from './geo/geo.module';
+import { ImportModule } from './import/import.module';
+import { AdminModule } from './admin/admin.module';
+import { DocumentModule } from './document/document.module';
+import { MobileModule } from './mobile/mobile.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    RealtimeModule,
+    UserModule,
+    AuthModule,
+    // LionsShare
+    GeoModule,
+    ImportModule,
+    AdminModule,
+    DocumentModule,
+    MobileModule,
+  ],
+  providers: [PrismaService],
+  controllers: [AppController],
+})
+export class AppModule {}
