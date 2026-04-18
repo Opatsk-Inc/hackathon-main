@@ -69,10 +69,10 @@ export function InspectionAreaChart() {
     return Number(((current - previous) / previous * 100).toFixed(1));
   }, [inspectionData]);
   return (
-    <div className="rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
+    <div className="panel-glass rounded-2xl">
       <div className="p-6">
-        <h3 className="mb-1 text-lg font-semibold text-slate-800">Динаміка інспекцій</h3>
-        <p className="text-sm text-slate-500">
+        <h3 className="mb-1 text-lg font-semibold text-[#10213f]">Динаміка інспекцій</h3>
+        <p className="text-sm text-[#5d728f]">
           Показує тренд створених та перевірених завдань за останні 6 місяців
         </p>
       </div>
@@ -160,12 +160,12 @@ export function InspectionAreaChart() {
           </AreaChart>
         </ChartContainer>
       </div>
-      <div className="border-t border-white/60 px-6 py-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+      <div className="border-t border-white/45 px-6 py-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-[#2d4467]">
           {growthRate > 0 ? 'Зростання' : 'Зменшення'} на {Math.abs(Number(growthRate))}% цього місяця
           <TrendingUp className="h-4 w-4 text-emerald-600" />
         </div>
-        <div className="mt-1 text-xs text-slate-500">
+        <div className="mt-1 text-xs text-[#5d728f]">
           Порівняно з попереднім періодом
         </div>
       </div>

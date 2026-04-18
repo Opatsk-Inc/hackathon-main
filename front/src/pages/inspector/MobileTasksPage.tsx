@@ -42,36 +42,6 @@ interface Task {
   distance: string
 }
 
-const tasks: Task[] = [
-  {
-    id: "1",
-    address: "вул. Лесі Українки, 15",
-    cadastralNumber: "3210136300:01:001:0015",
-    discrepancy: "Система: Пустир → Факт: Комерційна забудова",
-    lat: 50.4501,
-    lng: 30.5234,
-    distance: "1.2 км",
-  },
-  {
-    id: "2",
-    address: "вул. Франка, 10",
-    cadastralNumber: "3210136300:01:002:0042",
-    discrepancy: "Підозра на неоформлену комерцію",
-    lat: 50.4521,
-    lng: 30.5254,
-    distance: "2.8 км",
-  },
-  {
-    id: "3",
-    address: "пр. Перемоги, 88",
-    cadastralNumber: "3210136300:01:003:0128",
-    discrepancy: "Площа не співпадає з реєстром",
-    lat: 50.4481,
-    lng: 30.5194,
-    distance: "3.5 км",
-  },
-]
-
 export function MobileTasksPage() {
   const [searchParams] = useSearchParams()
   const autoTaskId = searchParams.get("taskId")

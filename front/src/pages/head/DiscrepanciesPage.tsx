@@ -187,7 +187,6 @@ function AnomalyModal({
   const [assignedName, setAssignedName] = useState<string | null>(null);
   const [magicLink, setMagicLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [inspectors, setInspectors] = useState<Inspector[]>([]);
   const currentStatus = assignedName ? "IN_PROGRESS" : a.status;
 
   // Завантажуємо інспекторів для генерації лінка для існуючих завдань
@@ -196,7 +195,6 @@ function AnomalyModal({
     if (a.status === "IN_PROGRESS" && a.inspectorId && !magicLink) {
       AdminService.getInspectors().then((list) => {
         console.log('Inspectors loaded:', list);
-        setInspectors(list);
         const inspector = list.find((i) => i.id === a.inspectorId);
         console.log('Found inspector:', inspector);
         if (inspector?.magicToken) {

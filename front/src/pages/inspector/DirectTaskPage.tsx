@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
-import { ApiClient } from "@/lib/api/client"
 import { AdminService } from "@/lib/api/admin.service"
 import { LoadingOverlay } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"
@@ -102,7 +101,9 @@ export function DirectTaskPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
-        <LoadingOverlay isLoading={true} />
+        <LoadingOverlay isLoading={true}>
+          <div className="h-24 w-24" />
+        </LoadingOverlay>
       </div>
     )
   }
