@@ -10,12 +10,14 @@ import { formatLargeNumber } from "@/lib/utils/formatNumber"
 import { useEffect } from "react"
 import { useMotionValue, useTransform, animate } from "framer-motion"
 import { useAuthStore } from "@/features/auth/store/auth.store"
+import { useNavigate } from "react-router-dom"
 
 
 export function DashboardPage() {
   const { user } = useAuthStore()
   const { data: metrics, isLoading } = useDashboardMetrics()
 
+  const navigate = useNavigate();
 
   // Animated motion values
   const budgetLossMotion = useMotionValue(0)
@@ -55,6 +57,7 @@ export function DashboardPage() {
           <Button
             size="lg"
             className="gap-2 shadow-lg transition-all hover:shadow-xl"
+            onClick={() => navigate("/head/import")}
           >
             <Plus className="h-5 w-5" />
             Новий аудит
