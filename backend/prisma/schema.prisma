@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  WAREHOUSE_MANAGER
+  DISPATCHER
+}
+
+model User {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique
+  passwordHash     String
+  firstName        String?
+  lastName         String?
+  role             Role     @default(WAREHOUSE_MANAGER)
+  registrationDate DateTime @default(dbgenerated("timezone('UTC'::text, now())")) @db.Timestamp(6)
+
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  @@map("user")
+}
+
+model Warehouse {
+  id        String      @id @default(uuid())
+  name      String
+  address   String?
+  lat       Float
+  lng       Float
+  users     User[]
+  inventory Inventory[]
+  ordersOut Order[]     @relation("Requester")
+  ordersIn  Order[]     @relation("Provider")
+
+  @@map("warehouse")
+}
+
+model Resource {
+  id        String      @id @default(uuid())
+  name      String
+  category  String?
+  inventory Inventory[]
+  orders    Order[]
+
+  @@map("resource")
+}
+
+model Inventory {
+  id                String    @id @default(uuid())
+  quantityAvailable Int       @default(0)
+  quantityReserved  Int       @default(0)
+  warehouseId       String
+  resourceId        String
+  warehouse         Warehouse @relation(fields: [warehouseId], references: [id])
+  resource          Resource  @relation(fields: [resourceId], references: [id])
+
+  @@unique([warehouseId, resourceId])
+  @@map("inventory")
+}
+
+enum Priority {
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  PACKED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+  REJECTED
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  quantity    Int
+  priority    Priority    @default(NORMAL)
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  requesterId String
+  providerId  String?
+  resourceId  String
+  requester   Warehouse   @relation("Requester", fields: [requesterId], references: [id])
+  provider    Warehouse?  @relation("Provider", fields: [providerId], references: [id])
+  resource    Resource    @relation(fields: [resourceId], references: [id])
+  trip        Trip?
+
+  @@map("order")
+}
+
+enum TripStatus {
+  PENDING
+  EN_ROUTE
+  DELIVERED
+  SOS
+}
+
+model Trip {
+  id         String      @id @default(uuid())
+  magicToken String      @unique @default(uuid())
+  status     TripStatus  @default(PENDING)
+  driverName String?
+  currentLat Float?
+  currentLng Float?
+  orderId    String      @unique
+  order      Order       @relation(fields: [orderId], references: [id])
+  points     TripPoint[]
+
+  @@map("trip")
+}
+
+model TripPoint {
+  id        String   @id @default(uuid())
+  tripId    String
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@map("trip_point")
+}
+
+// ─── LionsShare Models ────────────────────────────────────────────────────────
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  region    String
+  createdAt DateTime @default(now())
+
+  importBatches     ImportBatch[]
+  landRecords       LandRecord[]
+  realEstateRecords RealEstateRecord[]
+  anomalies         Anomaly[]
+
+  @@map("tenant")
+}
+
+model ImportBatch {
+  id        String   @id @default(uuid())
+  tenantId  String
+  fileName  String
+  rowsCount Int
+  createdAt DateTime @default(now())
+
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  realEstateRecords RealEstateRecord[]
+  anomalies         Anomaly[]
+
+  @@index([tenantId])
+  @@map("import_batch")
+}
+
+model LandRecord {
+  id              String @id @default(uuid())
+  tenantId        String
+  cadastralNumber String
+  koatuu          String
+  purpose         String
+  address         String
+  area            Float
+  taxId           String
+  ownerNameRaw    String
+  ownerNameNorm   String
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId, taxId, ownerNameNorm])
+  @@map("land_record")
+}
+
+model RealEstateRecord {
+  id            String    @id @default(uuid())
+  tenantId      String
+  batchId       String
+  taxId         String
+  ownerNameRaw  String
+  ownerNameNorm String
+  objectType    String
+  address       String
+  area          Float
+  ownershipEnd  DateTime?
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  batch  ImportBatch @relation(fields: [batchId], references: [id])
+
+  @@index([tenantId, taxId, ownerNameNorm])
+  @@map("real_estate_record")
+}
+
+enum AnomalyType {
+  MISSING_IN_REAL_ESTATE
+  MISSING_IN_LAND
+  NO_ACTIVE_REAL_RIGHTS
+  AREA_MISMATCH
+}
+
+enum AnomalyStatus {
+  NEW
+  IN_PROGRESS
+  RESOLVED
+}
+
+model Anomaly {
+  id            String        @id @default(uuid())
+  tenantId      String
+  batchId       String
+  type          AnomalyType
+  severity      String
+  description   String
+  status        AnomalyStatus @default(NEW)
+  taxId         String
+  suspectName   String
+  address       String
+  lat           Float?
+  lng           Float?
+  potentialFine Float?
+  inspectorId   String?
+  comment       String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id])
+  batch  ImportBatch @relation(fields: [batchId], references: [id])
+
+  @@index([tenantId, taxId, suspectName])
+  @@map("anomaly")
+}
