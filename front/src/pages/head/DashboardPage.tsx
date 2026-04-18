@@ -1,14 +1,21 @@
-import { HeadDesktopLayout } from "@/components/layouts";
-import { Button } from "@/components/ui/button";
+import { HeadDesktopLayout } from "@/components/layouts"
+import { Button } from "@/components/ui/button"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
-import { Plus, TrendingUp, AlertTriangle, Building2, Wallet } from "lucide-react";
-import * as React from "react";
-import { motion } from "framer-motion";
-import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber";
+} from "@/components/ui/chart"
+import {
+  Plus,
+  TrendingUp,
+  AlertTriangle,
+  Building2,
+  Wallet,
+} from "lucide-react"
+import * as React from "react"
+import { motion } from "framer-motion"
+import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber"
+import { TopViolationsTable } from "@/features/discrepancies/components"
 import {
   PieChart,
   Pie,
@@ -17,14 +24,17 @@ import {
   XAxis,
   CartesianGrid,
   Label,
-} from "recharts";
+} from "recharts"
 
-// Дані для кругової діаграми
 const violationData = [
-  { name: "Комерція на житловій землі", value: 137, fill: "var(--color-commerce)" },
+  {
+    name: "Комерція на житловій землі",
+    value: 137,
+    fill: "var(--color-commerce)",
+  },
   { name: "Неоформлена земля", value: 120, fill: "var(--color-unregistered)" },
   { name: "Занижена площа", value: 85, fill: "var(--color-underreported)" },
-];
+]
 
 const violationChartConfig = {
   value: {
@@ -42,9 +52,8 @@ const violationChartConfig = {
     label: "Занижена площа",
     color: "hsl(var(--chart-3))",
   },
-};
+}
 
-// Дані для стовпчикової діаграми
 const inspectionData = [
   { month: "Лис", created: 45, inspected: 38 },
   { month: "Гру", created: 52, inspected: 45 },
@@ -52,55 +61,21 @@ const inspectionData = [
   { month: "Лют", created: 61, inspected: 55 },
   { month: "Бер", created: 58, inspected: 51 },
   { month: "Кві", created: 78, inspected: 61 },
-];
-
-// Топ-5 критичних порушень
-const topViolations = [
-  {
-    address: "вул. Шевченка, 15",
-    type: "Комерція на житловій землі",
-    revenue: "125,000",
-    badge: "critical",
-  },
-  {
-    address: "вул. Грушевського, 42",
-    type: "Неоформлена земля",
-    revenue: "98,500",
-    badge: "high",
-  },
-  {
-    address: "пр. Незалежності, 8",
-    type: "Занижена площа",
-    revenue: "87,200",
-    badge: "high",
-  },
-  {
-    address: "вул. Франка, 23",
-    type: "Комерція на житловій землі",
-    revenue: "76,300",
-    badge: "critical",
-  },
-  {
-    address: "вул. Лесі Українки, 11",
-    type: "Неоформлена земля",
-    revenue: "64,800",
-    badge: "medium",
-  },
-];
+]
 
 export function DashboardPage() {
   const totalViolations = React.useMemo(() => {
-    return violationData.reduce((acc, curr) => acc + curr.value, 0);
-  }, []);
+    return violationData.reduce((acc, curr) => acc + curr.value, 0)
+  }, [])
 
-  const budgetLoss = useAnimatedNumber(1250000, 2, 0);
-  const discrepancies = useAnimatedNumber(342, 2, 0.2);
-  const totalObjects = useAnimatedNumber(12450, 2, 0.4);
-  const recovered = useAnimatedNumber(150000, 2, 0.6);
+  const budgetLoss = useAnimatedNumber(1250000, 2, 0)
+  const discrepancies = useAnimatedNumber(342, 2, 0.2)
+  const totalObjects = useAnimatedNumber(12450, 2, 0.4)
+  const recovered = useAnimatedNumber(150000, 2, 0.6)
 
   return (
     <HeadDesktopLayout currentPath="/head/dashboard">
-      <div className="mx-auto w-full space-y-8 p-6">
+      <div className="mx-auto w-full space-y-6 p-6">
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -122,32 +97,27 @@ export function DashboardPage() {
           {/* Card 1: Budget Losses - Primary Value Prop */}
           <div className="relative overflow-hidden rounded-lg border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="rounded-full bg-emerald-500/10 p-3">
-                <Wallet className="h-6 w-6 text-emerald-600" />
-              </div>
+              <Wallet className="h-8 w-8 text-rose-600 dark:text-rose-400" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Орієнтовні втрати бюджету
                 </p>
-                <p className="text-3xl font-bold text-emerald-600">
+                <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">
                   <motion.span>{budgetLoss}</motion.span> ₴
                 </p>
               </div>
             </div>
-            <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-emerald-500/5" />
           </div>
 
           {/* Card 2: Discrepancies Found */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="rounded-full bg-destructive/10 p-3">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
+              <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Виявлено розбіжностей
                 </p>
-                <p className="text-3xl font-bold text-destructive">
+                <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
                   <motion.span>{discrepancies}</motion.span>
                 </p>
               </div>
@@ -157,14 +127,12 @@ export function DashboardPage() {
           {/* Card 3: Total Objects */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
+              <Building2 className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Всього об'єктів
                 </p>
-                <p className="text-3xl font-bold">
+                <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
                   <motion.span>{totalObjects}</motion.span>
                 </p>
               </div>
@@ -174,14 +142,12 @@ export function DashboardPage() {
           {/* Card 4: Recovered to Budget */}
           <div className="rounded-lg border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-4">
-              <div className="rounded-full bg-green-500/10 p-3">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
+              <TrendingUp className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Повернуто до бюджету
                 </p>
-                <p className="text-3xl font-bold text-green-600">
+                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                   <motion.span>{recovered}</motion.span> ₴
                 </p>
               </div>
@@ -241,7 +207,7 @@ export function DashboardPage() {
                                 Порушень
                               </tspan>
                             </text>
-                          );
+                          )
                         }
                       }}
                     />
@@ -252,13 +218,18 @@ export function DashboardPage() {
             <div className="flex-1 p-6 pt-4">
               <div className="space-y-2">
                 {violationData.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between gap-2">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between gap-2"
+                  >
                     <div className="flex items-center gap-2">
                       <div
                         className="h-3 w-3 rounded-full"
                         style={{ backgroundColor: item.fill }}
                       />
-                      <span className="text-sm text-muted-foreground">{item.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {item.name}
+                      </span>
                     </div>
                     <span className="text-sm font-medium">{item.value}</span>
                   </div>
@@ -266,8 +237,9 @@ export function DashboardPage() {
               </div>
             </div>
             <div className="mt-auto border-t px-6 py-4">
-              <div className="flex items-center gap-2 text-sm font-medium leading-none">
-                Зростання на 12.3% цього місяця <TrendingUp className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-sm leading-none font-medium">
+                Зростання на 12.3% цього місяця{" "}
+                <TrendingUp className="h-4 w-4" />
               </div>
               <div className="mt-1 text-xs leading-none text-muted-foreground">
                 Показує загальну кількість порушень за останні 4 місяці
@@ -280,7 +252,8 @@ export function DashboardPage() {
             <div className="p-6">
               <h3 className="mb-1 text-lg font-semibold">Динаміка інспекцій</h3>
               <p className="text-sm text-muted-foreground">
-                Показує тренд створених та перевірених завдань за останні 6 місяців
+                Показує тренд створених та перевірених завдань за останні 6
+                місяців
               </p>
             </div>
             <div className="px-6 pb-6">
@@ -316,7 +289,13 @@ export function DashboardPage() {
                     content={<ChartTooltipContent indicator="dot" />}
                   />
                   <defs>
-                    <linearGradient id="fillCreated" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="fillCreated"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop
                         offset="5%"
                         stopColor="var(--color-created)"
@@ -328,7 +307,13 @@ export function DashboardPage() {
                         stopOpacity={0.1}
                       />
                     </linearGradient>
-                    <linearGradient id="fillInspected" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="fillInspected"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop
                         offset="5%"
                         stopColor="var(--color-inspected)"
@@ -362,7 +347,7 @@ export function DashboardPage() {
             </div>
             <div className="border-t px-6 py-4">
               <div className="flex items-center gap-2 text-sm">
-                <div className="flex items-center gap-1 font-medium leading-none">
+                <div className="flex items-center gap-1 leading-none font-medium">
                   Зростання на 5.2% цього місяця
                   <TrendingUp className="h-4 w-4" />
                 </div>
@@ -375,59 +360,8 @@ export function DashboardPage() {
         </div>
 
         {/* Top 5 Critical Violations Table */}
-        <div className="rounded-lg border bg-card shadow-sm">
-          <div className="border-b p-6">
-            <h3 className="text-lg font-semibold">
-              Топ-5 найкритичніших порушень
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Об'єкти з найбільшим потенційним доходом для бюджету
-            </p>
-          </div>
-          <div className="p-6">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b text-left text-sm font-medium text-muted-foreground">
-                    <th className="pb-3">Адреса</th>
-                    <th className="pb-3">Тип порушення</th>
-                    <th className="pb-3 text-right">Потенційний дохід</th>
-                    <th className="pb-3 text-right">Дії</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  {topViolations.map((violation, index) => (
-                    <tr key={index} className="border-b last:border-0">
-                      <td className="py-4 font-medium">{violation.address}</td>
-                      <td className="py-4">
-                        <span
-                          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                            violation.badge === "critical"
-                              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                              : violation.badge === "high"
-                                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
-                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
-                          }`}
-                        >
-                          {violation.type}
-                        </span>
-                      </td>
-                      <td className="py-4 text-right font-semibold">
-                        {violation.revenue} ₴
-                      </td>
-                      <td className="py-4 text-right">
-                        <Button variant="outline" size="sm">
-                          Деталі
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <TopViolationsTable />
       </div>
     </HeadDesktopLayout>
-  );
+  )
 }

@@ -1,2 +1,1 @@
-// Placeholder for discrepancies components
-export {};
+export { TopViolationsTable } from "./TopViolationsTable";
