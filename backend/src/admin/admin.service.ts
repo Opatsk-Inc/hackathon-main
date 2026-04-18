@@ -17,7 +17,11 @@ export class AdminService {
   ) {}
 
   async getDashboardMetrics(hromadaId: string): Promise<DashboardMetricsResponseDto> {
-    const [anomalies, fineAgg, statusCounts] = await Promise.all([
+    const now = new Date();
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const [anomalies, fineAgg, statusCounts, lastMonthFineAgg, lastMonthStatusCounts] = await Promise.all([
       this.prisma.anomaly.findMany({
         where: { hromadaId },
         select: { type: true },
@@ -32,10 +36,31 @@ export class AdminService {
         where: { hromadaId },
         _count: { status: true },
       }),
+      // Last month data
+      this.prisma.anomaly.aggregate({
+        where: {
+          hromadaId,
+          createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
+        },
+        _sum: { potentialFine: true },
+        _count: true,
+      }),
+      this.prisma.anomaly.groupBy({
+        by: ['status'],
+        where: {
+          hromadaId,
+          createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
+        },
+        _count: { status: true },
+      }),
     ]);
 
     const statusMap = Object.fromEntries(
       statusCounts.map((s) => [s.status, s._count.status]),
+    ) as Record<AnomalyStatus, number>;
+
+    const lastMonthStatusMap = Object.fromEntries(
+      lastMonthStatusCounts.map((s) => [s.status, s._count.status]),
     ) as Record<AnomalyStatus, number>;
 
     const typeMap = new Map<string, number>();
@@ -43,13 +68,36 @@ export class AdminService {
       typeMap.set(a.type, (typeMap.get(a.type) ?? 0) + 1);
     }
 
+    // Calculate trends
+    const calculateTrend = (current: number, previous: number) => {
+      if (previous === 0) return { value: 0, direction: 'up' as const };
+      const change = ((current - previous) / previous) * 100;
+      return {
+        value: Math.abs(Math.round(change * 10) / 10),
+        direction: change >= 0 ? ('up' as const) : ('down' as const),
+      };
+    };
+
+    const currentFine = fineAgg._sum.potentialFine ?? 0;
+    const lastMonthFine = lastMonthFineAgg._sum.potentialFine ?? 0;
+    const currentAnomalies = fineAgg._count;
+    const lastMonthAnomalies = lastMonthFineAgg._count;
+    const currentInProgress = statusMap[AnomalyStatus.IN_PROGRESS] ?? 0;
+    const lastMonthInProgress = lastMonthStatusMap[AnomalyStatus.IN_PROGRESS] ?? 0;
+    const currentResolved = statusMap[AnomalyStatus.RESOLVED] ?? 0;
+    const lastMonthResolved = lastMonthStatusMap[AnomalyStatus.RESOLVED] ?? 0;
+
     return {
-      totalAnomalies: fineAgg._count,
-      totalPotentialFine: fineAgg._sum.potentialFine ?? 0,
+      totalAnomalies: currentAnomalies,
+      totalPotentialFine: currentFine,
       newCount: statusMap[AnomalyStatus.NEW] ?? 0,
-      inProgressCount: statusMap[AnomalyStatus.IN_PROGRESS] ?? 0,
-      resolvedCount: statusMap[AnomalyStatus.RESOLVED] ?? 0,
+      inProgressCount: currentInProgress,
+      resolvedCount: currentResolved,
       byType: Array.from(typeMap.entries()).map(([type, count]) => ({ type, count })),
+      budgetLossTrend: calculateTrend(currentFine, lastMonthFine),
+      anomaliesTrend: calculateTrend(currentAnomalies, lastMonthAnomalies),
+      inProgressTrend: calculateTrend(currentInProgress, lastMonthInProgress),
+      resolvedTrend: calculateTrend(currentResolved, lastMonthResolved),
     };
   }
 
@@ -60,7 +108,11 @@ export class AdminService {
     };
 
     const [raw, total] = await Promise.all([
-      this.prisma.anomaly.findMany({ where, orderBy: { createdAt: 'desc' } }),
+      this.prisma.anomaly.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: 1000, // Limit to 1000 records for performance
+      }),
       this.prisma.anomaly.count({ where }),
     ]);
 

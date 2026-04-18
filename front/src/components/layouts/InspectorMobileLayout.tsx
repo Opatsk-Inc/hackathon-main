@@ -1,7 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface InspectorMobileLayoutProps {
   children: React.ReactNode;
@@ -16,6 +17,13 @@ export function InspectorMobileLayout({
   onBack,
   showBackButton = false,
 }: InspectorMobileLayoutProps) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Mobile Header */}
@@ -27,6 +35,10 @@ export function InspectorMobileLayout({
         )}
 
         <h1 className="flex-1 text-lg font-semibold">{title}</h1>
+
+        <Button variant="ghost" size="icon" onClick={handleLogout}>
+          <LogOut className="h-5 w-5" />
+        </Button>
       </header>
 
       {/* Main content */}

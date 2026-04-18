@@ -3,6 +3,11 @@ export interface AnomalyTypeCount {
   count: number
 }
 
+export interface Trend {
+  value: number
+  direction: 'up' | 'down'
+}
+
 export interface DashboardMetrics {
   totalAnomalies: number
   totalPotentialFine: number
@@ -10,6 +15,10 @@ export interface DashboardMetrics {
   inProgressCount: number
   resolvedCount: number
   byType: AnomalyTypeCount[]
+  budgetLossTrend: Trend
+  anomaliesTrend: Trend
+  inProgressTrend: Trend
+  resolvedTrend: Trend
 }
 
 export interface AnomalyEnrichment {

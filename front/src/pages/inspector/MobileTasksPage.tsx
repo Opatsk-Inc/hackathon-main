@@ -86,6 +86,8 @@ export function MobileTasksPage() {
   const mapRef = useRef<MapRef>(null)
   const previousLocationRef = useRef<[number, number] | null>(null)
 
+  type ViewMode = "map" | "list";
+
   // Відстеження геолокації користувача
   useEffect(() => {
     if (!navigator.geolocation) return
@@ -280,7 +282,7 @@ export function MobileTasksPage() {
             <div className="absolute top-4 left-4 z-10">
               <div className="flex gap-2 bg-background/95 backdrop-blur-sm rounded-full p-1 shadow-xl border">
                 <Button
-                  variant={viewMode === "map" ? "default" : "ghost"}
+                  variant={(viewMode as ViewMode) === "map" ? "default" : "ghost"}
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("map")}
@@ -288,7 +290,7 @@ export function MobileTasksPage() {
                   <Map className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
+                  variant={(viewMode as ViewMode) === "list" ? "default" : "ghost"}
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("list")}
@@ -370,7 +372,7 @@ export function MobileTasksPage() {
             <div className="fixed top-[4.5rem] left-4 z-10">
               <div className="flex gap-2 bg-background/95 backdrop-blur-sm rounded-full p-1 shadow-xl border">
                 <Button
-                  variant={viewMode === "map" ? "default" : "ghost"}
+                  variant={(viewMode as ViewMode) === "map" ? "default" : "ghost"}
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("map")}
@@ -378,7 +380,7 @@ export function MobileTasksPage() {
                   <Map className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
+                  variant={(viewMode as ViewMode) === "list" ? "default" : "ghost"}
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("list")}

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { TrendingUp } from "lucide-react"
 import {
   ChartContainer,
@@ -5,17 +6,68 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { AreaChart, Area, XAxis, CartesianGrid } from "recharts"
+import { AdminService } from "@/lib/api/admin.service"
+import { useQuery } from "@tanstack/react-query"
 
-const inspectionData = [
-  { month: "Лис", created: 45, inspected: 38 },
-  { month: "Гру", created: 52, inspected: 45 },
-  { month: "Січ", created: 48, inspected: 42 },
-  { month: "Лют", created: 61, inspected: 55 },
-  { month: "Бер", created: 58, inspected: 51 },
-  { month: "Кві", created: 78, inspected: 61 },
-]
+const MONTH_NAMES = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
 
 export function InspectionAreaChart() {
+  const { data: anomaliesData } = useQuery({
+    queryKey: ['discrepancies'],
+    queryFn: () => AdminService.getDiscrepancies(),
+  });
+
+  const inspectionData = useMemo(() => {
+    if (!anomaliesData?.items) return [];
+
+    const now = new Date();
+    const monthsCount = 6;
+
+    // Initialize months
+    const monthsMap = new Map<string, { created: number; inspected: number }>();
+    for (let i = monthsCount - 1; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthsMap.set(key, { created: 0, inspected: 0 });
+    }
+
+    // Count anomalies
+    for (const anomaly of anomaliesData.items) {
+      const createdDate = new Date(anomaly.createdAt);
+      const createdKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+
+      if (monthsMap.has(createdKey)) {
+        monthsMap.get(createdKey)!.created++;
+      }
+
+      if (anomaly.status === 'RESOLVED') {
+        // Use createdAt as fallback since we don't have updatedAt
+        const resolvedKey = createdKey;
+        if (monthsMap.has(resolvedKey)) {
+          monthsMap.get(resolvedKey)!.inspected++;
+        }
+      }
+    }
+
+    // Convert to array
+    return Array.from(monthsMap.entries()).map(([key, data]) => {
+      const [, month] = key.split('-');
+      const monthIndex = parseInt(month) - 1;
+      return {
+        month: MONTH_NAMES[monthIndex],
+        created: data.created,
+        inspected: data.inspected,
+      };
+    });
+  }, [anomaliesData]);
+
+  const growthRate = useMemo(() => {
+    if (inspectionData.length < 2) return 0;
+    const current = inspectionData[inspectionData.length - 1]?.inspected || 0;
+    const previous = inspectionData[inspectionData.length - 2]?.inspected || 0;
+    if (previous === 0) return 0;
+    return Number(((current - previous) / previous * 100).toFixed(1));
+  }, [inspectionData]);
   return (
     <div className="rounded-2xl border border-border bg-card">
       <div className="p-6">
@@ -36,6 +88,7 @@ export function InspectionAreaChart() {
               color: "hsl(var(--chart-2))",
             },
           }}
+          className="h-[300px] w-full"
         >
           <AreaChart
             data={inspectionData}
@@ -109,7 +162,7 @@ export function InspectionAreaChart() {
       </div>
       <div className="border-t px-6 py-4">
         <div className="flex items-center gap-2 text-sm font-medium">
-          Зростання на 5.2% цього місяця
+          {growthRate > 0 ? 'Зростання' : 'Зменшення'} на {Math.abs(Number(growthRate))}% цього місяця
           <TrendingUp className="h-4 w-4 text-[#A27B5C]" />
         </div>
         <div className="mt-1 text-xs text-muted-foreground">

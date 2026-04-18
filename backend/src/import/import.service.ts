@@ -293,6 +293,71 @@ export class ImportService {
       }
     }
 
+    // ── 10. MISSING_IN_LAND: real estate owner has no land record ─────────────
+    const seenREOwners = new Set<string>();
+    for (const row of rows) {
+      const key = row.taxId || row.ownerNameNorm;
+      if (!key || seenREOwners.has(key)) continue;
+      seenREOwners.add(key);
+
+      const hasLand = landRecords.some(
+        (land) =>
+          (row.taxId && land.taxId === row.taxId) ||
+          (row.ownerNameNorm && land.ownerNameNorm === row.ownerNameNorm),
+      );
+
+      if (!hasLand) {
+        const potentialFine = row.area > 0 ? row.area * baseTaxRate * 0.5 : 0;
+        anomalyData.push({
+          batchId: batch.id,
+          hromadaId,
+          type: AnomalyType.MISSING_IN_LAND,
+          severity: potentialFine > 3000 ? 'HIGH' : potentialFine > 800 ? 'MEDIUM' : 'LOW',
+          description: `Власник нерухомості ${row.ownerNameRaw} (ІПН: ${row.taxId}) відсутній у земельному кадастрі громади.`,
+          status: AnomalyStatus.NEW,
+          taxId: row.taxId,
+          suspectName: row.ownerNameRaw,
+          address: row.address,
+          lat: null,
+          lng: null,
+          potentialFine,
+        });
+      }
+    }
+
+    // ── 11. AREA_MISMATCH: area difference > 10% ──────────────────────────────
+    for (const row of rows) {
+      const matchingLand = landRecords.find(
+        (land) =>
+          (row.taxId && land.taxId === row.taxId) ||
+          (row.ownerNameNorm && land.ownerNameNorm === row.ownerNameNorm),
+      );
+
+      if (matchingLand && matchingLand.area > 0 && row.area > 0) {
+        const landAreaM2 = matchingLand.area * 10000;
+        const diff = Math.abs(landAreaM2 - row.area);
+        const diffPercent = (diff / landAreaM2) * 100;
+
+        if (diffPercent > 5) {
+          const potentialFine = diff * baseTaxRate * 0.3;
+          anomalyData.push({
+            batchId: batch.id,
+            hromadaId,
+            type: AnomalyType.AREA_MISMATCH,
+            severity: diffPercent > 50 ? 'HIGH' : diffPercent > 25 ? 'MEDIUM' : 'LOW',
+            description: `Розбіжність площ для ${row.ownerNameRaw} (ІПН: ${row.taxId}): земля ${landAreaM2.toFixed(1)} м², нерухомість ${row.area.toFixed(1)} м² (різниця ${diffPercent.toFixed(1)}%).`,
+            status: AnomalyStatus.NEW,
+            taxId: row.taxId,
+            suspectName: row.ownerNameRaw,
+            address: row.address,
+            lat: null,
+            lng: null,
+            potentialFine,
+          });
+        }
+      }
+    }
+
     if (anomalyData.length) {
       await this.prisma.anomaly.createMany({ data: anomalyData });
     }

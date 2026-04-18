@@ -7,47 +7,47 @@ export function TasksKanbanPage() {
       <div className="mx-auto w-full space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Завдання</h1>
             <p className="text-muted-foreground">
-              Manage tasks for inspectors
+              Керування завданнями для інспекторів
             </p>
           </div>
-          <Button>Create Task</Button>
+          <Button>Створити завдання</Button>
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b p-6">
-              <h3 className="text-lg font-semibold">Pending</h3>
-              <p className="text-sm text-muted-foreground">0 tasks</p>
+              <h3 className="text-lg font-semibold">Очікують</h3>
+              <p className="text-sm text-muted-foreground">0 завдань</p>
             </div>
             <div className="p-6">
               <p className="text-sm text-muted-foreground">
-                No tasks in this status
+                Немає завдань з цим статусом
               </p>
             </div>
           </div>
 
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b p-6">
-              <h3 className="text-lg font-semibold">In Progress</h3>
-              <p className="text-sm text-muted-foreground">0 tasks</p>
+              <h3 className="text-lg font-semibold">В роботі</h3>
+              <p className="text-sm text-muted-foreground">0 завдань</p>
             </div>
             <div className="p-6">
               <p className="text-sm text-muted-foreground">
-                No tasks in this status
+                Немає завдань з цим статусом
               </p>
             </div>
           </div>
 
           <div className="rounded-lg border bg-card shadow-sm">
             <div className="border-b p-6">
-              <h3 className="text-lg font-semibold">Completed</h3>
-              <p className="text-sm text-muted-foreground">0 tasks</p>
+              <h3 className="text-lg font-semibold">Завершено</h3>
+              <p className="text-sm text-muted-foreground">0 завдань</p>
             </div>
             <div className="p-6">
               <p className="text-sm text-muted-foreground">
-                No tasks in this status
+                Немає завдань з цим статусом
               </p>
             </div>
           </div>

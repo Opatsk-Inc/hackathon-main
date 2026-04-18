@@ -44,25 +44,25 @@ export function DashboardPage() {
             title="Орієнтовні втрати бюджету"
             value={budgetLoss}
             delay={0}
-            trend={{ value: 5.1, direction: "up" }}
+            trend={metrics?.budgetLossTrend}
           />
           <KPIStatCard
             title="Виявлено розбіжностей"
             value={discrepancies}
             delay={0.1}
-            trend={{ value: 3.2, direction: "up" }}
+            trend={metrics?.anomaliesTrend}
           />
           <KPIStatCard
             title="В роботі"
             value={inProgress}
             delay={0.2}
-            trend={{ value: 1.8, direction: "down" }}
+            trend={metrics?.inProgressTrend}
           />
           <KPIStatCard
             title="Вирішено"
             value={resolved}
             delay={0.3}
-            trend={{ value: 12.5, direction: "up" }}
+            trend={metrics?.resolvedTrend}
           />
         </div>
 

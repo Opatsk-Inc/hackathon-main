@@ -16,10 +16,10 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Overview", href: "/head/dashboard", icon: LayoutDashboard },
-  { label: "Import Data", href: "/head/import", icon: Upload },
-  { label: "Discrepancies", href: "/head/discrepancies", icon: AlertTriangle },
-  { label: "Tasks", href: "/head/tasks", icon: CheckSquare },
+  { label: "Огляд", href: "/head/dashboard", icon: LayoutDashboard },
+  { label: "Імпорт даних", href: "/head/import", icon: Upload },
+  { label: "Розбіжності", href: "/head/discrepancies", icon: AlertTriangle },
+  { label: "Завдання", href: "/head/tasks", icon: CheckSquare },
 ];
 
 interface HeadDesktopLayoutProps {
@@ -107,7 +107,7 @@ export function HeadDesktopLayout({
           </Button>
 
           <div className="flex flex-1 items-center justify-between">
-            <h2 className="text-lg font-semibold">Head Dashboard</h2>
+            <h2 className="text-lg font-semibold">Панель керування</h2>
             <div className="flex items-center gap-2">
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />

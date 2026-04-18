@@ -8,6 +8,14 @@ export class AnomalyTypeCountDto {
   count: number;
 }
 
+export class TrendDto {
+  @ApiProperty({ example: 5.1, description: 'Percentage change vs last month' })
+  value: number;
+
+  @ApiProperty({ example: 'up', enum: ['up', 'down'] })
+  direction: 'up' | 'down';
+}
+
 export class DashboardMetricsResponseDto {
   @ApiProperty({ example: 47 })
   totalAnomalies: number;
@@ -26,4 +34,16 @@ export class DashboardMetricsResponseDto {
 
   @ApiProperty({ type: [AnomalyTypeCountDto] })
   byType: AnomalyTypeCountDto[];
+
+  @ApiProperty({ type: TrendDto })
+  budgetLossTrend: TrendDto;
+
+  @ApiProperty({ type: TrendDto })
+  anomaliesTrend: TrendDto;
+
+  @ApiProperty({ type: TrendDto })
+  inProgressTrend: TrendDto;
+
+  @ApiProperty({ type: TrendDto })
+  resolvedTrend: TrendDto;
 }

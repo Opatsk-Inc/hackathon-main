@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { HeadDesktopLayout } from "@/components/layouts";
+import { Button } from "@/components/ui/button";
 import { AdminService } from "@/lib/api/admin.service";
 import type { Anomaly } from "@/lib/api/types";
+import { ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+const ITEMS_PER_PAGE = 10;
+
+type SortField = 'potentialFine' | 'riskLevel' | null;
+type SortDirection = 'asc' | 'desc';
+
+const RISK_ORDER = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
 
 const TYPE_LABELS: Record<string, string> = {
   MISSING_IN_REAL_ESTATE: "Немає нерухомості",
@@ -91,6 +100,9 @@ export function DiscrepanciesPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Anomaly | null>(null);
   const [filter, setFilter] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<SortField>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   useEffect(() => {
     AdminService.getDiscrepancies()
@@ -103,7 +115,51 @@ export function DiscrepanciesPage() {
     ? anomalies
     : anomalies.filter((a) => a.enrichment?.riskLevel === filter);
 
+  // Sorting
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortField) return 0;
+
+    if (sortField === 'potentialFine') {
+      const aVal = a.potentialFine ?? 0;
+      const bVal = b.potentialFine ?? 0;
+      return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+    }
+
+    if (sortField === 'riskLevel') {
+      const aVal = RISK_ORDER[a.enrichment?.riskLevel as keyof typeof RISK_ORDER] ?? 0;
+      const bVal = RISK_ORDER[b.enrichment?.riskLevel as keyof typeof RISK_ORDER] ?? 0;
+      return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+    }
+
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedData = sorted.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   const countByRisk = (lvl: string) => anomalies.filter((a) => a.enrichment?.riskLevel === lvl).length;
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />;
+    return sortDirection === 'asc'
+      ? <ArrowUp className="h-3.5 w-3.5 ml-1" />
+      : <ArrowDown className="h-3.5 w-3.5 ml-1" />;
+  };
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter]);
 
   return (
     <HeadDesktopLayout currentPath="/head/discrepancies">
@@ -132,7 +188,14 @@ export function DiscrepanciesPage() {
           ))}
         </div>
 
-        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="border-b px-6 py-5">
+            <h3 className="text-lg font-semibold">Виявлені розбіжності</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              {filtered.length} з {total} записів
+            </p>
+          </div>
+
           {loading ? (
             <div className="p-8 text-center text-sm text-muted-foreground">Завантаження...</div>
           ) : error ? (
@@ -142,48 +205,114 @@ export function DiscrepanciesPage() {
               Розбіжностей не знайдено. Завантажте дані для аналізу.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="border-b bg-muted/30">
-                  <tr>
-                    {["Власник / ІПН", "Адреса", "Тип", "Ризик", "Штраф", "Дія"].map((h) => (
-                      <th key={h} className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                        {h}
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-muted/30">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Власник / ІПН
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {filtered.map((a) => (
-                    <tr
-                      key={a.id}
-                      className="hover:bg-muted/40 cursor-pointer transition-colors"
-                      onClick={() => setSelected(a)}
-                    >
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium leading-tight">{a.suspectName}</p>
-                        {a.taxId && <p className="text-xs text-muted-foreground">{a.taxId}</p>}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground max-w-[200px] truncate">{a.address}</td>
-                      <td className="px-4 py-3 text-sm whitespace-nowrap">{TYPE_LABELS[a.type] ?? a.type}</td>
-                      <td className="px-4 py-3">
-                        <RiskBadge level={a.enrichment?.riskLevel ?? "LOW"} />
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-amber-700 dark:text-amber-400 whitespace-nowrap">
-                        {a.potentialFine ? `${a.potentialFine.toLocaleString("uk-UA")} ₴` : "—"}
-                      </td>
-                      <td className="px-4 py-3 text-sm whitespace-nowrap">
-                        {a.enrichment?.shouldVisit ? (
-                          <span className="text-red-600 font-medium">Виїхати</span>
-                        ) : (
-                          <span className="text-muted-foreground">Документально</span>
-                        )}
-                      </td>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Адреса
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Тип порушення
+                      </th>
+                      <th
+                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                        onClick={() => handleSort('riskLevel')}
+                      >
+                        <div className="flex items-center">
+                          Ризик
+                          <SortIcon field="riskLevel" />
+                        </div>
+                      </th>
+                      <th
+                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                        onClick={() => handleSort('potentialFine')}
+                      >
+                        <div className="flex items-center">
+                          Потенційний дохід
+                          <SortIcon field="potentialFine" />
+                        </div>
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Дії
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {paginatedData.map((a, idx) => (
+                      <tr
+                        key={a.id}
+                        className={`transition-colors hover:bg-muted/50 ${
+                          idx % 2 === 0 ? "bg-card" : "bg-muted/20"
+                        }`}
+                      >
+                        <td className="px-6 py-4">
+                          <p className="text-sm font-medium leading-tight">{a.suspectName}</p>
+                          {a.taxId && <p className="text-xs text-muted-foreground mt-0.5">{a.taxId}</p>}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground max-w-[200px] truncate">{a.address}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
+                            RISK_CONFIG[a.enrichment?.riskLevel]?.cls || RISK_CONFIG.LOW.cls
+                          }`}>
+                            {TYPE_LABELS[a.type] ?? a.type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <RiskBadge level={a.enrichment?.riskLevel ?? "LOW"} />
+                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold text-[#A27B5C]">
+                          {a.potentialFine ? `${a.potentialFine.toLocaleString("uk-UA")} ₴` : "—"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="hover:bg-[#A27B5C] hover:text-white hover:border-[#A27B5C] transition-colors"
+                            onClick={() => setSelected(a)}
+                          >
+                            Деталі
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="border-t px-6 py-4 flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">
+                    Сторінка {currentPage} з {totalPages}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Назад
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Вперед
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
