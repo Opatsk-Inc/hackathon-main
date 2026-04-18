@@ -40,10 +40,10 @@ export function DashboardPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-4xl font-bold tracking-tight text-transparent">
+            <h1 className="text-4xl font-bold tracking-tight text-slate-800">
               Огляд аудиту громади
             </h1>
-            <p className="mt-1 text-muted-foreground">
+            <p className="mt-1 text-slate-500">
               Аналітика податкових розбіжностей та фінансових втрат
             </p>
           </div>

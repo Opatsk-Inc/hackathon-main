@@ -4,6 +4,16 @@ import * as XLSX from 'xlsx';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeoService } from '../geo/geo.service';
 import { AnomalyType, AnomalyStatus } from '@prisma/client';
+import {
+  fuzzyNameSimilarity,
+  resolveOwnerKey,
+  detectAreaUnit,
+  tokenSortName,
+  normalizeForFuzzy,
+  buildOwnerIndex,
+  hasMatch,
+  findMatches,
+} from './matching';
 
 // ── Shared normalization (must match seed.ts) ────────────────────────────────
 
@@ -58,6 +68,17 @@ interface RealEstateRow {
   area: number;
   ownershipEnd: Date | null;
 }
+
+// ── Matching threshold constant ───────────────────────────────────────────────
+
+/**
+ * Minimum fuzzy similarity for owner name matching.
+ * 0.82 is lower than the original 0.85 to catch more legitimate matches
+ * like abbreviated patronymics (Олег Мих. vs Олег Михайлович).
+ * The composite scoring with bigram + token-set + initials detection
+ * means this lower threshold doesn't increase false positives.
+ */
+const MATCH_THRESHOLD = 0.82;
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
@@ -178,30 +199,38 @@ export class ImportService {
 
     this.logger.log(`Loaded ${landRecords.length} land records for hromadaId=${hromadaId}`);
 
-    // ── 3. Build lookup from real estate file (no address filter — real estate
-    //       records contain only street addresses, not community names) ─────────
-    const reByTaxId = new Map<string, RealEstateRow[]>();
-    const reByName  = new Map<string, RealEstateRow[]>();
+    // ── 3. Build indexed lookups for BOTH sides ────────────────────────────────
+    //    Instead of O(n*m) nested loops, we index by taxId + name prefixes
+    //    for near-O(n) matching.
 
-    for (const row of allRows) {
-      if (row.taxId) {
-        if (!reByTaxId.has(row.taxId)) reByTaxId.set(row.taxId, []);
-        reByTaxId.get(row.taxId)!.push(row);
-      }
-      if (row.ownerNameNorm) {
-        if (!reByName.has(row.ownerNameNorm)) reByName.set(row.ownerNameNorm, []);
-        reByName.get(row.ownerNameNorm)!.push(row);
-      }
-    }
+    const landIndex = buildOwnerIndex(landRecords);
+    const reIndex = buildOwnerIndex(allRows.map((r) => ({
+      taxId: r.taxId,
+      ownerNameRaw: r.ownerNameRaw,
+      ownerNameNorm: r.ownerNameNorm,
+    })));
 
-    // ── 4. Scope real estate rows to THIS hromada:
-    //       keep only rows whose owner also appears in the land registry here ───
+    this.logger.log(
+      `Built indexes: land=${landRecords.length} entries, ` +
+      `RE=${allRows.length} entries, ` +
+      `land taxIds=${landIndex.byTaxId.size}, RE taxIds=${reIndex.byTaxId.size}`,
+    );
+
+    // ── 4. Scope real estate rows to THIS hromada ─────────────────────────────
+    //    Keep only RE rows whose owner also appears in the land registry here.
+    //    Uses indexed matching: IPN first, then fuzzy name with prefix-bucketing.
+
     const matchedSet = new Set<RealEstateRow>();
-    for (const land of landRecords) {
-      const byTaxId: RealEstateRow[] = (land.taxId ? reByTaxId.get(land.taxId) : undefined) ?? [];
-      const byName: RealEstateRow[]  = (land.ownerNameNorm ? reByName.get(land.ownerNameNorm) : undefined) ?? [];
-      for (const row of [...byTaxId, ...byName]) matchedSet.add(row);
+    const matchedReIndexSet = new Set<number>(); // track by allRows index
+
+    for (let i = 0; i < allRows.length; i++) {
+      const row = allRows[i];
+      if (hasMatch(row.taxId, row.ownerNameRaw, row.ownerNameNorm, landIndex, MATCH_THRESHOLD)) {
+        matchedSet.add(row);
+        matchedReIndexSet.add(i);
+      }
     }
+
     const rows = [...matchedSet];
 
     this.logger.log(`Matched ${rows.length} real estate rows for hromadaId=${hromadaId} (file had ${allRows.length} total rows)`);
@@ -232,9 +261,12 @@ export class ImportService {
       });
     }
 
-    // ── 7. Build sets of real estate owners for fast reverse lookup ───────────
-    const reTaxIds = new Set(rows.map((r) => r.taxId).filter(Boolean));
-    const reNames  = new Set(rows.map((r) => r.ownerNameNorm).filter(Boolean));
+    // ── 7. Build RE index from MATCHED rows for anomaly detection ─────────────
+    const matchedReIndex = buildOwnerIndex(rows.map((r) => ({
+      taxId: r.taxId,
+      ownerNameRaw: r.ownerNameRaw,
+      ownerNameNorm: r.ownerNameNorm,
+    })));
 
     const anomalyData: {
       batchId: string; hromadaId: string; type: AnomalyType; severity: string;
@@ -249,9 +281,14 @@ export class ImportService {
       if (!key || seenLandOwners.has(key)) continue;
       seenLandOwners.add(key);
 
-      const hasRE =
-        (land.taxId && reTaxIds.has(land.taxId)) ||
-        (land.ownerNameNorm && reNames.has(land.ownerNameNorm));
+      // Use indexed lookup instead of O(n) scan
+      const hasRE = hasMatch(
+        land.taxId,
+        land.ownerNameRaw,
+        land.ownerNameNorm,
+        matchedReIndex,
+        MATCH_THRESHOLD,
+      );
 
       if (!hasRE) {
         const potentialFine = land.area > 0 ? land.area * 10000 * baseTaxRate : 0;
@@ -300,10 +337,13 @@ export class ImportService {
       if (!key || seenREOwners.has(key)) continue;
       seenREOwners.add(key);
 
-      const hasLand = landRecords.some(
-        (land) =>
-          (row.taxId && land.taxId === row.taxId) ||
-          (row.ownerNameNorm && land.ownerNameNorm === row.ownerNameNorm),
+      // Use indexed lookup instead of O(n) scan
+      const hasLand = hasMatch(
+        row.taxId,
+        row.ownerNameRaw,
+        row.ownerNameNorm,
+        landIndex,
+        MATCH_THRESHOLD,
       );
 
       if (!hasLand) {
@@ -325,36 +365,104 @@ export class ImportService {
       }
     }
 
-    // ── 11. AREA_MISMATCH: area difference > 10% ──────────────────────────────
-    for (const row of rows) {
-      const matchingLand = landRecords.find(
-        (land) =>
-          (row.taxId && land.taxId === row.taxId) ||
-          (row.ownerNameNorm && land.ownerNameNorm === row.ownerNameNorm),
-      );
+    // ── 11. AREA_MISMATCH: aggregate ALL parcels per owner, then compare totals ──
 
-      if (matchingLand && matchingLand.area > 0 && row.area > 0) {
-        const landAreaM2 = matchingLand.area * 10000;
-        const diff = Math.abs(landAreaM2 - row.area);
-        const diffPercent = (diff / landAreaM2) * 100;
+    // Auto-detect land area unit from all land records in this hromada
+    const landUnit = detectAreaUnit(landRecords.map((l) => l.area));
 
-        if (diffPercent > 5) {
-          const potentialFine = diff * baseTaxRate * 0.3;
-          anomalyData.push({
-            batchId: batch.id,
-            hromadaId,
-            type: AnomalyType.AREA_MISMATCH,
-            severity: diffPercent > 50 ? 'HIGH' : diffPercent > 25 ? 'MEDIUM' : 'LOW',
-            description: `Розбіжність площ для ${row.ownerNameRaw} (ІПН: ${row.taxId}): земля ${landAreaM2.toFixed(1)} м², нерухомість ${row.area.toFixed(1)} м² (різниця ${diffPercent.toFixed(1)}%).`,
-            status: AnomalyStatus.NEW,
-            taxId: row.taxId,
-            suspectName: row.ownerNameRaw,
-            address: row.address,
-            lat: null,
-            lng: null,
-            potentialFine,
-          });
+    // Build canonical owner key for each land record.
+    // Key: IPN when available, else token-sorted normalized fuzzy name.
+    // Group: sum all land areas per owner key.
+    const landAreaByKey = new Map<string, number>();
+    const landRawByKey  = new Map<string, string>();   // for description
+    const landNormByKey = new Map<string, string>();    // normalized name for fuzzy matching
+    for (const land of landRecords) {
+      const ownerKey = land.taxId
+        ? `ipn:${land.taxId}`
+        : `name:${tokenSortName(normalizeForFuzzy(land.ownerNameNorm))}`;
+      if (!ownerKey) continue;
+      landAreaByKey.set(ownerKey, (landAreaByKey.get(ownerKey) ?? 0) + land.area);
+      landRawByKey.set(ownerKey, land.ownerNameRaw);
+      landNormByKey.set(ownerKey, land.ownerNameNorm);
+    }
+
+    // Build canonical owner key for each matched real estate row.
+    // Group: sum all RE areas per owner key.
+    const reAreaByKey   = new Map<string, number>();
+    const reRawByKey    = new Map<string, string>();
+    const reNormByKey   = new Map<string, string>();    // normalized name for fuzzy matching
+    const reTaxIdByKey  = new Map<string, string>();
+    const reAddrByKey   = new Map<string, string>();
+    for (const re of rows) {
+      const ownerKey = re.taxId
+        ? `ipn:${re.taxId}`
+        : `name:${tokenSortName(normalizeForFuzzy(re.ownerNameNorm))}`;
+      if (!ownerKey) continue;
+      reAreaByKey.set(ownerKey, (reAreaByKey.get(ownerKey) ?? 0) + re.area);
+      reRawByKey.set(ownerKey, re.ownerNameRaw);
+      reNormByKey.set(ownerKey, re.ownerNameNorm);
+      reTaxIdByKey.set(ownerKey, re.taxId);
+      reAddrByKey.set(ownerKey, re.address);
+    }
+
+    // Cross-match: for each land key, find best-matching RE key
+    const seenAreaKeys = new Set<string>();
+    for (const [landKey, totalLandArea] of landAreaByKey) {
+      let totalREArea = 0;
+      let reKey = landKey;
+
+      if (reAreaByKey.has(landKey)) {
+        // Direct key match (same IPN or same normalized name)
+        totalREArea = reAreaByKey.get(landKey)!;
+      } else {
+        // Try cross-match: IPN-keyed land owner vs name-keyed RE owner (or vice versa)
+        // FIX: use NORMALIZED names, not raw names (was the critical bug)
+        const landTaxId = landKey.startsWith('ipn:') ? landKey.slice(4) : '';
+        const landNameNorm = landNormByKey.get(landKey) ?? '';
+        let bestSim = 0;
+        for (const [rk, reArea] of reAreaByKey) {
+          const reTaxId = rk.startsWith('ipn:') ? rk.slice(4) : '';
+          const reNameNorm = reNormByKey.get(rk) ?? '';
+          const res = resolveOwnerKey(landTaxId, landNameNorm, reTaxId, reNameNorm);
+          if (res.similarity >= MATCH_THRESHOLD && res.similarity > bestSim) {
+            bestSim = res.similarity;
+            totalREArea = reArea;
+            reKey = rk;
+          }
         }
+      }
+
+      if (totalREArea <= 0 || totalLandArea <= 0) continue;
+
+      const pairKey = `${landKey}::${reKey}`;
+      if (seenAreaKeys.has(pairKey)) continue;
+      seenAreaKeys.add(pairKey);
+
+      // Convert land area to m² using detected unit
+      const landAreaM2 = landUnit === 'ha' ? totalLandArea * 10000 : totalLandArea;
+      const diff = Math.abs(landAreaM2 - totalREArea);
+      const diffPercent = (diff / Math.max(landAreaM2, totalREArea)) * 100;
+
+      if (diffPercent > 5) {
+        const ownerNameRaw = landRawByKey.get(landKey) ?? '';
+        const taxId = landKey.startsWith('ipn:') ? landKey.slice(4) : reTaxIdByKey.get(reKey) ?? '';
+        const address = reAddrByKey.get(reKey) ?? '';
+        const potentialFine = diff * baseTaxRate * 0.3;
+
+        anomalyData.push({
+          batchId: batch.id,
+          hromadaId,
+          type: AnomalyType.AREA_MISMATCH,
+          severity: diffPercent > 50 ? 'HIGH' : diffPercent > 25 ? 'MEDIUM' : 'LOW',
+          description: `Розбіжність площ для ${ownerNameRaw} (ІПН: ${taxId}): земля ${landAreaM2.toFixed(1)} м², нерухомість ${totalREArea.toFixed(1)} м² (різниця ${diffPercent.toFixed(1)}%).`,
+          status: AnomalyStatus.NEW,
+          taxId,
+          suspectName: ownerNameRaw,
+          address,
+          lat: null,
+          lng: null,
+          potentialFine,
+        });
       }
     }
 

@@ -18,20 +18,20 @@ export function KPIStatCard({
   trend,
 }: KPIStatCardProps) {
   const TrendIcon = trend?.direction === "up" ? TrendingUp : TrendingDown
-  const trendColor = trend?.direction === "up" ? "text-emerald-500" : "text-red-500"
+  const trendColor = trend?.direction === "up" ? "text-emerald-600" : "text-red-600"
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-card border border-border rounded-xl p-6"
+      className="bg-white/50 backdrop-blur-md border border-white/60 shadow-sm rounded-xl p-6"
     >
       <div className="flex flex-col gap-1">
-        <p className="text-4xl font-bold text-foreground">
+        <p className="text-4xl font-bold text-slate-800">
           <motion.span>{value}</motion.span>
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-slate-500">
           {title}
         </p>
         {trend && (
@@ -40,7 +40,7 @@ export function KPIStatCard({
             <span className={`text-sm font-medium ${trendColor}`}>
               {Math.abs(trend.value)}%
             </span>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-slate-500">
               vs минулий місяць
             </span>
           </div>

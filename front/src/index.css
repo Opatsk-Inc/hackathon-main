@@ -1,13 +1,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
-    --font-sans: 'Geist Variable', sans-serif;
+    --font-heading: 'Montserrat Alternates', sans-serif;
+    --font-sans: 'Montserrat Alternates', sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,88 +48,117 @@
 }
 
 :root {
-    --brand-dark: #2C3639;
-    --brand-slate: #3F4E4F;
-    --brand-brown: #A27B5C;
-    --brand-cream: #DCD7C9;
+    --brand-dark: #1E293B;
+    --brand-slate: #64748B;
+    --brand-brown: #F97316;
+    --brand-cream: #FFFFFF;
 
-    --background: oklch(from var(--brand-cream) l c h);
-    --foreground: oklch(from var(--brand-dark) l c h);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(from var(--brand-dark) l c h);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(from var(--brand-dark) l c h);
-    --primary: oklch(from var(--brand-slate) l c h);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(from var(--brand-dark) l c h);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(from var(--brand-brown) l c h);
-    --accent-foreground: oklch(from var(--brand-dark) l c h);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(from var(--brand-slate) l c h);
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(from var(--brand-dark) l c h);
-    --sidebar-primary: oklch(from var(--brand-slate) l c h);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(from var(--brand-dark) l c h);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(from var(--brand-slate) l c h);
+    font-family: 'Montserrat Alternates', sans-serif !important;
+
+    --background: transparent;
+    --foreground: #1E293B;
+    --card: rgba(255, 255, 255, 0.5);
+    --card-foreground: #1E293B;
+    --popover: rgba(255, 255, 255, 0.8);
+    --popover-foreground: #1E293B;
+    --primary: #2563EB;
+    --primary-foreground: #FFFFFF;
+    --secondary: #EFF6FF;
+    --secondary-foreground: #1E293B;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #F97316;
+    --accent-foreground: #1E293B;
+    --destructive: #EF4444;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(255, 255, 255, 0.6);
+    --input: rgba(255, 255, 255, 0.7);
+    --ring: #2563EB;
+    --chart-1: #F97316;
+    --chart-2: #0D9488;
+    --chart-3: #2563EB;
+    --chart-4: #16A34A;
+    --chart-5: #8B5CF6;
+    --radius: 0.75rem;
+    --sidebar: rgba(255, 255, 255, 0.8);
+    --sidebar-foreground: #1E293B;
+    --sidebar-primary: #EFF6FF;
+    --sidebar-primary-foreground: #2563EB;
+    --sidebar-accent: #F0F9FF;
+    --sidebar-accent-foreground: #1E40AF;
+    --sidebar-border: rgba(255, 255, 255, 0.6);
+    --sidebar-ring: #2563EB;
 }
 
 .dark {
-    --background: oklch(from var(--brand-dark) l c h);
-    --foreground: oklch(from var(--brand-cream) l c h);
-    --card: oklch(from var(--brand-slate) l c h);
-    --card-foreground: oklch(from var(--brand-cream) l c h);
-    --popover: oklch(from var(--brand-slate) l c h);
-    --popover-foreground: oklch(from var(--brand-cream) l c h);
-    --primary: oklch(from var(--brand-brown) l c h);
-    --primary-foreground: oklch(from var(--brand-dark) l c h);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(from var(--brand-cream) l c h);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(from var(--brand-brown) l c h);
-    --accent-foreground: oklch(from var(--brand-dark) l c h);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(from var(--brand-brown) l c h);
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar: oklch(from var(--brand-slate) l c h);
-    --sidebar-foreground: oklch(from var(--brand-cream) l c h);
-    --sidebar-primary: oklch(from var(--brand-brown) l c h);
-    --sidebar-primary-foreground: oklch(from var(--brand-dark) l c h);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(from var(--brand-cream) l c h);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(from var(--brand-brown) l c h);
+    --background: transparent;
+    --foreground: #F1F5F9;
+    --card: rgba(30, 41, 59, 0.7);
+    --card-foreground: #F1F5F9;
+    --popover: rgba(30, 41, 59, 0.85);
+    --popover-foreground: #F1F5F9;
+    --primary: #3B82F6;
+    --primary-foreground: #FFFFFF;
+    --secondary: rgba(51, 65, 85, 0.8);
+    --secondary-foreground: #F1F5F9;
+    --muted: rgba(51, 65, 85, 0.6);
+    --muted-foreground: #94A3B8;
+    --accent: #FB923C;
+    --accent-foreground: #FFFFFF;
+    --destructive: #F87171;
+    --destructive-foreground: #FFFFFF;
+    --border: rgba(255, 255, 255, 0.15);
+    --input: rgba(255, 255, 255, 0.2);
+    --ring: #3B82F6;
+    --chart-1: #FB923C;
+    --chart-2: #14B8A6;
+    --chart-3: #3B82F6;
+    --chart-4: #22C55E;
+    --chart-5: #A78BFA;
+    --sidebar: rgba(30, 41, 59, 0.9);
+    --sidebar-foreground: #F1F5F9;
+    --sidebar-primary: rgba(51, 65, 85, 0.8);
+    --sidebar-primary-foreground: #3B82F6;
+    --sidebar-accent: rgba(51, 65, 85, 0.6);
+    --sidebar-accent-foreground: #60A5FA;
+    --sidebar-border: rgba(255, 255, 255, 0.15);
+    --sidebar-ring: #3B82F6;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    font-family: 'Montserrat Alternates', sans-serif !important;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
+    background-image: url('/background_blue.svg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-color: transparent;
+    font-family: 'Montserrat Alternates', sans-serif !important;
     }
   html {
-    @apply font-sans;
+    background-color: transparent;
+    font-family: 'Montserrat Alternates', sans-serif !important;
+    }
+  /* Glassmorphism для всіх карток та панелей */
+  .bg-card, [data-slot="card"], .card {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    }
+  .bg-sidebar, [data-slot="sidebar"], aside {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    }
+  .bg-popover, [data-slot="popover"] {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
     }
   .maplibregl-popup-content {
     @apply bg-transparent! shadow-none! p-0! rounded-none!;

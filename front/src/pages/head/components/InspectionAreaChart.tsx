@@ -69,10 +69,10 @@ export function InspectionAreaChart() {
     return Number(((current - previous) / previous * 100).toFixed(1));
   }, [inspectionData]);
   return (
-    <div className="rounded-2xl border border-border bg-card">
+    <div className="rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
       <div className="p-6">
-        <h3 className="mb-1 text-lg font-semibold">Динаміка інспекцій</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="mb-1 text-lg font-semibold text-slate-800">Динаміка інспекцій</h3>
+        <p className="text-sm text-slate-500">
           Показує тренд створених та перевірених завдань за останні 6 місяців
         </p>
       </div>
@@ -117,24 +117,24 @@ export function InspectionAreaChart() {
               <linearGradient id="fillCreated" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="var(--color-created)"
+                  stopColor="#f97316"
                   stopOpacity={0.3}
                 />
                 <stop
                   offset="95%"
-                  stopColor="var(--color-created)"
+                  stopColor="#f97316"
                   stopOpacity={0}
                 />
               </linearGradient>
               <linearGradient id="fillInspected" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="5%"
-                  stopColor="var(--color-inspected)"
+                  stopColor="#0d9488"
                   stopOpacity={0.3}
                 />
                 <stop
                   offset="95%"
-                  stopColor="var(--color-inspected)"
+                  stopColor="#0d9488"
                   stopOpacity={0}
                 />
               </linearGradient>
@@ -144,7 +144,7 @@ export function InspectionAreaChart() {
               type="monotone"
               fill="url(#fillInspected)"
               fillOpacity={1}
-              stroke="var(--color-inspected)"
+              stroke="#0d9488"
               strokeWidth={2}
               stackId="a"
             />
@@ -153,19 +153,19 @@ export function InspectionAreaChart() {
               type="monotone"
               fill="url(#fillCreated)"
               fillOpacity={1}
-              stroke="var(--color-created)"
+              stroke="#f97316"
               strokeWidth={2}
               stackId="a"
             />
           </AreaChart>
         </ChartContainer>
       </div>
-      <div className="border-t px-6 py-4">
-        <div className="flex items-center gap-2 text-sm font-medium">
+      <div className="border-t border-white/60 px-6 py-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
           {growthRate > 0 ? 'Зростання' : 'Зменшення'} на {Math.abs(Number(growthRate))}% цього місяця
-          <TrendingUp className="h-4 w-4 text-[#A27B5C]" />
+          <TrendingUp className="h-4 w-4 text-emerald-600" />
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 text-xs text-slate-500">
           Порівняно з попереднім періодом
         </div>
       </div>

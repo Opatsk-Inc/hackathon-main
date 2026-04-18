@@ -332,8 +332,8 @@ export function DiscrepanciesPage() {
       <div className="mx-auto w-full space-y-6 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Розбіжності</h1>
-            <p className="text-muted-foreground">Виявлені невідповідності між реєстрами ({total})</p>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-800">Розбіжності</h1>
+            <p className="text-slate-500">Виявлені невідповідності між реєстрами ({total})</p>
           </div>
           <Button variant="outline" size="sm" onClick={loadAnomalies}>
             Оновити
@@ -348,8 +348,8 @@ export function DiscrepanciesPage() {
               onClick={() => setFilter(lvl)}
               className={`rounded-full px-3 py-1 text-xs font-medium border transition-colors ${
                 filter === lvl
-                  ? "bg-foreground text-background border-foreground"
-                  : "border-border hover:bg-muted"
+                  ? "bg-slate-800 text-white border-slate-800"
+                  : "border-white/60 text-slate-700 hover:bg-slate-100"
               }`}
             >
               {lvl === "ALL" ? `Всі (${total})` : `${RISK_CONFIG[lvl]?.label} (${countByRisk(lvl)})`}
@@ -357,18 +357,18 @@ export function DiscrepanciesPage() {
           ))}
         </div>
 
-        <div className="rounded-2xl border border-border bg-card overflow-hidden">
-          <div className="border-b px-6 py-5">
-            <h3 className="text-lg font-semibold">Виявлені розбіжності</h3>
-            <p className="text-sm text-muted-foreground mt-1">{filtered.length} з {total} записів</p>
+        <div className="rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm overflow-hidden">
+          <div className="border-b border-white/60 px-6 py-5">
+            <h3 className="text-lg font-semibold text-slate-800">Виявлені розбіжності</h3>
+            <p className="text-sm text-slate-500 mt-1">{filtered.length} з {total} записів</p>
           </div>
 
           {loading ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">Завантаження...</div>
+            <div className="p-8 text-center text-sm text-slate-500">Завантаження...</div>
           ) : error ? (
-            <div className="p-8 text-center text-sm text-red-500">{error}</div>
+            <div className="p-8 text-center text-sm text-red-600">{error}</div>
           ) : filtered.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
+            <div className="p-8 text-center text-sm text-slate-500">
               Розбіжностей не знайдено. Завантажте дані для аналізу.
             </div>
           ) : (
@@ -376,37 +376,37 @@ export function DiscrepanciesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b bg-muted/30">
+                    <tr className="border-b border-white/60 bg-slate-50/50">
                       {["Власник / ІПН", "Адреса", "Тип порушення"].map((h) => (
-                        <th key={h} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">{h}</th>
+                        <th key={h} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">{h}</th>
                       ))}
                       <th
-                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground select-none"
+                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600 cursor-pointer hover:text-slate-800 select-none"
                         onClick={() => handleSort('riskLevel')}
                       >
                         <div className="flex items-center">Ризик<SortIcon field="riskLevel" /></div>
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Статус</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Статус</th>
                       <th
-                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground select-none"
+                        className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600 cursor-pointer hover:text-slate-800 select-none"
                         onClick={() => handleSort('potentialFine')}
                       >
                         <div className="flex items-center">Потенційний дохід<SortIcon field="potentialFine" /></div>
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Дії</th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-600">Дії</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y divide-white/60">
                     {paginatedData.map((a, idx) => (
                       <tr
                         key={a.id}
-                        className={`transition-colors hover:bg-muted/50 ${idx % 2 === 0 ? "bg-card" : "bg-muted/20"}`}
+                        className={`transition-colors hover:bg-slate-50/50 ${idx % 2 === 0 ? "bg-transparent" : "bg-white/20"}`}
                       >
                         <td className="px-6 py-4">
-                          <p className="text-sm font-medium leading-tight">{a.suspectName}</p>
-                          {a.taxId && <p className="text-xs text-muted-foreground mt-0.5">{a.taxId}</p>}
+                          <p className="text-sm font-medium leading-tight text-slate-800">{a.suspectName}</p>
+                          {a.taxId && <p className="text-xs text-slate-500 mt-0.5">{a.taxId}</p>}
                         </td>
-                        <td className="px-6 py-4 text-sm text-muted-foreground max-w-[200px] truncate">{a.address}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 max-w-[200px] truncate">{a.address}</td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${RISK_CONFIG[a.enrichment?.riskLevel]?.cls || RISK_CONFIG.LOW.cls}`}>
                             {TYPE_LABELS[a.type] ?? a.type}
@@ -414,14 +414,14 @@ export function DiscrepanciesPage() {
                         </td>
                         <td className="px-6 py-4"><RiskBadge level={a.enrichment?.riskLevel ?? "LOW"} /></td>
                         <td className="px-6 py-4"><StatusBadge status={a.status} /></td>
-                        <td className="px-6 py-4 text-sm font-semibold text-[#A27B5C]">
+                        <td className="px-6 py-4 text-sm font-semibold text-orange-600">
                           {a.potentialFine ? `${a.potentialFine.toLocaleString("uk-UA")} ₴` : "—"}
                         </td>
                         <td className="px-6 py-4">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="hover:bg-[#A27B5C] hover:text-white hover:border-[#A27B5C] transition-colors"
+                            className="hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
                             onClick={() => setSelected(a)}
                           >
                             Деталі
@@ -434,8 +434,8 @@ export function DiscrepanciesPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="border-t px-6 py-4 flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">Сторінка {currentPage} з {totalPages}</p>
+                <div className="border-t border-white/60 px-6 py-4 flex items-center justify-between">
+                  <p className="text-sm text-slate-500">Сторінка {currentPage} з {totalPages}</p>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
                       <ChevronLeft className="h-4 w-4" />Назад
