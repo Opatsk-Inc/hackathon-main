@@ -16,27 +16,27 @@ export class AdminService {
     private readonly geo: GeoService,
   ) {}
 
+  // Derive effective status: if inspectorId is set but status is still NEW, treat as IN_PROGRESS
+  private effectiveStatus(status: AnomalyStatus, inspectorId: string | null): AnomalyStatus {
+    if (inspectorId && status === AnomalyStatus.NEW) return AnomalyStatus.IN_PROGRESS;
+    return status;
+  }
+
   async getDashboardMetrics(hromadaId: string): Promise<DashboardMetricsResponseDto> {
     const now = new Date();
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-    const [anomalies, fineAgg, statusCounts, lastMonthFineAgg, lastMonthStatusCounts] = await Promise.all([
+    const [allAnomalies, fineAgg, lastMonthFineAgg, lastMonthAnomalies] = await Promise.all([
       this.prisma.anomaly.findMany({
         where: { hromadaId },
-        select: { type: true },
+        select: { type: true, status: true, inspectorId: true },
       }),
       this.prisma.anomaly.aggregate({
         where: { hromadaId },
         _sum: { potentialFine: true },
         _count: true,
       }),
-      this.prisma.anomaly.groupBy({
-        by: ['status'],
-        where: { hromadaId },
-        _count: { status: true },
-      }),
-      // Last month data
       this.prisma.anomaly.aggregate({
         where: {
           hromadaId,
@@ -45,27 +45,28 @@ export class AdminService {
         _sum: { potentialFine: true },
         _count: true,
       }),
-      this.prisma.anomaly.groupBy({
-        by: ['status'],
+      this.prisma.anomaly.findMany({
         where: {
           hromadaId,
           createdAt: { gte: lastMonthStart, lte: lastMonthEnd }
         },
-        _count: { status: true },
+        select: { status: true, inspectorId: true },
       }),
     ]);
 
-    const statusMap = Object.fromEntries(
-      statusCounts.map((s) => [s.status, s._count.status]),
-    ) as Record<AnomalyStatus, number>;
-
-    const lastMonthStatusMap = Object.fromEntries(
-      lastMonthStatusCounts.map((s) => [s.status, s._count.status]),
-    ) as Record<AnomalyStatus, number>;
-
+    // Count statuses using effective status (accounts for inspectorId)
+    const statusMap: Record<string, number> = {};
     const typeMap = new Map<string, number>();
-    for (const a of anomalies) {
+    for (const a of allAnomalies) {
+      const eff = this.effectiveStatus(a.status, a.inspectorId);
+      statusMap[eff] = (statusMap[eff] ?? 0) + 1;
       typeMap.set(a.type, (typeMap.get(a.type) ?? 0) + 1);
+    }
+
+    const lastMonthStatusMap: Record<string, number> = {};
+    for (const a of lastMonthAnomalies) {
+      const eff = this.effectiveStatus(a.status, a.inspectorId);
+      lastMonthStatusMap[eff] = (lastMonthStatusMap[eff] ?? 0) + 1;
     }
 
     // Calculate trends
@@ -81,7 +82,7 @@ export class AdminService {
     const currentFine = fineAgg._sum.potentialFine ?? 0;
     const lastMonthFine = lastMonthFineAgg._sum.potentialFine ?? 0;
     const currentAnomalies = fineAgg._count;
-    const lastMonthAnomalies = lastMonthFineAgg._count;
+    const lastMonthAnomaliesCount = lastMonthFineAgg._count;
     const currentInProgress = statusMap[AnomalyStatus.IN_PROGRESS] ?? 0;
     const lastMonthInProgress = lastMonthStatusMap[AnomalyStatus.IN_PROGRESS] ?? 0;
     const currentResolved = statusMap[AnomalyStatus.RESOLVED] ?? 0;
@@ -95,7 +96,7 @@ export class AdminService {
       resolvedCount: currentResolved,
       byType: Array.from(typeMap.entries()).map(([type, count]) => ({ type, count })),
       budgetLossTrend: calculateTrend(currentFine, lastMonthFine),
-      anomaliesTrend: calculateTrend(currentAnomalies, lastMonthAnomalies),
+      anomaliesTrend: calculateTrend(currentAnomalies, lastMonthAnomaliesCount),
       inProgressTrend: calculateTrend(currentInProgress, lastMonthInProgress),
       resolvedTrend: calculateTrend(currentResolved, lastMonthResolved),
     };
@@ -110,14 +111,17 @@ export class AdminService {
     const [raw, total] = await Promise.all([
       this.prisma.anomaly.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
-        take: 1000, // Limit to 1000 records for performance
+        orderBy: [
+          { status: 'asc' },     // IN_PROGRESS first, then NEW, then RESOLVED
+          { createdAt: 'desc' },
+        ],
       }),
       this.prisma.anomaly.count({ where }),
     ]);
 
     const items = raw.map((a) => ({
       ...a,
+      status: this.effectiveStatus(a.status, a.inspectorId),
       enrichment: enrichAnomaly(a.type, a.severity, a.potentialFine),
     }));
 
@@ -144,6 +148,8 @@ export class AdminService {
   }
 
   async assignTask(hromadaId: string, dto: AssignTaskRequestDto) {
+    this.logger.log(`Assigning ${dto.anomalyIds.length} anomalies to inspector ${dto.inspectorId} (hromadaId=${hromadaId})`);
+
     const updated = await this.prisma.anomaly.updateMany({
       where: {
         hromadaId,
@@ -151,6 +157,15 @@ export class AdminService {
       },
       data: { inspectorId: dto.inspectorId, status: AnomalyStatus.IN_PROGRESS },
     });
+
+    this.logger.log(`Updated ${updated.count} anomalies to IN_PROGRESS`);
+
+    if (updated.count === 0) {
+      this.logger.warn(
+        `No anomalies updated! Requested IDs: ${dto.anomalyIds.join(', ')}. ` +
+        `Possible hromadaId mismatch (expected: ${hromadaId})`,
+      );
+    }
 
     this.geocodeAssignedAnomalies(dto.anomalyIds).catch((e) =>
       this.logger.error(`Background geocoding failed: ${e.message}`),
