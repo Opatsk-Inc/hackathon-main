@@ -5,7 +5,6 @@ import {
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { motion } from "framer-motion";
 
 interface TopViolation {
   address: string;
@@ -59,27 +58,24 @@ const columns = [
     cell: (info) => {
       const badge = info.row.original.badge;
       return (
-        <motion.span
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${
+        <span
+          className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ${
             badge === "critical"
-              ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 animate-pulse"
+              ? "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-800/30"
               : badge === "high"
-                ? "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400"
-                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
+                ? "bg-orange-50 text-orange-700 ring-1 ring-inset ring-orange-600/20 dark:bg-orange-900/20 dark:text-orange-400 dark:ring-orange-800/30"
+                : "bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-800/30"
           }`}
         >
           {info.getValue()}
-        </motion.span>
+        </span>
       );
     },
   }),
   columnHelper.accessor("revenue", {
     header: "Потенційний дохід",
     cell: (info) => (
-      <span className="font-bold text-emerald-600 dark:text-emerald-400">
+      <span className="font-semibold text-[#A27B5C]">
         {info.getValue()} ₴
       </span>
     ),
@@ -91,7 +87,7 @@ const columns = [
       <Button
         variant="outline"
         size="sm"
-        className="hover:bg-primary hover:text-primary-foreground transition-all"
+        className="hover:bg-[#A27B5C] hover:text-white hover:border-[#A27B5C] transition-colors"
       >
         Деталі
       </Button>
@@ -107,56 +103,56 @@ export function TopViolationsTable() {
   });
 
   return (
-    <div className="rounded-xl border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm overflow-hidden">
-      <div className="border-b bg-muted/30 p-6">
-        <h3 className="text-xl font-bold">
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="border-b px-6 py-5">
+        <h3 className="text-lg font-semibold">
           Топ-5 найкритичніших порушень
         </h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mt-1">
           Об'єкти з найбільшим потенційним доходом для бюджету
         </p>
       </div>
-      <div className="p-6">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr
-                  key={headerGroup.id}
-                  className="border-b text-left text-sm font-semibold text-muted-foreground"
-                >
-                  {headerGroup.headers.map((header) => (
-                    <th key={header.id} className="pb-3 px-2">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </th>
-                  ))}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="text-sm">
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b last:border-0 hover:bg-muted/50 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="py-4 px-2">
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr
+                key={headerGroup.id}
+                className="border-b bg-muted/30"
+              >
+                {headerGroup.headers.map((header) => (
+                  <th key={header.id} className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody className="divide-y divide-border">
+            {table.getRowModel().rows.map((row, idx) => (
+              <tr
+                key={row.id}
+                className={`transition-colors hover:bg-muted/50 ${
+                  idx % 2 === 0 ? "bg-card" : "bg-muted/20"
+                }`}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className="px-6 py-4 text-sm">
+                    {flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext()
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

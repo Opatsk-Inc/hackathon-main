@@ -24,7 +24,9 @@ import {
   XAxis,
   CartesianGrid,
   Label,
+  Sector,
 } from "recharts"
+import type { PieSectorShapeProps } from "recharts/types/polar/Pie"
 
 const violationData = [
   {
@@ -73,6 +75,32 @@ export function DashboardPage() {
   const totalObjects = useAnimatedNumber(12450, 2, 0.4)
   const recovered = useAnimatedNumber(150000, 2, 0.6)
 
+  const [activeViolation, setActiveViolation] = React.useState(
+    violationData[0].name
+  )
+
+  const activeIndex = React.useMemo(
+    () => violationData.findIndex((item) => item.name === activeViolation),
+    [activeViolation]
+  )
+
+  const renderActiveShape = React.useCallback(
+    (props: PieSectorShapeProps) => {
+      const { outerRadius = 0 } = props
+      return (
+        <g>
+          <Sector {...props} outerRadius={outerRadius + 10} />
+          <Sector
+            {...props}
+            outerRadius={outerRadius + 25}
+            innerRadius={outerRadius + 12}
+          />
+        </g>
+      )
+    },
+    []
+  )
+
   return (
     <HeadDesktopLayout currentPath="/head/dashboard">
       <div className="mx-auto w-full space-y-6 p-6">
@@ -99,10 +127,9 @@ export function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0 }}
-            className="group relative overflow-hidden rounded-xl border-2 border-rose-200/50 dark:border-rose-900/50 bg-gradient-to-br from-rose-50 to-white dark:from-rose-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-rose-300 dark:hover:border-rose-800"
+            className="relative overflow-hidden rounded-xl border-2 border-rose-200/50 dark:border-rose-900/50 bg-gradient-to-br from-rose-50 to-white dark:from-rose-950/20 dark:to-card p-6 shadow-lg"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -inset-1 bg-gradient-to-r from-rose-400 to-pink-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent" />
             <div className="relative flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground mb-2">
@@ -112,13 +139,9 @@ export function DashboardPage() {
                   <motion.span>{budgetLoss}</motion.span> ₴
                 </p>
               </div>
-              <motion.div
-                whileHover={{ rotate: 15, scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="rounded-lg bg-rose-100 dark:bg-rose-900/30 p-3"
-              >
+              <div className="rounded-lg bg-rose-100 dark:bg-rose-900/30 p-3">
                 <Wallet className="h-6 w-6 text-rose-600 dark:text-rose-400" />
-              </motion.div>
+              </div>
             </div>
           </motion.div>
 
@@ -127,10 +150,9 @@ export function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="group relative overflow-hidden rounded-xl border-2 border-amber-200/50 dark:border-amber-900/50 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-amber-300 dark:hover:border-amber-800"
+            className="relative overflow-hidden rounded-xl border-2 border-amber-200/50 dark:border-amber-900/50 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-card p-6 shadow-lg"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -inset-1 bg-gradient-to-r from-amber-400 to-orange-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent" />
             <div className="relative flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground mb-2">
@@ -140,13 +162,9 @@ export function DashboardPage() {
                   <motion.span>{discrepancies}</motion.span>
                 </p>
               </div>
-              <motion.div
-                whileHover={{ rotate: -15, scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="rounded-lg bg-amber-100 dark:bg-amber-900/30 p-3"
-              >
+              <div className="rounded-lg bg-amber-100 dark:bg-amber-900/30 p-3">
                 <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-              </motion.div>
+              </div>
             </div>
           </motion.div>
 
@@ -155,10 +173,9 @@ export function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="group relative overflow-hidden rounded-xl border-2 border-indigo-200/50 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-indigo-300 dark:hover:border-indigo-800"
+            className="relative overflow-hidden rounded-xl border-2 border-indigo-200/50 dark:border-indigo-900/50 bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950/20 dark:to-card p-6 shadow-lg"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -inset-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent" />
             <div className="relative flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground mb-2">
@@ -168,13 +185,9 @@ export function DashboardPage() {
                   <motion.span>{totalObjects}</motion.span>
                 </p>
               </div>
-              <motion.div
-                whileHover={{ rotate: 15, scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="rounded-lg bg-indigo-100 dark:bg-indigo-900/30 p-3"
-              >
+              <div className="rounded-lg bg-indigo-100 dark:bg-indigo-900/30 p-3">
                 <Building2 className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-              </motion.div>
+              </div>
             </div>
           </motion.div>
 
@@ -183,10 +196,9 @@ export function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="group relative overflow-hidden rounded-xl border-2 border-emerald-200/50 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-card p-6 shadow-lg transition-all hover:shadow-2xl hover:scale-[1.02] hover:border-emerald-300 dark:hover:border-emerald-800"
+            className="relative overflow-hidden rounded-xl border-2 border-emerald-200/50 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-card p-6 shadow-lg"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-xl opacity-0 group-hover:opacity-20 blur transition-opacity" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent" />
             <div className="relative flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-sm font-medium text-muted-foreground mb-2">
@@ -196,13 +208,9 @@ export function DashboardPage() {
                   <motion.span>{recovered}</motion.span> ₴
                 </p>
               </div>
-              <motion.div
-                whileHover={{ rotate: -15, scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="rounded-lg bg-emerald-100 dark:bg-emerald-900/30 p-3"
-              >
+              <div className="rounded-lg bg-emerald-100 dark:bg-emerald-900/30 p-3">
                 <TrendingUp className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-              </motion.div>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -210,9 +218,9 @@ export function DashboardPage() {
         {/* Charts Section */}
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Pie Chart: Violation Structure */}
-          <div className="flex flex-col rounded-xl border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm">
+          <div className="flex flex-col rounded-2xl border border-border bg-card">
             <div className="p-6 pb-4">
-              <h3 className="text-xl font-bold">Структура порушень</h3>
+              <h3 className="text-lg font-semibold">Структура порушень</h3>
               <p className="text-sm text-muted-foreground">
                 Січень - Квітень 2026
               </p>
@@ -232,7 +240,13 @@ export function DashboardPage() {
                     dataKey="value"
                     nameKey="name"
                     innerRadius={60}
-                    strokeWidth={5}
+                    strokeWidth={2}
+                    activeIndex={activeIndex}
+                    activeShape={renderActiveShape}
+                    onMouseEnter={(_, index) => {
+                      setActiveViolation(violationData[index].name)
+                    }}
+                    isAnimationActive={false}
                   >
                     <Label
                       content={({ viewBox }) => {
@@ -244,17 +258,21 @@ export function DashboardPage() {
                               textAnchor="middle"
                               dominantBaseline="middle"
                             >
-                              <tspan
+                              <motion.tspan
+                                key={activeIndex}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3 }}
                                 x={viewBox.cx}
                                 y={viewBox.cy}
                                 className="fill-foreground text-3xl font-bold"
                               >
-                                {totalViolations.toLocaleString()}
-                              </tspan>
+                                {violationData[activeIndex].value.toLocaleString()}
+                              </motion.tspan>
                               <tspan
                                 x={viewBox.cx}
                                 y={(viewBox.cy || 0) + 24}
-                                className="fill-muted-foreground"
+                                className="fill-muted-foreground text-sm"
                               >
                                 Порушень
                               </tspan>
@@ -268,41 +286,62 @@ export function DashboardPage() {
               </ChartContainer>
             </div>
             <div className="flex-1 p-6 pt-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {violationData.map((item, index) => (
-                  <div
+                  <motion.div
                     key={index}
-                    className="flex items-center justify-between gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    whileHover={{ scale: 1.02, x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`flex items-center justify-between gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
+                      index === activeIndex
+                        ? "bg-muted"
+                        : "hover:bg-muted/50"
+                    }`}
+                    onClick={() => setActiveViolation(item.name)}
                   >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full shadow-sm"
+                    <div className="flex items-center gap-3">
+                      <motion.div
+                        animate={{
+                          scale: index === activeIndex ? 1.3 : 1,
+                        }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                        className="h-2 w-2 rounded-full"
                         style={{ backgroundColor: item.fill }}
                       />
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-sm text-foreground">
                         {item.name}
                       </span>
                     </div>
-                    <span className="text-sm font-semibold">{item.value}</span>
-                  </div>
+                    <motion.span
+                      animate={{
+                        scale: index === activeIndex ? 1.1 : 1,
+                      }}
+                      className="text-sm font-semibold"
+                    >
+                      {item.value}
+                    </motion.span>
+                  </motion.div>
                 ))}
               </div>
             </div>
-            <div className="mt-auto border-t bg-muted/30 px-6 py-4">
-              <div className="flex items-center gap-2 text-sm leading-none font-medium">
-                Зростання на 12.3% цього місяця{" "}
-                <TrendingUp className="h-4 w-4" />
+            <div className="mt-auto border-t px-6 py-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                Зростання на 12.3% цього місяця
+                <TrendingUp className="h-4 w-4 text-[#A27B5C]" />
               </div>
-              <div className="mt-1 text-xs leading-none text-muted-foreground">
+              <div className="mt-1 text-xs text-muted-foreground">
                 Показує загальну кількість порушень за останні 4 місяці
               </div>
             </div>
           </div>
 
           {/* Area Chart: Inspection Dynamics */}
-          <div className="rounded-xl border bg-gradient-to-br from-card to-card/50 shadow-lg backdrop-blur-sm">
+          <div className="rounded-2xl border border-border bg-card">
             <div className="p-6">
-              <h3 className="mb-1 text-xl font-bold">Динаміка інспекцій</h3>
+              <h3 className="mb-1 text-lg font-semibold">Динаміка інспекцій</h3>
               <p className="text-sm text-muted-foreground">
                 Показує тренд створених та перевірених завдань за останні 6
                 місяців
@@ -329,7 +368,7 @@ export function DashboardPage() {
                   }}
                   accessibilityLayer
                 >
-                  <CartesianGrid vertical={false} />
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
                   <XAxis
                     dataKey="month"
                     tickLine={false}
@@ -351,12 +390,12 @@ export function DashboardPage() {
                       <stop
                         offset="5%"
                         stopColor="var(--color-created)"
-                        stopOpacity={0.8}
+                        stopOpacity={0.3}
                       />
                       <stop
                         offset="95%"
                         stopColor="var(--color-created)"
-                        stopOpacity={0.1}
+                        stopOpacity={0}
                       />
                     </linearGradient>
                     <linearGradient
@@ -369,40 +408,40 @@ export function DashboardPage() {
                       <stop
                         offset="5%"
                         stopColor="var(--color-inspected)"
-                        stopOpacity={0.8}
+                        stopOpacity={0.3}
                       />
                       <stop
                         offset="95%"
                         stopColor="var(--color-inspected)"
-                        stopOpacity={0.1}
+                        stopOpacity={0}
                       />
                     </linearGradient>
                   </defs>
                   <Area
                     dataKey="inspected"
-                    type="natural"
+                    type="monotone"
                     fill="url(#fillInspected)"
-                    fillOpacity={0.4}
+                    fillOpacity={1}
                     stroke="var(--color-inspected)"
+                    strokeWidth={2}
                     stackId="a"
                   />
                   <Area
                     dataKey="created"
-                    type="natural"
+                    type="monotone"
                     fill="url(#fillCreated)"
-                    fillOpacity={0.4}
+                    fillOpacity={1}
                     stroke="var(--color-created)"
+                    strokeWidth={2}
                     stackId="a"
                   />
                 </AreaChart>
               </ChartContainer>
             </div>
-            <div className="border-t bg-muted/30 px-6 py-4">
-              <div className="flex items-center gap-2 text-sm">
-                <div className="flex items-center gap-1 leading-none font-medium">
-                  Зростання на 5.2% цього місяця
-                  <TrendingUp className="h-4 w-4" />
-                </div>
+            <div className="border-t px-6 py-4">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                Зростання на 5.2% цього місяця
+                <TrendingUp className="h-4 w-4 text-[#A27B5C]" />
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
                 Порівняно з попереднім періодом
