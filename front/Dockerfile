@@ -7,7 +7,9 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build
+# Skip `tsc -b` from package.json's build script — Vite compiles TS via esbuild.
+# Keep `npm run typecheck` / `npm run build` for local dev & CI; don't block deploy on type errors.
+RUN npx vite build
 
 # ─── Stage 2: Serve via nginx with runtime env injection ─────────────────────
 FROM nginx:1.27-alpine

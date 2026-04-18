@@ -35,10 +35,11 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      # Coolify injects FQDN from the user-provided backend domain. Coolify
-      # proxies this FQDN → container port 1488 (defined after _ suffix).
+      # Coolify reverse-proxies the user-set backend domain → container port 1488.
+      # SERVICE_FQDN_BACKEND_1488 → just the FQDN (e.g. api.main.notfounds.dev)
+      # SERVICE_URL_BACKEND_1488  → full URL with scheme (e.g. https://api.main.notfounds.dev)
       SERVICE_FQDN_BACKEND_1488:
-      BACKEND_URL: ${SERVICE_FQDN_BACKEND_1488}
+      BACKEND_URL: ${SERVICE_URL_BACKEND_1488}
 
       # DB wiring — Prisma reads DATABASE_URL, the legacy POSTGRES_* keep
       # build-time scripts (prisma generate) happy.
@@ -98,11 +99,11 @@ services:
     depends_on:
       - backend
     environment:
-      # Coolify assigns the frontend its own FQDN, proxied to container port 80.
+      # Coolify reverse-proxies the user-set frontend domain → container port 80.
       SERVICE_FQDN_FRONTEND_80:
       # Backend URL exposed to the browser at runtime via window.__ENV__.
-      # Reuses the backend's FQDN so no separate var to paste.
-      VITE_API_URL: ${SERVICE_FQDN_BACKEND_1488}
+      # Uses the full URL (with https://) so the frontend can fetch directly.
+      VITE_API_URL: ${SERVICE_URL_BACKEND_1488}
 
 volumes:
   postgres_data:
