@@ -19,7 +19,7 @@ const RISK_CONFIG: Record<string, { label: string; dot: string }> = {
   LOW:      { label: "Низький",   dot: "bg-green-500" },
 };
 
-function TaskCard({ anomaly }: { anomaly: Anomaly }) {
+function TaskCard({ anomaly, status }: { anomaly: Anomaly; status: string }) {
   const risk = RISK_CONFIG[anomaly.enrichment?.riskLevel] ?? RISK_CONFIG.LOW;
   const daysLeft = anomaly.enrichment?.urgencyDays ?? 30;
 
@@ -61,10 +61,16 @@ function TaskCard({ anomaly }: { anomaly: Anomaly }) {
         </p>
       ) : null}
 
-      {anomaly.enrichment?.shouldVisit && (
-        <div className="flex items-center gap-1.5 rounded-md bg-red-50 dark:bg-red-950/20 px-2 py-1">
-          <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
-          <p className="text-xs text-red-600 dark:text-red-400 font-medium">Потрібен виїзд</p>
+      {anomaly.enrichment?.shouldVisit && status !== "RESOLVED" && (
+        <div className={`flex items-center gap-1.5 rounded-md px-2 py-1 ${
+          status === "IN_PROGRESS"
+            ? "bg-blue-50 dark:bg-blue-950/20"
+            : "bg-red-50 dark:bg-red-950/20"
+        }`}>
+          <AlertTriangle className={`h-3 w-3 shrink-0 ${status === "IN_PROGRESS" ? "text-blue-500" : "text-red-500"}`} />
+          <p className={`text-xs font-medium ${status === "IN_PROGRESS" ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>
+            {status === "IN_PROGRESS" ? "Виїзд призначено" : "Потрібен виїзд"}
+          </p>
         </div>
       )}
     </div>
@@ -99,7 +105,7 @@ function Column({
             Немає завдань з цим статусом
           </p>
         ) : (
-          items.map((a) => <TaskCard key={a.id} anomaly={a} />)
+          items.map((a) => <TaskCard key={a.id} anomaly={a} status={status} />)
         )}
       </div>
     </div>
