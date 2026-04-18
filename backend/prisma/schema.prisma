@@ -139,17 +139,33 @@ model ImportBatch {
   fileName  String
   rowsCount Int
   createdAt DateTime @default(now())
+  hromadaId String?
 
   user              User               @relation(fields: [userId], references: [id])
+  hromada           Hromada?           @relation(fields: [hromadaId], references: [id])
   realEstateRecords RealEstateRecord[]
   anomalies         Anomaly[]
 
   @@index([userId])
+  @@index([hromadaId])
   @@map("import_batch")
 }
 
+model Hromada {
+  id            String        @id @default(uuid())
+  koatuu        String        @unique
+  name          String
+  region        String
+  district      String
+  landRecords   LandRecord[]
+  importBatches ImportBatch[]
+  anomalies     Anomaly[]
+
+  @@map("hromada")
+}
+
 model LandRecord {
-  id              String @id @default(uuid())
+  id              String  @id @default(uuid())
   cadastralNumber String
   koatuu          String
   purpose         String
@@ -158,8 +174,12 @@ model LandRecord {
   taxId           String
   ownerNameRaw    String
   ownerNameNorm   String
+  hromadaId       String?
+
+  hromada Hromada? @relation(fields: [hromadaId], references: [id])
 
   @@index([taxId, ownerNameNorm])
+  @@index([hromadaId])
   @@map("land_record")
 }
 
@@ -196,6 +216,7 @@ enum AnomalyStatus {
 model Anomaly {
   id            String        @id @default(uuid())
   batchId       String
+  hromadaId     String?
   type          AnomalyType
   severity      String
   description   String
@@ -211,8 +232,10 @@ model Anomaly {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  batch ImportBatch @relation(fields: [batchId], references: [id])
+  batch   ImportBatch @relation(fields: [batchId], references: [id])
+  hromada Hromada?    @relation(fields: [hromadaId], references: [id])
 
   @@index([batchId, taxId, suspectName])
+  @@index([hromadaId])
   @@map("anomaly")
 }
