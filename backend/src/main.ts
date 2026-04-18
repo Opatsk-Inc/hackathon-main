@@ -33,12 +33,9 @@ async function bootstrap() {
   const options = new DocumentBuilder()
     .setTitle('LionsShare API')
     .setDescription(
-      'B2G SaaS platform for detecting tax evasion via Real Estate ↔ Land Registry cross-matching. ' +
-        'Pass `x-tenant-id` header on every request.',
-    )
+      'B2G SaaS platform for detecting tax evasion via Real Estate ↔ Land Registry cross-matching. ')
     .setVersion('1.0.0')
     .addBearerAuth()
-    .addApiKey({ type: 'apiKey', in: 'header', name: 'x-tenant-id' }, 'tenant-id')
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('api', app, document);

@@ -4,7 +4,7 @@ import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { PrismaService } from './prisma/prisma.service';
 import { ConfigModule } from '@nestjs/config';
-import { RealtimeModule } from './common/realtime.module';
+
 
 // LionsShare modules
 import { GeoModule } from './geo/geo.module';
@@ -17,7 +17,7 @@ import { HromadaModule } from './hromada/hromada.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    RealtimeModule,
+
     UserModule,
     AuthModule,
     // LionsShare
