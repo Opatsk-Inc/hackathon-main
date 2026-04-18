@@ -67,7 +67,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
       >
         <div className="flex h-full flex-col">
           <div className="flex h-16 items-center justify-between border-b border-white/60 px-6">
-            <h1 className="text-xl font-bold text-slate-800">Gromada-Audit</h1>
+            <img src="/name.svg" alt="Gromada-Audit" className="h-10" />
             <Button
               variant="ghost"
               size="icon"
