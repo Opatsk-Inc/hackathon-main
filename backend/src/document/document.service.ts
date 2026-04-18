@@ -23,16 +23,16 @@ export class DocumentService {
   constructor(private readonly prisma: PrismaService) {}
 
   async generateInspectionDirection(
-    tenantId: string,
+    userId: number,
     anomalyId: string,
   ): Promise<InspectionDirectionDocument> {
     const anomaly = await this.prisma.anomaly.findFirst({
-      where: { id: anomalyId, tenantId },
+      where: { id: anomalyId, batch: { userId } },
+      include: { batch: true },
     });
 
     if (!anomaly) throw new NotFoundException(`Anomaly ${anomalyId} not found`);
 
-    const tenant = await this.prisma.tenant.findUnique({ where: { id: tenantId } });
     const documentNumber = `LS-${Date.now()}-${anomalyId.slice(0, 6).toUpperCase()}`;
     const issuedAt = new Date().toISOString();
 
@@ -40,8 +40,6 @@ export class DocumentService {
       `НАПРАВЛЕННЯ НА ПЕРЕВІРКУ`,
       `№ ${documentNumber}`,
       `від ${new Date().toLocaleDateString('uk-UA')}`,
-      ``,
-      `Орган: ${tenant?.name ?? 'ОТГ'} (${tenant?.region ?? ''})`,
       ``,
       `ПЛАТНИК: ${anomaly.suspectName}`,
       `РНОКПП: ${anomaly.taxId}`,

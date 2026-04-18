@@ -1,46 +1,31 @@
-import { Controller, Get, Param, Headers } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
-  ApiHeader,
+  ApiBearerAuth,
   ApiResponse,
 } from '@nestjs/swagger';
 import { DocumentService, InspectionDirectionDocument } from './document.service';
+import { Usr } from '../user/user.decorator';
+import type { AuthUser } from '../auth/auth-user';
 
 @ApiTags('Document')
-@ApiHeader({ name: 'x-tenant-id', description: 'Tenant identifier', required: true })
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('api/admin/tasks')
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
   @Get(':id/document')
-  @ApiOperation({
-    summary: 'Generate "Направлення на перевірку" (Inspection Direction) document',
-    description:
-      'Returns a structured document with anomaly details and a base64-encoded PDF stub compliant with Ukrainian administrative law (ПКУ ст. 288).',
-  })
+  @ApiOperation({ summary: 'Generate "Направлення на перевірку" (Inspection Direction) document' })
   @ApiParam({ name: 'id', description: 'Anomaly ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Inspection direction document',
-    schema: {
-      example: {
-        documentTitle: 'Направлення на перевірку',
-        documentNumber: 'LS-1717000000000-ABC123',
-        issuedAt: '2024-06-01T10:00:00.000Z',
-        legalBasis: 'ПКУ ст. 288',
-        taxId: '1234567890',
-        suspectName: 'Іваненко Іван Іванович',
-        potentialFine: 4250,
-        pdfBase64Stub: 'base64encodedstring...',
-      },
-    },
-  })
+  @ApiResponse({ status: 200, description: 'Inspection direction document' })
   generateDocument(
-    @Headers('x-tenant-id') tenantId: string,
+    @Usr() user: AuthUser,
     @Param('id') anomalyId: string,
   ): Promise<InspectionDirectionDocument> {
-    return this.documentService.generateInspectionDirection(tenantId, anomalyId);
+    return this.documentService.generateInspectionDirection(user.id, anomalyId);
   }
 }

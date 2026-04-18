@@ -1,50 +1,54 @@
 import {
   Controller,
   Post,
-  Body,
   UploadedFile,
   UseInterceptors,
-  Headers,
+  UseGuards,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
   ApiConsumes,
   ApiBody,
-  ApiHeader,
+  ApiBearerAuth,
   ApiResponse,
 } from '@nestjs/swagger';
 import { ImportService } from './import.service';
-import { ImportRealEstateRequestDto } from './dto/request/import-real-estate.request.dto';
 import { ImportBatchResponseDto } from './dto/response/import-batch.response.dto';
+import { ImportRealEstateRequestDto } from './dto/request/import-real-estate.request.dto';
+import { Usr } from '../user/user.decorator';
+import type { AuthUser } from '../auth/auth-user';
 
 @ApiTags('Import')
-@ApiHeader({ name: 'x-tenant-id', description: 'Tenant identifier', required: true })
-@Controller('api/admin/import')
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
+@Controller('api/import')
 export class ImportController {
   constructor(private readonly importService: ImportService) {}
 
   @Post('real-estate')
-  @ApiOperation({ summary: 'Upload Real Estate CSV and run anomaly detection' })
+  @ApiOperation({ summary: 'Upload Real Estate file (CSV or XLSX) and run anomaly detection' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['estateCsv', 'baseTaxRate'],
+      required: ['file', 'baseTaxRate'],
       properties: {
-        estateCsv: { type: 'string', format: 'binary', description: 'Real estate CSV file' },
+        file: { type: 'string', format: 'binary', description: 'Real estate CSV or XLSX file' },
         baseTaxRate: { type: 'number', description: 'Tax rate per m² (UAH)' },
       },
     },
   })
   @ApiResponse({ status: 201, type: ImportBatchResponseDto })
-  @UseInterceptors(FileInterceptor('estateCsv'))
+  @UseInterceptors(FileInterceptor('file'))
   async uploadRealEstate(
-    @Headers('x-tenant-id') tenantId: string,
+    @Usr() user: AuthUser,
     @UploadedFile() file: Express.Multer.File,
     @Body() dto: ImportRealEstateRequestDto,
   ): Promise<ImportBatchResponseDto> {
-    return this.importService.importRealEstate(tenantId, file, dto.baseTaxRate);
+    return this.importService.importRealEstate(user.id, file, dto.baseTaxRate);
   }
 }

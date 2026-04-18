@@ -8,9 +8,9 @@ import { ResolveTaskRequestDto } from './dto/request/resolve-task.request.dto';
 export class MobileService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAssignedTasks(tenantId: string, inspectorId: string): Promise<MobileTaskResponseDto[]> {
-    const anomalies = await this.prisma.anomaly.findMany({
-      where: { tenantId, inspectorId, status: { not: AnomalyStatus.RESOLVED } },
+  async getAssignedTasks(inspectorId: string): Promise<MobileTaskResponseDto[]> {
+    return this.prisma.anomaly.findMany({
+      where: { inspectorId, status: { not: AnomalyStatus.RESOLVED } },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
@@ -22,28 +22,18 @@ export class MobileService {
         lng: true,
         severity: true,
         createdAt: true,
-        // potentialFine intentionally excluded
       },
     });
-    return anomalies;
   }
 
-  async resolveTask(tenantId: string, anomalyId: string, dto: ResolveTaskRequestDto) {
-    const existing = await this.prisma.anomaly.findFirst({
-      where: { id: anomalyId, tenantId },
-    });
+  async resolveTask(anomalyId: string, dto: ResolveTaskRequestDto) {
+    const existing = await this.prisma.anomaly.findUnique({ where: { id: anomalyId } });
     if (!existing) throw new NotFoundException(`Task ${anomalyId} not found`);
 
-    const updated = await this.prisma.anomaly.update({
+    return this.prisma.anomaly.update({
       where: { id: anomalyId },
       data: { status: dto.status, comment: dto.comment ?? null },
-      select: {
-        id: true,
-        status: true,
-        comment: true,
-        updatedAt: true,
-      },
+      select: { id: true, status: true, comment: true, updatedAt: true },
     });
-    return updated;
   }
 }
