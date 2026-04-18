@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { useMotionValue, useTransform, animate } from "framer-motion";
+import { useMotionValue, useTransform, animate, MotionValue } from "framer-motion";
 
 export function useAnimatedNumber(
   value: number,
   duration: number = 2,
   delay: number = 0
-) {
+): MotionValue<string> {
   const motionValue = useMotionValue(0);
   const rounded = useTransform(motionValue, (latest) =>
     Math.round(latest).toLocaleString()

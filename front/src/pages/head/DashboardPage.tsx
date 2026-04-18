@@ -1,20 +1,24 @@
 import { HeadDesktopLayout } from "@/components/layouts"
 import { Button } from "@/components/ui/button"
-import { Plus, AlertTriangle, Building2, Wallet, TrendingUp } from "lucide-react"
-import * as React from "react"
-import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber"
-import { TopViolationsTable } from "@/features/discrepancies/components"
 import {
-  KPICard,
-  ViolationsPieChart,
-  InspectionAreaChart,
-} from "./components"
+  Plus,
+  AlertTriangle,
+  Building2,
+  Wallet,
+  TrendingUp,
+} from "lucide-react"
+import { useAnimatedNumber } from "@/lib/hooks/useAnimatedNumber"
+import { useDashboardMetrics } from "@/lib/hooks/useDashboardMetrics"
+import { TopViolationsTable } from "@/features/discrepancies/components"
+import { KPICard, ViolationsPieChart, InspectionAreaChart } from "./components"
 
 export function DashboardPage() {
-  const budgetLoss = useAnimatedNumber(1250000, 2, 0)
-  const discrepancies = useAnimatedNumber(342, 2, 0.2)
-  const totalObjects = useAnimatedNumber(12450, 2, 0.4)
-  const recovered = useAnimatedNumber(150000, 2, 0.6)
+  const { data: metrics, isLoading } = useDashboardMetrics()
+
+  const budgetLoss = useAnimatedNumber(metrics?.totalPotentialFine ?? 0, 2, 0)
+  const discrepancies = useAnimatedNumber(metrics?.totalAnomalies ?? 0, 2, 0.2)
+  const inProgress = useAnimatedNumber(metrics?.inProgressCount ?? 0, 2, 0.4)
+  const resolved = useAnimatedNumber(metrics?.resolvedCount ?? 0, 2, 0.6)
 
   return (
     <HeadDesktopLayout currentPath="/head/dashboard">
@@ -55,15 +59,15 @@ export function DashboardPage() {
             colorScheme="amber"
           />
           <KPICard
-            title="Всього об'єктів"
-            value={totalObjects}
+            title="В роботі"
+            value={inProgress}
             icon={Building2}
             delay={0.2}
             colorScheme="indigo"
           />
           <KPICard
-            title="Повернуто до бюджету"
-            value={recovered}
+            title="Вирішено"
+            value={resolved}
             icon={TrendingUp}
             delay={0.3}
             colorScheme="emerald"
@@ -72,7 +76,7 @@ export function DashboardPage() {
 
         {/* Charts Section */}
         <div className="grid gap-6 lg:grid-cols-2">
-          <ViolationsPieChart />
+          <ViolationsPieChart data={metrics?.byType} isLoading={isLoading} />
           <InspectionAreaChart />
         </div>
 

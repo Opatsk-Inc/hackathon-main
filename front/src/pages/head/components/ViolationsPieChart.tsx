@@ -6,39 +6,35 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { PieChart, Pie, Label } from "recharts"
+import { PieChart, Pie, Label, Sector } from "recharts"
+import type { PieSectorDataItem } from "recharts/types/polar/Pie"
+import type { AnomalyTypeCount } from "@/lib/api/types"
 
-const violationData = [
-  {
-    name: "Комерція на житловій землі",
-    value: 137,
-    fill: "var(--color-commerce)",
-  },
-  { name: "Неоформлена земля", value: 120, fill: "var(--color-unregistered)" },
-  { name: "Занижена площа", value: 85, fill: "var(--color-underreported)" },
+const chartColors = [
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
+  "hsl(var(--chart-4))",
+  "hsl(var(--chart-5))",
 ]
 
-const violationChartConfig = {
-  value: {
-    label: "Порушень",
-  },
-  commerce: {
-    label: "Комерція на житловій землі",
-    color: "hsl(var(--chart-1))",
-  },
-  unregistered: {
-    label: "Неоформлена земля",
-    color: "hsl(var(--chart-2))",
-  },
-  underreported: {
-    label: "Занижена площа",
-    color: "hsl(var(--chart-3))",
-  },
+interface ViolationsPieChartProps {
+  data?: AnomalyTypeCount[]
+  isLoading?: boolean
 }
 
-export function ViolationsPieChart() {
+export function ViolationsPieChart({ data, isLoading }: ViolationsPieChartProps) {
+  const violationData = React.useMemo(() => {
+    if (!data || data.length === 0) return []
+    return data.map((item, index) => ({
+      name: item.type,
+      value: item.count,
+      fill: chartColors[index % chartColors.length],
+    }))
+  }, [data])
+
   const [activeViolation, setActiveViolation] = React.useState(
-    violationData[0].name
+    violationData[0]?.name || ""
   )
 
   const activeIndex = React.useMemo(
@@ -46,11 +42,48 @@ export function ViolationsPieChart() {
     [activeViolation]
   )
 
+  const renderActiveShape = (props: PieSectorDataItem) => {
+    const outerRadius = (props as unknown as { outerRadius: number })
+      .outerRadius
+    return (
+      <g>
+        <Sector {...props} outerRadius={outerRadius + 10} />
+        <Sector
+          {...props}
+          outerRadius={outerRadius + 25}
+          innerRadius={outerRadius + 12}
+        />
+      </g>
+    )
+  }
+
+  if (isLoading || violationData.length === 0) {
+    return (
+      <div className="flex flex-col rounded-2xl border border-border bg-card">
+        <div className="p-6 pb-4">
+          <h3 className="text-lg font-semibold">Структура порушень</h3>
+          <p className="text-sm text-muted-foreground">Завантаження...</p>
+        </div>
+        <div className="flex items-center justify-center h-[400px]">
+          <div className="animate-pulse text-muted-foreground">Завантаження даних...</div>
+        </div>
+      </div>
+    )
+  }
+
+  const violationChartConfig = violationData.reduce((acc, item, index) => {
+    acc[`type${index}`] = {
+      label: item.name,
+      color: chartColors[index % chartColors.length],
+    }
+    return acc
+  }, {} as Record<string, { label: string; color: string }>)
+
   return (
     <div className="flex flex-col rounded-2xl border border-border bg-card">
       <div className="p-6 pb-4">
         <h3 className="text-lg font-semibold">Структура порушень</h3>
-        <p className="text-sm text-muted-foreground">Січень - Квітень 2026</p>
+        <p className="text-sm text-muted-foreground">Поточні дані</p>
       </div>
       <div className="px-6 pb-0">
         <ChartContainer
@@ -68,6 +101,7 @@ export function ViolationsPieChart() {
               nameKey="name"
               innerRadius={60}
               strokeWidth={2}
+              activeShape={renderActiveShape}
               onMouseEnter={(_, index) => {
                 setActiveViolation(violationData[index].name)
               }}
@@ -149,11 +183,11 @@ export function ViolationsPieChart() {
       </div>
       <div className="mt-auto border-t px-6 py-4">
         <div className="flex items-center gap-2 text-sm font-medium">
-          Зростання на 12.3% цього місяця
+          Всього типів порушень: {violationData.length}
           <TrendingUp className="h-4 w-4 text-[#A27B5C]" />
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
-          Показує загальну кількість порушень за останні 4 місяці
+          Розподіл за типами аномалій
         </div>
       </div>
     </div>

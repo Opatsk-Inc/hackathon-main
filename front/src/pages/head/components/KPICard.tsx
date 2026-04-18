@@ -1,9 +1,9 @@
-import { motion } from "framer-motion"
+import { motion, MotionValue } from "framer-motion"
 import type { LucideIcon } from "lucide-react"
 
 interface KPICardProps {
   title: string
-  value: string | number
+  value: string | number | MotionValue<string>
   icon: LucideIcon
   delay: number
   colorScheme: "rose" | "amber" | "indigo" | "emerald"
