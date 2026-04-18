@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { GeoService } from '../geo/geo.service';
 import { AnomalyStatus } from '@prisma/client';
 import { DashboardMetricsResponseDto } from './dto/response/dashboard-metrics.response.dto';
 import { AnomalyListResponseDto } from './dto/response/anomaly-list.response.dto';
@@ -7,7 +8,12 @@ import { AssignTaskRequestDto } from './dto/request/assign-task.request.dto';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(AdminService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly geo: GeoService,
+  ) {}
 
   async getDashboardMetrics(userId: number): Promise<DashboardMetricsResponseDto> {
     const userBatchFilter = { batch: { userId } };
@@ -79,6 +85,42 @@ export class AdminService {
       },
       data: { inspectorId: dto.inspectorId, status: AnomalyStatus.IN_PROGRESS },
     });
+
+    // Geocode addresses in background — inspector needs coordinates, don't block the response
+    this.geocodeAssignedAnomalies(dto.anomalyIds).catch((e) =>
+      this.logger.error(`Background geocoding failed: ${e.message}`),
+    );
+
     return { assigned: updated.count };
+  }
+
+  private async geocodeAssignedAnomalies(anomalyIds: string[]) {
+    const anomalies = await this.prisma.anomaly.findMany({
+      where: { id: { in: anomalyIds }, lat: null },
+      select: { id: true, address: true, hromada: { select: { name: true, region: true } } },
+    });
+
+    for (const anomaly of anomalies) {
+      // Nominatim policy: max 1 request per second
+      await new Promise((r) => setTimeout(r, 1100));
+
+      // Append hromada name + region so Nominatim has enough context to locate the street
+      const fullAddress = [anomaly.address, anomaly.hromada?.name, anomaly.hromada?.region]
+        .filter(Boolean)
+        .join(', ');
+
+      const coords = await this.geo.geocodeAddress(fullAddress);
+      if (!coords) {
+        this.logger.warn(`Geocoding returned no result for: "${fullAddress}"`);
+        continue;
+      }
+
+      await this.prisma.anomaly.update({
+        where: { id: anomaly.id },
+        data: { lat: coords.lat, lng: coords.lng },
+      });
+
+      this.logger.log(`Geocoded anomaly ${anomaly.id}: ${coords.lat}, ${coords.lng}`);
+    }
   }
 }
