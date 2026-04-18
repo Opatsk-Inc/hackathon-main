@@ -19,7 +19,7 @@ export class AdminService {
     return ApiClient.get<Inspector[]>('/api/admin/inspectors')
   }
 
-  static assignTask(anomalyIds: string[], inspectorId: string) {
+  static assignTask(anomalyIds: string[], inspectorId: string): Promise<{ assigned: number }> {
     return ApiClient.patch('/api/admin/tasks/assign', { anomalyIds, inspectorId })
   }
 

@@ -156,9 +156,14 @@ export function TasksKanbanPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const pending     = anomalies.filter((a) => a.status === "NEW");
-  const inProgress  = anomalies.filter((a) => a.status === "IN_PROGRESS");
-  const resolved    = anomalies.filter((a) => a.status === "RESOLVED");
+  // Derive effective status: if an inspector is assigned but status wasn't
+  // updated in DB (e.g. optimistic update on DiscrepanciesPage), treat as IN_PROGRESS
+  const effectiveStatus = (a: Anomaly) =>
+    a.inspectorId && a.status === "NEW" ? "IN_PROGRESS" : a.status;
+
+  const pending     = anomalies.filter((a) => effectiveStatus(a) === "NEW");
+  const inProgress  = anomalies.filter((a) => effectiveStatus(a) === "IN_PROGRESS");
+  const resolved    = anomalies.filter((a) => effectiveStatus(a) === "RESOLVED");
 
   return (
     <HeadDesktopLayout currentPath="/head/tasks">

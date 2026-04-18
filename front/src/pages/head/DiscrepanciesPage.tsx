@@ -74,11 +74,19 @@ function AssignPanel({
   const handleAssign = async () => {
     if (!selectedId) return;
     setAssigning(true);
-    await AdminService.assignTask([anomalyId], selectedId).catch(() => null);
-    setDone(true);
-    setAssigning(false);
-    const inspector = inspectors.find((i) => i.id === selectedId);
-    onAssigned(selectedId, inspector?.name ?? selectedId);
+    try {
+      const result = await AdminService.assignTask([anomalyId], selectedId);
+      if (result?.assigned === 0) {
+        console.warn("assignTask returned 0 updated rows — possible hromadaId mismatch");
+      }
+      setDone(true);
+      const inspector = inspectors.find((i) => i.id === selectedId);
+      onAssigned(selectedId, inspector?.name ?? selectedId);
+    } catch (e) {
+      console.error("Failed to assign inspector:", e);
+    } finally {
+      setAssigning(false);
+    }
   };
 
   if (done) {
