@@ -24,7 +24,7 @@
     "postinstall": "npm run prisma:generate"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "npx tsx prisma/seed.ts"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -68,6 +68,7 @@
     "rimraf": "^6.1.3",
     "rxjs": "^7.8.2",
     "swagger-ui-express": "^5.0.1",
+    "tsx": "^4.21.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

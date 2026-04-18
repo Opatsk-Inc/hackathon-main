@@ -51,7 +51,7 @@ function parseLocation(location: string): { region: string; district: string; na
 }
 
 async function main() {
-  const filePath = path.resolve(__dirname, '../../ДРРП земля.xlsx');
+  const filePath = path.resolve(__dirname, 'data/drrp-land.xlsx');
   console.log(`Reading: ${filePath}`);
 
   const wb = XLSX.readFile(filePath);

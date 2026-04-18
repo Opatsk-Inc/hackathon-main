@@ -13,7 +13,8 @@
       "Bash(python3 *)",
       "Bash(python *)",
       "Bash(node -e \"const XLSX = require\\('xlsx'\\); const wb = XLSX.readFile\\('../ДРРП земля.xlsx'\\); const ws = wb.Sheets[wb.SheetNames[0]]; const data = XLSX.utils.sheet_to_json\\(ws, {header:1}\\); console.log\\('Headers:', JSON.stringify\\(data[0]\\)\\); console.log\\('Row1:', JSON.stringify\\(data[1]\\)\\);\")",
-      "Bash(node -e \"const XLSX = require\\('xlsx'\\); const wb = XLSX.readFile\\('../ДРРП нерухомість.xlsx'\\); const ws = wb.Sheets[wb.SheetNames[0]]; const data = XLSX.utils.sheet_to_json\\(ws, {header:1}\\); console.log\\('Headers:', JSON.stringify\\(data[0]\\)\\); console.log\\('Row1:', JSON.stringify\\(data[1]\\)\\);\")"
+      "Bash(node -e \"const XLSX = require\\('xlsx'\\); const wb = XLSX.readFile\\('../ДРРП нерухомість.xlsx'\\); const ws = wb.Sheets[wb.SheetNames[0]]; const data = XLSX.utils.sheet_to_json\\(ws, {header:1}\\); console.log\\('Headers:', JSON.stringify\\(data[0]\\)\\); console.log\\('Row1:', JSON.stringify\\(data[1]\\)\\);\")",
+      "mcp__MCP_DOCKER__resolve-library-id"
     ]
   }
 }
