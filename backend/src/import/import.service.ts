@@ -158,10 +158,34 @@ export class ImportService {
       file.originalname.endsWith('.xlsx') ||
       file.originalname.endsWith('.xls');
 
-    const rows = isXlsx ? this.parseXlsx(file.buffer) : this.parseCsv(file.buffer);
+    const allRows = isXlsx ? this.parseXlsx(file.buffer) : this.parseCsv(file.buffer);
 
-    if (!rows.length) throw new BadRequestException('File contains no valid rows');
+    if (!allRows.length) throw new BadRequestException('File contains no valid rows');
 
+    // ── 1. Fetch hromada and filter rows by its name ───────────────────────────
+    const hromada = await this.prisma.hromada.findUnique({ where: { id: hromadaId } });
+    if (!hromada) throw new BadRequestException('Громаду не знайдено');
+
+    const cleanHromadaName = hromada.name
+      .toLowerCase()
+      .replace(/сільська рада|міська рада|селищна рада|територіальна громада|м\.|с\.|селище /g, '')
+      .replace(/\(.*?\)/g, '')
+      .trim();
+
+    const rows = allRows.filter((row) =>
+      row.address.toLowerCase().includes(cleanHromadaName)
+    );
+
+    if (!rows.length) {
+      throw new BadRequestException(`У файлі не знайдено записів для вашої громади (${hromada.name})`);
+    }
+
+    // ── 2. Clear old data for this hromada to avoid duplicates in dashboard ────
+    await this.prisma.anomaly.deleteMany({ where: { hromadaId } });
+    await this.prisma.realEstateRecord.deleteMany({ where: { batch: { hromadaId } } });
+    await this.prisma.importBatch.deleteMany({ where: { hromadaId } });
+
+    // ── 3. Create new batch ────────────────────────────────────────────────────
     const batch = await this.prisma.importBatch.create({
       data: { hromadaId, fileName: file.originalname, rowsCount: rows.length },
     });

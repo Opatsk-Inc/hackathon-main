@@ -16,9 +16,13 @@ export function LoginPage() {
   }
 
   const errorMessage = login.error
-    ? (login.error as Error).message.includes('401')
-      ? 'Невірний email або пароль'
-      : 'Помилка підключення до сервера'
+    ? (() => {
+        const msg = (login.error as Error).message
+        if (msg.startsWith('401')) return 'Невірний email або пароль'
+        if (msg.startsWith('404')) return 'Акаунт не знайдено'
+        if (msg.startsWith('0') || msg.includes('fetch')) return 'Не вдалося підключитися до сервера'
+        return 'Помилка входу. Спробуйте ще раз'
+      })()
     : null
 
   return (

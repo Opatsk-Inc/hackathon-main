@@ -1,7 +1,13 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { AuthService } from '@/lib/api/auth.service'
 import { useAuthStore } from '../store/auth.store'
+import { HROMADAS } from '@/lib/constants/hromadas'
+import type { Hromada } from '@/lib/api/auth.service'
+
+export function useHromadas(): { data: Hromada[]; isLoading: boolean } {
+  return { data: HROMADAS, isLoading: false }
+}
 
 export function useLogin() {
   const { setToken, setUser } = useAuthStore()
@@ -41,14 +47,8 @@ export function useSignup() {
   })
 }
 
-export function useHromadas(enabled = true) {
-  return useQuery({
-    queryKey: ['hromadas'],
-    queryFn: AuthService.getHromadas,
-    enabled,
-    staleTime: 5 * 60 * 1000,
-  })
-}
+
+
 
 export function useLogout() {
   const { logout } = useAuthStore()
