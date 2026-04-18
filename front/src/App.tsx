@@ -1,21 +1,35 @@
-import { Button } from "@/components/ui/button"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  DashboardPage,
+  ImportPage,
+  DiscrepanciesPage,
+  TasksKanbanPage,
+} from "@/pages/head";
+import { MobileTasksPage, TaskInspectionPage } from "@/pages/inspector";
+import { HomePage } from "@/pages/HomePage";
 
 export function App() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        {/* Homepage з автоматичним редіректом */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Head (Desktop) Routes */}
+        <Route path="/head/dashboard" element={<DashboardPage />} />
+        <Route path="/head/import" element={<ImportPage />} />
+        <Route path="/head/discrepancies" element={<DiscrepanciesPage />} />
+        <Route path="/head/tasks" element={<TasksKanbanPage />} />
+
+        {/* Inspector (Mobile) Routes */}
+        <Route path="/inspector/tasks" element={<MobileTasksPage />} />
+        <Route
+          path="/inspector/tasks/:taskId"
+          element={<TaskInspectionPage />}
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
