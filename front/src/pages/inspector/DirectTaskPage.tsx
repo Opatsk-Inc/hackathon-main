@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
-import { ApiClient } from "@/lib/api/client"
+import { AuthService } from "@/lib/api/auth.service"
 import { AdminService } from "@/lib/api/admin.service"
+import { useInspectorStore } from "@/features/auth/store/inspector.store"
 import { LoadingOverlay } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -30,43 +31,35 @@ export function DirectTaskPage() {
   const { id: anomalyId } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { setSession } = useInspectorStore()
+  const didRun = useRef(false)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [task, setTask] = useState<Task | null>(null)
 
   useEffect(() => {
-    const token = searchParams.get("token")
+    // Guard against React 18 StrictMode double-fire
+    if (didRun.current) return
+    didRun.current = true
 
+    const token = searchParams.get("token")
     if (!token) {
       setError("Відсутній токен авторизації")
       setLoading(false)
       return
     }
 
-    const authenticate = async () => {
+    const load = async () => {
       try {
-        // Автологін через magic link
-        const authResponse = await fetch(
-          `${import.meta.env.VITE_API_URL || ""}/auth/inspector/magic?token=${token}`
-        )
+        // Authenticate via magic link using the shared ApiClient (correct base URL)
+        const { accessToken, inspector } = await AuthService.inspectorMagicLink(token)
+        // Store session so InspectorRoute and ApiClient both see the token
+        setSession(accessToken, inspector)
 
-        if (!authResponse.ok) {
-          throw new Error("Невірне або прострочене посилання")
-        }
-
-        const { accessToken } = await authResponse.json()
-        localStorage.setItem("token", accessToken)
-
-        // Завантажуємо всі завдання інспектора
         const tasks = await AdminService.getMyTasks()
-
-        // Знаходимо конкретне завдання
         const targetTask = tasks.find((t: any) => t.id === anomalyId)
-
-        if (!targetTask) {
-          throw new Error("Завдання не знайдено або не призначено вам")
-        }
+        if (!targetTask) throw new Error("Завдання не знайдено або не призначено вам")
 
         setTask({
           id: targetTask.id,
@@ -86,7 +79,7 @@ export function DirectTaskPage() {
       }
     }
 
-    authenticate()
+    load()
   }, [anomalyId, searchParams])
 
   const handleNavigate = () => {

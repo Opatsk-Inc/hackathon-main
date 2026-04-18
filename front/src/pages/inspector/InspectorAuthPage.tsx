@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { AuthService } from "@/lib/api/auth.service"
 import { useInspectorStore } from "@/features/auth/store/inspector.store"
@@ -9,8 +9,13 @@ export function InspectorAuthPage() {
   const navigate = useNavigate()
   const { setSession } = useInspectorStore()
   const [error, setError] = useState<string | null>(null)
+  const didRun = useRef(false)
 
   useEffect(() => {
+    // Guard against React 18 StrictMode double-fire
+    if (didRun.current) return
+    didRun.current = true
+
     const token = searchParams.get("token")
     if (!token) {
       setError("Посилання недійсне — відсутній токен.")
