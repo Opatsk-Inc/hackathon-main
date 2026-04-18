@@ -210,6 +210,15 @@ enum AnomalyStatus {
   RESOLVED
 }
 
+model Inspector {
+  id         String    @id @default(uuid())
+  name       String
+  phone      String
+  magicToken String    @unique @default(uuid())
+
+  @@map("inspector")
+}
+
 model Anomaly {
   id            String        @id @default(uuid())
   batchId       String

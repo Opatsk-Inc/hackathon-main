@@ -124,12 +124,14 @@ export class AdminService {
     return { items, total };
   }
 
-  getInspectors() {
-    return [
-      { id: 'inspector-001', name: 'Коваленко Петро Миколайович', phone: '+380671234567' },
-      { id: 'inspector-002', name: 'Мельник Оксана Василівна',    phone: '+380501234567' },
-      { id: 'inspector-003', name: 'Шевченко Андрій Олегович',    phone: '+380931234567' },
-    ];
+  async getInspectors(baseUrl: string) {
+    const inspectors = await this.prisma.inspector.findMany({ orderBy: { name: 'asc' } });
+    return inspectors.map((i) => ({
+      id: i.id,
+      name: i.name,
+      phone: i.phone,
+      magicLink: `${baseUrl}/inspector/auth?token=${i.magicToken}`,
+    }));
   }
 
   async getBatches(hromadaId: string) {

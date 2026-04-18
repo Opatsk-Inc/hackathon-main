@@ -1,4 +1,5 @@
-import { Controller, Get, Patch, Body, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Body, UseGuards, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
@@ -40,9 +41,10 @@ export class AdminController {
   }
 
   @Get('inspectors')
-  @ApiOperation({ summary: 'List available field inspectors' })
-  getInspectors() {
-    return this.adminService.getInspectors();
+  @ApiOperation({ summary: 'List available field inspectors with magic links' })
+  getInspectors(@Req() req: Request) {
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    return this.adminService.getInspectors(baseUrl);
   }
 
   @Get('batches')

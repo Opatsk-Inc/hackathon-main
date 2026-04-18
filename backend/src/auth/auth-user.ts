@@ -1,3 +1,5 @@
-import type { Hromada } from '@prisma/client';
+import type { Hromada, Inspector } from '@prisma/client';
 
-export type AuthUser = Hromada;
+export type HromadaUser = Hromada & { type: 'hromada' };
+export type InspectorUser = Inspector & { type: 'inspector' };
+export type AuthUser = HromadaUser | InspectorUser;

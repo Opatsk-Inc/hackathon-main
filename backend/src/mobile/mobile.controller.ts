@@ -1,16 +1,17 @@
-import { Controller, Get, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
   ApiBearerAuth,
-  ApiQuery,
   ApiResponse,
 } from '@nestjs/swagger';
 import { MobileService } from './mobile.service';
 import { ResolveTaskRequestDto } from './dto/request/resolve-task.request.dto';
 import { MobileTaskResponseDto } from './dto/response/mobile-task.response.dto';
+import { Usr } from '../user/user.decorator';
+import type { AuthUser } from '../auth/auth-user';
 
 @ApiTags('Mobile (Inspector)')
 @ApiBearerAuth()
@@ -20,11 +21,10 @@ export class MobileController {
   constructor(private readonly mobileService: MobileService) {}
 
   @Get('tasks')
-  @ApiOperation({ summary: "Get inspector's assigned tasks" })
-  @ApiQuery({ name: 'inspectorId', required: true, description: 'Inspector user ID' })
+  @ApiOperation({ summary: "Get inspector's assigned tasks (uses JWT identity)" })
   @ApiResponse({ status: 200, type: [MobileTaskResponseDto] })
-  getTasks(@Query('inspectorId') inspectorId: string): Promise<MobileTaskResponseDto[]> {
-    return this.mobileService.getAssignedTasks(inspectorId);
+  getTasks(@Usr() user: AuthUser): Promise<MobileTaskResponseDto[]> {
+    return this.mobileService.getAssignedTasks(user.id);
   }
 
   @Patch('tasks/:id/resolve')

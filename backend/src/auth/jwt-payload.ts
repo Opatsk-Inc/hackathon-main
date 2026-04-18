@@ -1,4 +1,5 @@
 export interface JwtPayload {
   id: string;
-  email: string;
+  email?: string;
+  type: 'hromada' | 'inspector';
 }

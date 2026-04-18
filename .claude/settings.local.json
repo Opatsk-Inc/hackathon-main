@@ -17,7 +17,12 @@
       "mcp__MCP_DOCKER__resolve-library-id",
       "Bash(node -e \"const p=require\\('./package.json'\\); const keys=Object.keys\\({...p.dependencies,...p.devDependencies}\\); console.log\\(keys.filter\\(k=>k.includes\\('radix'\\)\\).join\\('\\\\n'\\)\\)\")",
       "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(p.dependencies['radix-ui'] || p.devDependencies['radix-ui']\\)\")",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(DATABASE_URL=postgresql://postgres:bogda765@localhost:5432/hackaton npx prisma *)",
+      "Bash(DATABASE_URL=postgresql://postgres:bogda765@localhost:5432/hackaton npx tsx prisma/seed.ts)",
+      "Bash(kill %1)",
+      "Bash(psql postgresql://postgres:bogda765@localhost:5432/hackaton -c \"SELECT id, name, phone, \\\\\"magicToken\\\\\" FROM inspector;\")",
+      "Bash(npx tsx -e ' *)"
     ]
   }
 }

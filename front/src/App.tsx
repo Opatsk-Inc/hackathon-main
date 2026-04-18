@@ -6,9 +6,11 @@ import {
   TasksKanbanPage,
 } from "@/pages/head";
 import { MobileTasksPage, TaskInspectionPage } from "@/pages/inspector";
+import { InspectorAuthPage } from "@/pages/inspector/InspectorAuthPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { SignupPage } from "@/pages/SignupPage";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { InspectorRoute } from "@/components/InspectorRoute";
 
 export function App() {
   return (
@@ -29,8 +31,11 @@ export function App() {
           <Route path="/head/tasks" element={<TasksKanbanPage />} />
         </Route>
 
+        {/* Public inspector magic link */}
+        <Route path="/inspector/auth" element={<InspectorAuthPage />} />
+
         {/* Protected Inspector (Mobile) Routes */}
-        <Route element={<ProtectedRoute />}>
+        <Route element={<InspectorRoute />}>
           <Route path="/inspector/tasks" element={<MobileTasksPage />} />
           <Route
             path="/inspector/tasks/:taskId"

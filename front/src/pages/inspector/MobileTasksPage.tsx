@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { AdminService } from "@/lib/api/admin.service"
 import { InspectorMobileLayout } from "@/components/layouts"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -39,7 +41,7 @@ interface Task {
   distance: string
 }
 
-const mockTasks: Task[] = [
+const tasks: Task[] = [
   {
     id: "1",
     address: "вул. Лесі Українки, 15",
@@ -70,6 +72,23 @@ const mockTasks: Task[] = [
 ]
 
 export function MobileTasksPage() {
+  const { data: apiTasks = [] } = useQuery({
+    queryKey: ['myTasks'],
+    queryFn: AdminService.getMyTasks,
+  })
+
+  const tasks: Task[] = apiTasks
+    .filter((t: any) => t.lat != null && t.lng != null)
+    .map((t: any) => ({
+      id: t.id,
+      address: t.address,
+      cadastralNumber: t.taxId ?? '',
+      discrepancy: t.description ?? '',
+      lat: t.lat,
+      lng: t.lng,
+      distance: '',
+    }))
+
   const [viewMode, setViewMode] = useState<"map" | "list">("map")
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
@@ -229,7 +248,7 @@ export function MobileTasksPage() {
                 className="h-full w-full"
               >
                 {/* Маркери завдань */}
-                {mockTasks.map((task) => (
+                {tasks.map((task) => (
                   <MapMarker
                     key={task.id}
                     longitude={task.lng}
@@ -305,7 +324,7 @@ export function MobileTasksPage() {
               <div className="absolute top-4 right-4 z-10">
                 <div className="bg-primary text-primary-foreground rounded-full px-4 py-2 shadow-xl font-semibold text-sm flex items-center gap-2">
                   <Layers className="h-4 w-4" />
-                  {mockTasks.length} завдань
+                  {tasks.length} завдань
                 </div>
               </div>
             )}
@@ -391,7 +410,7 @@ export function MobileTasksPage() {
             </div>
 
             <div className="space-y-3 pt-12">
-              {mockTasks.map((task, index) => (
+              {tasks.map((task, index) => (
                 <Card
                   key={task.id}
                   className="cursor-pointer p-4 transition-all hover:shadow-lg hover:scale-[1.02] border-l-4 border-l-primary"

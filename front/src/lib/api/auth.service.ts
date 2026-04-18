@@ -34,6 +34,17 @@ export interface Hromada {
   _count?: { landRecords: number }
 }
 
+export interface InspectorProfile {
+  id: string
+  name: string
+  phone: string
+}
+
+export interface InspectorLoginResponse {
+  accessToken: string
+  inspector: InspectorProfile
+}
+
 export class AuthService {
   static login(data: LoginRequest): Promise<LoginResponse> {
     return ApiClient.post<LoginResponse>('/auth/login', data)
@@ -49,5 +60,9 @@ export class AuthService {
 
   static getHromadas(): Promise<Hromada[]> {
     return ApiClient.get<Hromada[]>('/api/hromadas')
+  }
+
+  static inspectorMagicLink(token: string): Promise<InspectorLoginResponse> {
+    return ApiClient.get<InspectorLoginResponse>(`/auth/inspector/magic?token=${encodeURIComponent(token)}`)
   }
 }

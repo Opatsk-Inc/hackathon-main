@@ -10,7 +10,7 @@ const API_BASE_URL = isLocalHost
 
 export class ApiClient {
   private static getAuthToken(): string | null {
-    return localStorage.getItem('auth_token')
+    return localStorage.getItem('auth_token') || localStorage.getItem('inspector_token')
   }
 
   private static async request<T>(

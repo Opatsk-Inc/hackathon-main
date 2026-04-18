@@ -50,7 +50,25 @@ function parseLocation(location: string): { region: string; district: string; na
   return { region, district, name: nameClean || location };
 }
 
+async function seedInspectors() {
+  const inspectors = [
+    { id: 'insp-00000001-0000-0000-0000-000000000001', name: 'Коваленко Петро Миколайович', phone: '+380671234567', magicToken: 'magic-token-kovalenko-001' },
+    { id: 'insp-00000002-0000-0000-0000-000000000002', name: 'Мельник Оксана Василівна',    phone: '+380501234567', magicToken: 'magic-token-melnyk-002' },
+    { id: 'insp-00000003-0000-0000-0000-000000000003', name: 'Шевченко Андрій Олегович',    phone: '+380931234567', magicToken: 'magic-token-shevchenko-003' },
+  ];
+  for (const inspector of inspectors) {
+    await prisma.inspector.upsert({
+      where: { id: inspector.id },
+      update: { name: inspector.name, phone: inspector.phone, magicToken: inspector.magicToken },
+      create: inspector,
+    });
+  }
+  console.log('Seeded 3 inspectors');
+}
+
 async function main() {
+  await seedInspectors();
+
   const filePath = path.resolve(__dirname, 'data/drrp-land.xlsx');
   console.log(`Reading: ${filePath}`);
 

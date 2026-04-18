@@ -23,6 +23,10 @@ export class AdminService {
     return ApiClient.patch('/api/admin/tasks/assign', { anomalyIds, inspectorId })
   }
 
+  static getMyTasks(): Promise<any[]> {
+    return ApiClient.get<any[]>('/api/mobile/tasks')
+  }
+
   static importRealEstate(file: File): Promise<{ message: string; batchId: string }> {
     const formData = new FormData()
     formData.append('file', file)
