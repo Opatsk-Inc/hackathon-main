@@ -9,7 +9,11 @@
       "Bash(npx prisma *)",
       "Bash(npx ts-node *)",
       "Bash(npx tsc *)",
-      "Bash(curl -s http://localhost:3000/api)"
+      "Bash(curl -s http://localhost:3000/api)",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(node -e \"const XLSX = require\\('xlsx'\\); const wb = XLSX.readFile\\('../ДРРП земля.xlsx'\\); const ws = wb.Sheets[wb.SheetNames[0]]; const data = XLSX.utils.sheet_to_json\\(ws, {header:1}\\); console.log\\('Headers:', JSON.stringify\\(data[0]\\)\\); console.log\\('Row1:', JSON.stringify\\(data[1]\\)\\);\")",
+      "Bash(node -e \"const XLSX = require\\('xlsx'\\); const wb = XLSX.readFile\\('../ДРРП нерухомість.xlsx'\\); const ws = wb.Sheets[wb.SheetNames[0]]; const data = XLSX.utils.sheet_to_json\\(ws, {header:1}\\); console.log\\('Headers:', JSON.stringify\\(data[0]\\)\\); console.log\\('Row1:', JSON.stringify\\(data[1]\\)\\);\")"
     ]
   }
 }

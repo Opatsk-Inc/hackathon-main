@@ -75,6 +75,9 @@ async function main() {
   console.log(`Unique hromadas: ${hromadaMap.size}`);
 
   // ── 2. Upsert hromadas ──────────────────────────────────────────────────────
+  await prisma.anomaly.deleteMany();
+  await prisma.realEstateRecord.deleteMany();
+  await prisma.importBatch.deleteMany();
   await prisma.landRecord.deleteMany();
   await prisma.hromada.deleteMany();
 
