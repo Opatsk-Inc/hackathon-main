@@ -166,4 +166,24 @@
   .maplibregl-popup-tip {
     @apply hidden!;
     }
+
+  /* Custom scrollbar styles */
+  .custom-scrollbar {
+    overflow-y: scroll !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px !important;
+    display: block !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(148, 163, 184, 0.2) !important;
+    border-radius: 4px !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgb(148 163 184) !important;
+    border-radius: 4px !important;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(100 116 139) !important;
+  }
 }

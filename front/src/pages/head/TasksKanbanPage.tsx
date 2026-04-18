@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { AdminService } from "@/lib/api/admin.service";
@@ -12,11 +12,11 @@ const TYPE_LABELS: Record<string, string> = {
   AREA_MISMATCH: "Розбіжність площ",
 };
 
-const RISK_CONFIG: Record<string, { label: string; dot: string }> = {
-  CRITICAL: { label: "Критичний", dot: "bg-red-500" },
-  HIGH:     { label: "Високий",   dot: "bg-orange-500" },
-  MEDIUM:   { label: "Середній",  dot: "bg-yellow-500" },
-  LOW:      { label: "Низький",   dot: "bg-green-500" },
+const RISK_CONFIG: Record<string, { label: string; cls: string }> = {
+  CRITICAL: { label: "Критичний", cls: "bg-red-100 text-red-900 ring-1 ring-red-400" },
+  HIGH:     { label: "Високий",   cls: "bg-orange-100 text-orange-900 ring-1 ring-orange-400" },
+  MEDIUM:   { label: "Середній",  cls: "bg-yellow-100 text-yellow-900 ring-1 ring-yellow-400" },
+  LOW:      { label: "Низький",   cls: "bg-green-100 text-green-900 ring-1 ring-green-400" },
 };
 
 function TaskCard({ anomaly, status }: { anomaly: Anomaly; status: string }) {
@@ -26,10 +26,9 @@ function TaskCard({ anomaly, status }: { anomaly: Anomaly; status: string }) {
   return (
     <div className="rounded-xl border border-white/60 bg-white/50 backdrop-blur-md p-4 shadow-sm space-y-3 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full shrink-0 ${risk.dot}`} />
-          <span className="text-xs font-semibold text-slate-600">{risk.label}</span>
-        </div>
+        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${risk.cls}`}>
+          {risk.label}
+        </span>
         <span className="text-xs text-slate-500 whitespace-nowrap">
           {new Date(anomaly.createdAt).toLocaleDateString("uk-UA")}
         </span>
@@ -56,7 +55,7 @@ function TaskCard({ anomaly, status }: { anomaly: Anomaly; status: string }) {
       </div>
 
       {anomaly.potentialFine ? (
-        <p className="text-xs font-bold text-amber-700 dark:text-amber-400 border-t border-white/60 pt-2">
+        <p className="text-xs font-bold text-orange-600 border-t border-white/60 pt-2">
           {anomaly.potentialFine.toLocaleString("uk-UA")} ₴
         </p>
       ) : null}
@@ -64,11 +63,11 @@ function TaskCard({ anomaly, status }: { anomaly: Anomaly; status: string }) {
       {anomaly.enrichment?.shouldVisit && status !== "RESOLVED" && (
         <div className={`flex items-center gap-1.5 rounded-md px-2 py-1 ${
           status === "IN_PROGRESS"
-            ? "bg-blue-50 dark:bg-blue-950/20"
-            : "bg-red-50 dark:bg-red-950/20"
+            ? "bg-blue-100 text-blue-900 ring-1 ring-blue-400"
+            : "bg-red-100 text-red-900 ring-1 ring-red-400"
         }`}>
-          <AlertTriangle className={`h-3 w-3 shrink-0 ${status === "IN_PROGRESS" ? "text-blue-500" : "text-red-500"}`} />
-          <p className={`text-xs font-medium ${status === "IN_PROGRESS" ? "text-blue-600 dark:text-blue-400" : "text-red-600 dark:text-red-400"}`}>
+          <AlertTriangle className={`h-3.5 w-3.5 shrink-0 ${status === "IN_PROGRESS" ? "text-blue-900" : "text-red-900"}`} />
+          <p className={`text-xs font-semibold ${status === "IN_PROGRESS" ? "text-blue-900" : "text-red-900"}`}>
             {status === "IN_PROGRESS" ? "Виїзд призначено" : "Потрібен виїзд"}
           </p>
         </div>
@@ -82,12 +81,33 @@ function Column({
   status,
   items,
   headerCls,
+  enableInfiniteScroll = false,
 }: {
   title: string;
   status: string;
   items: Anomaly[];
   headerCls: string;
+  enableInfiniteScroll?: boolean;
 }) {
+  const [displayCount, setDisplayCount] = useState(10);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (!enableInfiniteScroll) return;
+
+    const target = e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    if (scrollTop + clientHeight >= scrollHeight - 50) {
+      setDisplayCount(prev => Math.min(prev + 10, items.length));
+    }
+  }, [enableInfiniteScroll, items.length]);
+
+  useEffect(() => {
+    setDisplayCount(10);
+  }, [items.length]);
+
+  const displayedItems = enableInfiniteScroll ? items.slice(0, displayCount) : items;
+
   return (
     <div className="flex flex-col rounded-xl border border-white/60 bg-white/30 backdrop-blur-md overflow-hidden">
       <div className={`border-b border-white/60 px-5 py-4 ${headerCls}`}>
@@ -99,13 +119,18 @@ function Column({
         </div>
         <p className="text-xs text-slate-600 mt-0.5">завдань</p>
       </div>
-      <div className="flex-1 space-y-3 p-4 min-h-[200px]">
-        {items.length === 0 ? (
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        className="overflow-y-scroll space-y-3 p-4 custom-scrollbar"
+        style={{ height: '600px', maxHeight: 'calc(100vh - 300px)' }}
+      >
+        {displayedItems.length === 0 ? (
           <p className="text-sm text-slate-500 text-center py-6">
             Немає завдань з цим статусом
           </p>
         ) : (
-          items.map((a) => <TaskCard key={a.id} anomaly={a} status={status} />)
+          displayedItems.map((a) => <TaskCard key={a.id} anomaly={a} status={status} />)
         )}
       </div>
     </div>
@@ -148,7 +173,7 @@ export function TasksKanbanPage() {
             size="sm"
             onClick={() => load(true)}
             disabled={refreshing}
-            className="gap-2"
+            className="gap-2 bg-white text-slate-800 border-slate-300 hover:bg-slate-100"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             Оновити
@@ -164,6 +189,7 @@ export function TasksKanbanPage() {
               status="NEW"
               items={pending}
               headerCls="bg-gray-50 dark:bg-gray-900/30"
+              enableInfiniteScroll={true}
             />
             <Column
               title="В роботі"

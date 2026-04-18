@@ -81,7 +81,7 @@ export function ImportPage() {
           </p>
         </div>
 
-        <div className="max-w-2xl">
+        <div className="w-full">
           <div className="rounded-lg border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
             <div className="border-b border-white/60 p-6">
               <h3 className="text-lg font-semibold text-slate-800">Реєстр нерухомості</h3>
@@ -92,7 +92,7 @@ export function ImportPage() {
             <div className="p-6 space-y-6">
               {!file ? (
                 <div
-                  className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${isDragging ? "border-primary bg-primary/5" : "hover:bg-muted/50"
+                  className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors cursor-pointer ${isDragging ? "border-primary bg-primary/5" : "border-slate-400 hover:border-slate-500 hover:bg-slate-50/50"
                     }`}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}

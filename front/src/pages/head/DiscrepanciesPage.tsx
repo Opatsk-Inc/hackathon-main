@@ -20,16 +20,16 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const RISK_CONFIG: Record<string, { label: string; cls: string }> = {
-  CRITICAL: { label: "Критичний", cls: "bg-red-100 text-red-800 ring-1 ring-red-300 dark:bg-red-900/30 dark:text-red-300" },
-  HIGH:     { label: "Високий",   cls: "bg-orange-100 text-orange-800 ring-1 ring-orange-300 dark:bg-orange-900/30 dark:text-orange-300" },
-  MEDIUM:   { label: "Середній",  cls: "bg-yellow-100 text-yellow-800 ring-1 ring-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300" },
-  LOW:      { label: "Низький",   cls: "bg-green-100 text-green-700 ring-1 ring-green-300 dark:bg-green-900/30 dark:text-green-300" },
+  CRITICAL: { label: "Критичний", cls: "bg-red-100 text-red-900 ring-1 ring-red-400" },
+  HIGH:     { label: "Високий",   cls: "bg-orange-100 text-orange-900 ring-1 ring-orange-400" },
+  MEDIUM:   { label: "Середній",  cls: "bg-yellow-100 text-yellow-900 ring-1 ring-yellow-400" },
+  LOW:      { label: "Низький",   cls: "bg-green-100 text-green-900 ring-1 ring-green-400" },
 };
 
 const STATUS_CONFIG: Record<string, { label: string; cls: string }> = {
-  NEW:         { label: "Новий",       cls: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300" },
-  IN_PROGRESS: { label: "В роботі",   cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" },
-  RESOLVED:    { label: "Вирішено",   cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" },
+  NEW:         { label: "Новий",       cls: "bg-gray-100 text-gray-900 ring-1 ring-gray-400" },
+  IN_PROGRESS: { label: "В роботі",   cls: "bg-blue-100 text-blue-900 ring-1 ring-blue-400" },
+  RESOLVED:    { label: "Вирішено",   cls: "bg-green-100 text-green-900 ring-1 ring-green-400" },
 };
 
 function RiskBadge({ level }: { level: string }) {
@@ -413,7 +413,7 @@ export function DiscrepanciesPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
+                            className="bg-white text-slate-800 border-slate-300 hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-colors"
                             onClick={() => setSelected(a)}
                           >
                             Деталі
@@ -429,10 +429,10 @@ export function DiscrepanciesPage() {
                 <div className="border-t border-white/60 px-6 py-4 flex items-center justify-between">
                   <p className="text-sm text-slate-500">Сторінка {currentPage} з {totalPages}</p>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-white text-slate-800 border-slate-300 hover:bg-slate-100">
                       <ChevronLeft className="h-4 w-4" />Назад
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                    <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-white text-slate-800 border-slate-300 hover:bg-slate-100">
                       Вперед<ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
