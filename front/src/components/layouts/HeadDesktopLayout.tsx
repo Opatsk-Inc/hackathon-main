@@ -1,8 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -13,6 +24,7 @@ import {
   X,
   Bell,
   User,
+  LogOut,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -27,11 +39,14 @@ interface HeadDesktopLayoutProps {
   currentPath?: string;
 }
 
-export function HeadDesktopLayout({
-  children,
-  currentPath,
-}: HeadDesktopLayoutProps) {
+export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    navigate("/login");
+  };
 
   return (
     <div className="relative flex min-h-screen">
@@ -86,10 +101,34 @@ export function HeadDesktopLayout({
             })}
           </nav>
 
-          <div className="border-t p-4">
-            <div className="text-xs text-muted-foreground">
-              © 2026 Gromada-Audit
-            </div>
+          <div className="border-t p-4 space-y-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                >
+                  <LogOut className="h-5 w-5" />
+                  Вийти
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Вийти з системи?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Ви впевнені, що хочете вийти? Всі незбережені зміни буде втрачено.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleLogout}>
+                    Вийти
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <div className="text-xs text-muted-foreground px-3">© 2026 Gromada-Audit</div>
           </div>
         </div>
       </aside>
@@ -115,6 +154,27 @@ export function HeadDesktopLayout({
               <Button variant="ghost" size="icon">
                 <User className="h-5 w-5" />
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" title="Вийти">
+                    <LogOut className="h-5 w-5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Вийти з системи?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Ви впевнені, що хочете вийти? Всі незбережені зміни буде втрачено.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Скасувати</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout}>
+                      Вийти
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </header>

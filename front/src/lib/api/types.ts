@@ -53,3 +53,9 @@ export interface AnomalyListResponse {
   items: Anomaly[]
   total: number
 }
+
+export interface Inspector {
+  id: string
+  name: string
+  phone: string
+}

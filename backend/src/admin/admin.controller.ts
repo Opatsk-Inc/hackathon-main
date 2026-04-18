@@ -39,6 +39,12 @@ export class AdminController {
     return this.adminService.getDiscrepancies(user.id, batchId);
   }
 
+  @Get('inspectors')
+  @ApiOperation({ summary: 'List available field inspectors' })
+  getInspectors() {
+    return this.adminService.getInspectors();
+  }
+
   @Get('batches')
   @ApiOperation({ summary: 'List import batches for current hromada' })
   getBatches(@Usr() user: AuthUser) {

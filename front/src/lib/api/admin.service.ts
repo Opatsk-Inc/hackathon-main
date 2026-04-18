@@ -1,5 +1,5 @@
 import { ApiClient } from './client'
-import type { DashboardMetrics, AnomalyListResponse } from './types'
+import type { DashboardMetrics, AnomalyListResponse, Inspector } from './types'
 
 export class AdminService {
   static getDashboardMetrics(): Promise<DashboardMetrics> {
@@ -15,7 +15,11 @@ export class AdminService {
     return ApiClient.get('/api/admin/batches')
   }
 
-  static assignTask(anomalyIds: string[], inspectorId: number) {
+  static getInspectors(): Promise<Inspector[]> {
+    return ApiClient.get<Inspector[]>('/api/admin/inspectors')
+  }
+
+  static assignTask(anomalyIds: string[], inspectorId: string) {
     return ApiClient.patch('/api/admin/tasks/assign', { anomalyIds, inspectorId })
   }
 
