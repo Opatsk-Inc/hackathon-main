@@ -22,5 +22,5 @@ export function formatLargeNumber(num: number, decimals: number = 2): string {
     return sign + (absNum / 1_000).toFixed(decimals) + 'K';
   }
 
-  return sign + absNum.toString();
+  return sign + Math.round(absNum).toString();
 }
