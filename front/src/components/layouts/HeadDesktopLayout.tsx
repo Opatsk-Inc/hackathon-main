@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -68,9 +69,9 @@ export function HeadDesktopLayout({
               const isActive = currentPath === item.href;
 
               return (
-                <a
+                <Link
                   key={item.href}
-                  href={item.href}
+                  to={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
@@ -80,7 +81,7 @@ export function HeadDesktopLayout({
                 >
                   <Icon className="h-5 w-5" />
                   {item.label}
-                </a>
+                </Link>
               );
             })}
           </nav>
