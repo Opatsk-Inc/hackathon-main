@@ -134,6 +134,7 @@ export class AdminService {
       id: i.id,
       name: i.name,
       phone: i.phone,
+      magicToken: i.magicToken,
       magicLink: `${baseUrl}/inspector/auth?token=${i.magicToken}`,
     }));
   }
