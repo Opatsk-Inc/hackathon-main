@@ -10,6 +10,9 @@ import {
   detectAreaUnit,
   tokenSortName,
   normalizeForFuzzy,
+  buildOwnerIndex,
+  hasMatch,
+  findMatches,
 } from './matching';
 
 // ── Shared normalization (must match seed.ts) ────────────────────────────────
@@ -65,6 +68,17 @@ interface RealEstateRow {
   area: number;
   ownershipEnd: Date | null;
 }
+
+// ── Matching threshold constant ───────────────────────────────────────────────
+
+/**
+ * Minimum fuzzy similarity for owner name matching.
+ * 0.82 is lower than the original 0.85 to catch more legitimate matches
+ * like abbreviated patronymics (Олег Мих. vs Олег Михайлович).
+ * The composite scoring with bigram + token-set + initials detection
+ * means this lower threshold doesn't increase false positives.
+ */
+const MATCH_THRESHOLD = 0.82;
 
 // ── Service ───────────────────────────────────────────────────────────────────
 
@@ -185,43 +199,38 @@ export class ImportService {
 
     this.logger.log(`Loaded ${landRecords.length} land records for hromadaId=${hromadaId}`);
 
-    // ── 3. Build lookup from real estate file (no address filter — real estate
-    //       records contain only street addresses, not community names) ─────────
-    const reByTaxId = new Map<string, RealEstateRow[]>();
-    const reByName  = new Map<string, RealEstateRow[]>();
+    // ── 3. Build indexed lookups for BOTH sides ────────────────────────────────
+    //    Instead of O(n*m) nested loops, we index by taxId + name prefixes
+    //    for near-O(n) matching.
 
-    for (const row of allRows) {
-      if (row.taxId) {
-        if (!reByTaxId.has(row.taxId)) reByTaxId.set(row.taxId, []);
-        reByTaxId.get(row.taxId)!.push(row);
-      }
-      if (row.ownerNameNorm) {
-        if (!reByName.has(row.ownerNameNorm)) reByName.set(row.ownerNameNorm, []);
-        reByName.get(row.ownerNameNorm)!.push(row);
-      }
-    }
+    const landIndex = buildOwnerIndex(landRecords);
+    const reIndex = buildOwnerIndex(allRows.map((r) => ({
+      taxId: r.taxId,
+      ownerNameRaw: r.ownerNameRaw,
+      ownerNameNorm: r.ownerNameNorm,
+    })));
+
+    this.logger.log(
+      `Built indexes: land=${landRecords.length} entries, ` +
+      `RE=${allRows.length} entries, ` +
+      `land taxIds=${landIndex.byTaxId.size}, RE taxIds=${reIndex.byTaxId.size}`,
+    );
 
     // ── 4. Scope real estate rows to THIS hromada ─────────────────────────────
     //    Keep only RE rows whose owner also appears in the land registry here.
-    //    Priority: IPN match first, fuzzy name fallback (threshold ≥ 0.85).
+    //    Uses indexed matching: IPN first, then fuzzy name with prefix-bucketing.
+
     const matchedSet = new Set<RealEstateRow>();
-    for (const land of landRecords) {
-      for (const row of allRows) {
-        // Fast path: exact IPN match (both non-empty and equal)
-        if (land.taxId && row.taxId && land.taxId === row.taxId) {
-          matchedSet.add(row);
-          continue;
-        }
-        // If both have non-empty IPN but they differ → definitively different persons, skip
-        if (land.taxId && row.taxId && land.taxId !== row.taxId) {
-          continue;
-        }
-        // Fuzzy name fallback (one or both lack IPN)
-        if (fuzzyNameSimilarity(land.ownerNameNorm, row.ownerNameNorm) >= 0.85) {
-          matchedSet.add(row);
-        }
+    const matchedReIndexSet = new Set<number>(); // track by allRows index
+
+    for (let i = 0; i < allRows.length; i++) {
+      const row = allRows[i];
+      if (hasMatch(row.taxId, row.ownerNameRaw, row.ownerNameNorm, landIndex, MATCH_THRESHOLD)) {
+        matchedSet.add(row);
+        matchedReIndexSet.add(i);
       }
     }
+
     const rows = [...matchedSet];
 
     this.logger.log(`Matched ${rows.length} real estate rows for hromadaId=${hromadaId} (file had ${allRows.length} total rows)`);
@@ -252,9 +261,12 @@ export class ImportService {
       });
     }
 
-    // ── 7. Build sets of real estate owners for fast reverse lookup ───────────
-    const reTaxIds = new Set(rows.map((r) => r.taxId).filter(Boolean));
-    const reNames  = new Set(rows.map((r) => r.ownerNameNorm).filter(Boolean));
+    // ── 7. Build RE index from MATCHED rows for anomaly detection ─────────────
+    const matchedReIndex = buildOwnerIndex(rows.map((r) => ({
+      taxId: r.taxId,
+      ownerNameRaw: r.ownerNameRaw,
+      ownerNameNorm: r.ownerNameNorm,
+    })));
 
     const anomalyData: {
       batchId: string; hromadaId: string; type: AnomalyType; severity: string;
@@ -269,20 +281,14 @@ export class ImportService {
       if (!key || seenLandOwners.has(key)) continue;
       seenLandOwners.add(key);
 
-      // IPN-priority: if land has IPN, check RE set for that IPN first
-      let hasRE = false;
-      if (land.taxId) {
-        hasRE = rows.some((re) => re.taxId === land.taxId);
-      }
-      if (!hasRE) {
-        // Fuzzy name fallback: at least one RE row matches this land owner by name
-        hasRE = rows.some(
-          (re) =>
-            // Skip RE rows that have a different non-empty IPN (different person)
-            !(land.taxId && re.taxId && land.taxId !== re.taxId) &&
-            fuzzyNameSimilarity(land.ownerNameNorm, re.ownerNameNorm) >= 0.85,
-        );
-      }
+      // Use indexed lookup instead of O(n) scan
+      const hasRE = hasMatch(
+        land.taxId,
+        land.ownerNameRaw,
+        land.ownerNameNorm,
+        matchedReIndex,
+        MATCH_THRESHOLD,
+      );
 
       if (!hasRE) {
         const potentialFine = land.area > 0 ? land.area * 10000 * baseTaxRate : 0;
@@ -331,17 +337,14 @@ export class ImportService {
       if (!key || seenREOwners.has(key)) continue;
       seenREOwners.add(key);
 
-      let hasLand = false;
-      if (row.taxId) {
-        hasLand = landRecords.some((land) => land.taxId === row.taxId);
-      }
-      if (!hasLand) {
-        hasLand = landRecords.some(
-          (land) =>
-            !(row.taxId && land.taxId && row.taxId !== land.taxId) &&
-            fuzzyNameSimilarity(row.ownerNameNorm, land.ownerNameNorm) >= 0.85,
-        );
-      }
+      // Use indexed lookup instead of O(n) scan
+      const hasLand = hasMatch(
+        row.taxId,
+        row.ownerNameRaw,
+        row.ownerNameNorm,
+        landIndex,
+        MATCH_THRESHOLD,
+      );
 
       if (!hasLand) {
         const potentialFine = row.area > 0 ? row.area * baseTaxRate * 0.5 : 0;
@@ -372,6 +375,7 @@ export class ImportService {
     // Group: sum all land areas per owner key.
     const landAreaByKey = new Map<string, number>();
     const landRawByKey  = new Map<string, string>();   // for description
+    const landNormByKey = new Map<string, string>();    // normalized name for fuzzy matching
     for (const land of landRecords) {
       const ownerKey = land.taxId
         ? `ipn:${land.taxId}`
@@ -379,12 +383,14 @@ export class ImportService {
       if (!ownerKey) continue;
       landAreaByKey.set(ownerKey, (landAreaByKey.get(ownerKey) ?? 0) + land.area);
       landRawByKey.set(ownerKey, land.ownerNameRaw);
+      landNormByKey.set(ownerKey, land.ownerNameNorm);
     }
 
     // Build canonical owner key for each matched real estate row.
     // Group: sum all RE areas per owner key.
     const reAreaByKey   = new Map<string, number>();
     const reRawByKey    = new Map<string, string>();
+    const reNormByKey   = new Map<string, string>();    // normalized name for fuzzy matching
     const reTaxIdByKey  = new Map<string, string>();
     const reAddrByKey   = new Map<string, string>();
     for (const re of rows) {
@@ -394,12 +400,11 @@ export class ImportService {
       if (!ownerKey) continue;
       reAreaByKey.set(ownerKey, (reAreaByKey.get(ownerKey) ?? 0) + re.area);
       reRawByKey.set(ownerKey, re.ownerNameRaw);
+      reNormByKey.set(ownerKey, re.ownerNameNorm);
       reTaxIdByKey.set(ownerKey, re.taxId);
       reAddrByKey.set(ownerKey, re.address);
     }
 
-    // For IPN-keyed land records, also try matching RE records keyed by name
-    // (handles case where RE file has no IPN but land file does — use resolveOwnerKey cross-match)
     // Cross-match: for each land key, find best-matching RE key
     const seenAreaKeys = new Set<string>();
     for (const [landKey, totalLandArea] of landAreaByKey) {
@@ -411,16 +416,18 @@ export class ImportService {
         totalREArea = reAreaByKey.get(landKey)!;
       } else {
         // Try cross-match: IPN-keyed land owner vs name-keyed RE owner (or vice versa)
+        // FIX: use NORMALIZED names, not raw names (was the critical bug)
         const landTaxId = landKey.startsWith('ipn:') ? landKey.slice(4) : '';
-        const landNameNorm = landRawByKey.get(landKey) ?? '';
+        const landNameNorm = landNormByKey.get(landKey) ?? '';
+        let bestSim = 0;
         for (const [rk, reArea] of reAreaByKey) {
           const reTaxId = rk.startsWith('ipn:') ? rk.slice(4) : '';
-          const reNameNorm = reRawByKey.get(rk) ?? '';
+          const reNameNorm = reNormByKey.get(rk) ?? '';
           const res = resolveOwnerKey(landTaxId, landNameNorm, reTaxId, reNameNorm);
-          if (res.similarity >= 0.85) {
+          if (res.similarity >= MATCH_THRESHOLD && res.similarity > bestSim) {
+            bestSim = res.similarity;
             totalREArea = reArea;
             reKey = rk;
-            break;
           }
         }
       }
@@ -434,7 +441,7 @@ export class ImportService {
       // Convert land area to m² using detected unit
       const landAreaM2 = landUnit === 'ha' ? totalLandArea * 10000 : totalLandArea;
       const diff = Math.abs(landAreaM2 - totalREArea);
-      const diffPercent = (diff / landAreaM2) * 100;
+      const diffPercent = (diff / Math.max(landAreaM2, totalREArea)) * 100;
 
       if (diffPercent > 5) {
         const ownerNameRaw = landRawByKey.get(landKey) ?? '';
