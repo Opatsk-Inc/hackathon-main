@@ -42,13 +42,13 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
   if (isLoading || chartData.length === 0) {
     return (
       <div className="panel-glass flex flex-col rounded-2xl">
-        <div className="p-6 pb-4">
+        <div className="p-6 pb-4 max-[600px]:p-4 max-[600px]:pb-3">
           <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
             Структура порушень
           </h3>
           <p className="text-sm text-slate-500">Завантаження...</p>
         </div>
-        <div className="flex h-[400px] items-center justify-center">
+        <div className="flex h-[320px] items-center justify-center max-[600px]:h-[230px] max-[480px]:h-[190px]">
           <div className="animate-pulse text-slate-400">Завантаження даних...</div>
         </div>
       </div>
@@ -65,15 +65,15 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
 
   return (
     <div className="panel-glass flex flex-col rounded-2xl">
-      <div className="p-6 pb-4">
+      <div className="p-6 pb-4 max-[600px]:p-4 max-[600px]:pb-3">
         <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
           Структура порушень
         </h3>
         <p className="text-sm text-slate-500">Розподіл за типами</p>
       </div>
 
-      <div className="px-6 pb-6">
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
+      <div className="px-6 pb-6 max-[600px]:px-4 max-[600px]:pb-4">
+        <ChartContainer config={chartConfig} className="h-[300px] w-full max-[600px]:h-[220px] max-[480px]:h-[185px]">
           <BarChart data={chartData} margin={{ left: 10, right: 10, top: 10 }}>
             <defs>
               {chartData.map((item, idx) => (
@@ -111,7 +111,7 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
           </BarChart>
         </ChartContainer>
 
-        <div className="mt-6 space-y-2">
+        <div className="mt-6 space-y-2 max-[600px]:mt-4">
           {chartData.map((item, idx) => (
             <div
               key={idx}
@@ -122,9 +122,9 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
                   className="h-2.5 w-2.5 rounded-full"
                   style={{ backgroundColor: item.fill, boxShadow: `0 0 0 3px ${item.fill}1a` }}
                 />
-                <span className="font-medium text-slate-700">{item.name}</span>
+                <span className="font-medium text-slate-700 max-[600px]:text-xs">{item.name}</span>
               </div>
-              <span className="font-mono font-semibold tabular-nums text-slate-900">
+              <span className="font-mono font-semibold tabular-nums text-slate-900 max-[600px]:text-xs">
                 {item.value.toLocaleString("uk-UA")}
               </span>
             </div>

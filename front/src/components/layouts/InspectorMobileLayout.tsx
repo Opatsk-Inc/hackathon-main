@@ -28,7 +28,7 @@ export function InspectorMobileLayout({
 
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/60 bg-white/60 px-4 backdrop-blur-2xl shadow-[0_8px_24px_rgba(11,28,54,0.06)]">
+      <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/35 bg-gradient-to-r from-[#fff7ea]/78 via-white/66 to-[#eaf4ff]/78 px-4 backdrop-blur-xl shadow-[0_8px_20px_rgba(11,28,54,0.05)]">
         {showBackButton && onBack ? (
           <Button
             variant="outline"

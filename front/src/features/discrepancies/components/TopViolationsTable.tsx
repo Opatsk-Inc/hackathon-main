@@ -225,8 +225,39 @@ export function TopViolationsTable() {
             Немає даних для відображення
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <>
+            <div className="space-y-3 p-4 md:hidden">
+              {topViolations.map((item) => (
+                <div
+                  key={item.id}
+                  className="space-y-3 rounded-2xl border border-white/70 bg-white/75 p-4 shadow-[0_1px_2px_rgba(11,28,54,0.04),0_10px_24px_rgba(11,28,54,0.06)]"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-slate-900">{extractStreetAddress(item.address)}</p>
+                    <p className="text-xs text-slate-500">{item.suspectName}</p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200/80">
+                      {TYPE_LABELS[item.type] || item.type}
+                    </span>
+                    <RiskBadge level={item.enrichment?.riskLevel ?? "LOW"} />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-mono text-sm font-semibold tabular-nums text-amber-700">
+                      {item.potentialFine?.toLocaleString("uk-UA") || "0"} ₴
+                    </span>
+                    <Button variant="outline" size="sm" onClick={() => setSelected(item)}>
+                      Деталі
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full">
               <thead>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr
@@ -257,8 +288,9 @@ export function TopViolationsTable() {
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

@@ -69,15 +69,15 @@ export function InspectionAreaChart() {
 
   return (
     <div className="panel-glass rounded-2xl">
-      <div className="p-6">
+      <div className="p-6 max-[600px]:p-4">
         <h3 className="mb-1 font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
           Динаміка інспекцій
         </h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 max-[600px]:text-xs">
           Тренд створених та перевірених завдань за останні 6 місяців
         </p>
       </div>
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 max-[600px]:px-4 max-[600px]:pb-4">
         <ChartContainer
           config={{
             created: {
@@ -89,7 +89,7 @@ export function InspectionAreaChart() {
               color: "#2563eb",
             },
           }}
-          className="h-[300px] w-full"
+          className="h-[300px] w-full max-[600px]:h-[220px] max-[480px]:h-[185px]"
         >
           <AreaChart
             data={inspectionData}
@@ -149,8 +149,8 @@ export function InspectionAreaChart() {
           </AreaChart>
         </ChartContainer>
       </div>
-      <div className="border-t border-white/55 px-6 py-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+      <div className="border-t border-white/55 px-6 py-4 max-[600px]:px-4 max-[600px]:py-3">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-800 max-[600px]:text-xs">
           {positive ? "Зростання" : "Зменшення"} на {Math.abs(Number(growthRate))}% цього місяця
           {positive ? (
             <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -158,7 +158,7 @@ export function InspectionAreaChart() {
             <TrendingDown className="h-4 w-4 text-rose-600" />
           )}
         </div>
-        <div className="mt-1 text-xs text-slate-500">Порівняно з попереднім періодом</div>
+        <div className="mt-1 text-xs text-slate-500 max-[600px]:text-[11px]">Порівняно з попереднім періодом</div>
       </div>
     </div>
   )

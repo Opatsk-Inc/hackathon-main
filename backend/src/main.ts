@@ -16,6 +16,7 @@ async function bootstrap() {
       'http://localhost:5174',
       'https://api.notfounds.dev',
       'https://main.notfounds.dev',
+      'https://akr.notfounds.dev',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
