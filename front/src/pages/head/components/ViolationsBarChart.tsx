@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/chart"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import type { AnomalyTypeCount } from "@/lib/api/types"
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react"
 
 const TYPE_LABELS: Record<string, string> = {
   MISSING_IN_REAL_ESTATE: "Немає нерухомості",
@@ -28,10 +27,8 @@ interface ViolationsBarChartProps {
   isLoading?: boolean
 }
 
-type SortDirection = 'asc' | 'desc' | null
-
 export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps) {
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>(null)
+  const sortDirection = null
 
   const chartData = React.useMemo(() => {
     if (!data || data.length === 0) return []
@@ -50,34 +47,17 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
     }
 
     return items
-  }, [data, sortDirection])
-
-  const handleSort = () => {
-    if (sortDirection === null) {
-      setSortDirection('desc')
-    } else if (sortDirection === 'desc') {
-      setSortDirection('asc')
-    } else {
-      setSortDirection(null)
-    }
-  }
-
-  const SortIcon = () => {
-    if (sortDirection === null) return <ArrowUpDown className="h-3.5 w-3.5 ml-1 opacity-50" />
-    return sortDirection === 'asc'
-      ? <ArrowUp className="h-3.5 w-3.5 ml-1" />
-      : <ArrowDown className="h-3.5 w-3.5 ml-1" />
-  }
+  }, [data])
 
   if (isLoading || chartData.length === 0) {
     return (
-      <div className="flex flex-col rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
+      <div className="panel-glass flex flex-col rounded-2xl">
         <div className="p-6 pb-4">
-          <h3 className="text-lg font-semibold text-slate-800">Структура порушень</h3>
-          <p className="text-sm text-slate-500">Завантаження...</p>
+          <h3 className="text-lg font-semibold text-[#10213f]">Структура порушень</h3>
+          <p className="text-sm text-[#5d728f]">Завантаження...</p>
         </div>
         <div className="flex items-center justify-center h-[400px]">
-          <div className="animate-pulse text-slate-500">Завантаження даних...</div>
+          <div className="animate-pulse text-[#5d728f]">Завантаження даних...</div>
         </div>
       </div>
     )
@@ -92,10 +72,10 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
   }, {} as Record<string, { label: string; color: string }>)
 
   return (
-    <div className="flex flex-col rounded-2xl border border-white/60 bg-white/50 backdrop-blur-md shadow-sm">
+    <div className="panel-glass flex flex-col rounded-2xl">
       <div className="p-6 pb-4">
-        <h3 className="text-lg font-semibold text-slate-800">Структура порушень</h3>
-        <p className="text-sm text-slate-500">Розподіл за типами</p>
+        <h3 className="text-lg font-semibold text-[#10213f]">Структура порушень</h3>
+        <p className="text-sm text-[#5d728f]">Розподіл за типами</p>
       </div>
 
       <div className="px-6 pb-6">
@@ -121,7 +101,7 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
         <div className="mt-6 space-y-2">
           {chartData.map((item, idx) => (
             <div key={idx} className="flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-700">{item.name}</span>
+              <span className="font-medium text-[#2d4467]">{item.name}</span>
               <span className="font-semibold tabular-nums" style={{ color: item.fill }}>
                 {item.value.toLocaleString("uk-UA")}
               </span>

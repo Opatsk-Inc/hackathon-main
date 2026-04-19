@@ -83,7 +83,7 @@ export function SignupPage() {
   const displayError = localError || serverError
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="atmo-shell min-h-screen bg-background flex">
       {/* Left decorative panel */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[var(--brand-slate)]">
         <div className="absolute inset-0 opacity-10">
@@ -129,7 +129,7 @@ export function SignupPage() {
 
       {/* Right form panel */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
-        <div className="w-full max-w-md">
+        <div className="panel-strong w-full max-w-md rounded-3xl p-8 md:p-10">
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 justify-center mb-8">
             <div className="w-9 h-9 rounded-lg bg-[var(--brand-dark)] flex items-center justify-center">
@@ -139,7 +139,7 @@ export function SignupPage() {
           </div>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Реєстрація</h1>
+            <h1 className="text-4xl font-bold text-foreground leading-[1.05]">Реєстрація</h1>
             <p className="text-muted-foreground mt-2">Створіть акаунт для вашої громади</p>
           </div>
 
@@ -158,10 +158,10 @@ export function SignupPage() {
               </label>
               <div className="relative">
                 <div
-                  className={`flex items-center gap-2 rounded-xl border bg-card px-4 py-3 cursor-text transition-all ${
+                  className={`flex items-center gap-2 rounded-xl border bg-white/55 px-4 py-3 cursor-text transition-all ${
                     dropdownOpen
-                      ? 'border-[var(--brand-slate)] ring-2 ring-[var(--brand-slate)]/20'
-                      : 'border-border'
+                      ? 'border-[#5f7391] ring-2 ring-[#5f7391]/20'
+                      : 'border-white/60'
                   }`}
                   onClick={() => setDropdownOpen(true)}
                 >
@@ -177,7 +177,7 @@ export function SignupPage() {
                       setDropdownOpen(true)
                     }}
                     onFocus={() => setDropdownOpen(true)}
-                    className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                    className="flex-1 bg-transparent text-sm text-[#10213f] placeholder:text-[#627692] outline-none"
                     autoComplete="off"
                   />
                   {hromada && <Check className="w-4 h-4 text-green-600 shrink-0" />}
@@ -185,10 +185,10 @@ export function SignupPage() {
                 </div>
 
                 {dropdownOpen && (
-                  <div className="absolute z-50 mt-2 w-full rounded-xl border border-border bg-card shadow-xl overflow-hidden">
+                  <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/60 bg-white/95 shadow-xl overflow-hidden">
                     <div className="max-h-60 overflow-y-auto">
                       {filtered.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                        <div className="px-4 py-8 text-center text-sm text-[#627692]">
                           Громаду не знайдено
                         </div>
                       ) : (
@@ -199,12 +199,12 @@ export function SignupPage() {
                             disabled={!!h.email}
                             onClick={() => !h.email && handleSelect(h)}
                             className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between gap-2 ${
-                              hromada?.id === h.id ? 'bg-muted' : ''
-                            } ${h.email ? 'opacity-60 cursor-not-allowed' : 'hover:bg-muted'}`}
+                              hromada?.id === h.id ? 'bg-[#e9f2ff]' : ''
+                            } ${h.email ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#eef4ff]'}`}
                           >
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{h.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
+                              <p className="text-sm font-medium text-[#10213f] truncate">{h.name}</p>
+                              <p className="text-xs text-[#627692] truncate">
                                 {h.region} · {h.district}
                               </p>
                             </div>
@@ -242,7 +242,7 @@ export function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="hromada@example.com"
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-[var(--brand-slate)] focus:ring-2 focus:ring-[var(--brand-slate)]/20"
+                className="w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 text-sm text-[#10213f] placeholder:text-[#627692] outline-none transition-all focus:border-[#5f7391] focus:ring-2 focus:ring-[#5f7391]/20"
               />
             </div>
 
@@ -261,7 +261,7 @@ export function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Мінімум 8 символів"
-                  className="w-full rounded-xl border border-border bg-card px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-[var(--brand-slate)] focus:ring-2 focus:ring-[var(--brand-slate)]/20"
+                  className="w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 pr-12 text-sm text-[#10213f] placeholder:text-[#627692] outline-none transition-all focus:border-[#5f7391] focus:ring-2 focus:ring-[#5f7391]/20"
                 />
                 <button
                   type="button"
@@ -287,10 +287,10 @@ export function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Повторіть пароль"
-                  className={`w-full rounded-xl border bg-card px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:ring-2 ${
+                  className={`w-full rounded-xl border bg-white/55 px-4 py-3 pr-12 text-sm text-[#10213f] placeholder:text-[#627692] outline-none transition-all focus:ring-2 ${
                     confirmPassword && confirmPassword !== password
                       ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
-                      : 'border-border focus:border-[var(--brand-slate)] focus:ring-[var(--brand-slate)]/20'
+                      : 'border-white/60 focus:border-[#5f7391] focus:ring-[#5f7391]/20'
                   }`}
                 />
                 <button
@@ -310,7 +310,7 @@ export function SignupPage() {
               id="signup-submit"
               type="submit"
               disabled={signup.isPending}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[var(--brand-dark)] px-4 py-3 text-sm font-semibold text-[var(--brand-cream)] transition-all hover:bg-[var(--brand-slate)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#10213f] px-4 py-3 text-sm font-semibold text-[#f8fbff] transition-all hover:bg-[#1c365f] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#10213f]/30"
             >
               {signup.isPending ? (
                 <span className="flex items-center gap-2">

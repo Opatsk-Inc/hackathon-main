@@ -49,11 +49,11 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
   };
 
   return (
-    <div className="relative flex min-h-screen">
+    <div className="atmo-shell relative flex min-h-screen">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-[#0f1f38]/55 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -61,12 +61,12 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 z-50 h-screen w-64 border-r border-white/60 bg-white/80 backdrop-blur-md transition-transform duration-300 lg:translate-x-0",
+          "fixed left-0 top-0 z-50 h-screen w-72 border-r border-white/40 bg-white/70 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
-          <div className="flex h-16 items-center justify-between border-b border-white/60 px-6">
+          <div className="flex h-20 items-center justify-between border-b border-white/45 px-6">
             <img src="/name.svg" alt="Gromada-Audit" className="h-10" />
             <Button
               variant="ghost"
@@ -88,10 +88,10 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-200",
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
+                      ? "bg-gradient-to-r from-[#2f6fe8]/15 to-[#f38c3d]/12 text-[#1f55b5] shadow-sm"
+                      : "text-[#334b6d] hover:bg-white/70 hover:text-[#0f2951]"
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -101,12 +101,12 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
             })}
           </nav>
 
-          <div className="border-t border-white/60 p-4 space-y-3">
+          <div className="border-t border-white/45 p-4 space-y-3">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-3 text-slate-600 hover:text-red-600 hover:bg-red-50"
+                  className="w-full justify-start gap-3 text-[#334b6d] hover:text-red-600 hover:bg-red-50"
                 >
                   <LogOut className="h-5 w-5" />
                   Вийти
@@ -128,14 +128,14 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
               </AlertDialogContent>
             </AlertDialog>
 
-            <div className="text-xs text-slate-500 px-3">© 2026 Gromada-Audit</div>
+            <div className="text-xs text-[#5d728f] px-3">© 2026 Gromada-Audit</div>
           </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col lg:pl-64">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b border-white/60 bg-white/40 backdrop-blur-md px-6">
+      <div className="flex flex-1 flex-col lg:pl-72">
+        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-white/35 bg-white/35 backdrop-blur-xl px-6">
           <Button
             variant="ghost"
             size="icon"
@@ -146,17 +146,17 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
           </Button>
 
           <div className="flex flex-1 items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-800">Панель керування</h2>
+            <h2 className="text-xl font-bold text-[#10213f]">Панель керування</h2>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="text-slate-600">
+              <Button variant="ghost" size="icon" className="text-[#334b6d] hover:bg-white/70">
                 <Bell className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon" className="text-slate-600">
+              <Button variant="ghost" size="icon" className="text-[#334b6d] hover:bg-white/70">
                 <User className="h-5 w-5" />
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon" title="Вийти" className="text-slate-600">
+                  <Button variant="ghost" size="icon" title="Вийти" className="text-[#334b6d] hover:bg-white/70">
                     <LogOut className="h-5 w-5" />
                   </Button>
                 </AlertDialogTrigger>

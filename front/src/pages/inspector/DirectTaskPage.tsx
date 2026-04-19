@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
+<<<<<<< HEAD
 import { AuthService } from "@/lib/api/auth.service"
+=======
+>>>>>>> ada0997ace9eaad592bfa5f938ba35db160fba5f
 import { AdminService } from "@/lib/api/admin.service"
 import { useInspectorStore } from "@/features/auth/store/inspector.store"
 import { LoadingOverlay } from "@/components/ui/loading-spinner"
@@ -95,7 +98,9 @@ export function DirectTaskPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30">
-        <LoadingOverlay isLoading={true} />
+        <LoadingOverlay isLoading={true}>
+          <div className="h-24 w-24" />
+        </LoadingOverlay>
       </div>
     )
   }

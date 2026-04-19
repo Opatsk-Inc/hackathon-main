@@ -42,21 +42,21 @@ export function DashboardPage() {
 
   return (
     <HeadDesktopLayout currentPath="/head/dashboard">
-      <div className="mx-auto w-full space-y-6 p-6">
+      <div className="mx-auto w-full space-y-6 p-6 md:p-8">
         {/* Page Header */}
-        <div className="flex items-center justify-between">
+        <div className="panel-glass rounded-3xl p-6 md:p-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-4xl font-bold tracking-tight text-slate-800">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-[#10213f] leading-[1.05]">
               Огляд аудиту {user?.name ? `громади ${user.name}` : "громади"}
             </h1>
 
-            <p className="mt-1 text-slate-500">
+            <p className="mt-2 text-[#5d728f]">
               Аналітика податкових розбіжностей та фінансових втрат
             </p>
           </div>
           <Button
             size="lg"
-            className="gap-2 shadow-lg transition-all hover:shadow-xl"
+            className="gap-2 shadow-lg transition-all hover:shadow-xl bg-[#10213f] hover:bg-[#1c365f] text-[#f8fbff]"
             onClick={() => navigate("/head/import")}
           >
             <Plus className="h-5 w-5" />
