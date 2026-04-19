@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -22,6 +22,7 @@ import {
   Upload,
   AlertTriangle,
   CheckSquare,
+  Menu,
   X,
   LogOut,
 } from "lucide-react";
@@ -49,6 +50,22 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const activeItem = NAV_ITEMS.find((item) => item.href === currentPath);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [sidebarOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
@@ -56,13 +73,28 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
   };
 
   return (
-    <div className="relative flex min-h-screen">
+    <div className="relative flex min-h-screen overflow-x-clip">
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-md lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/60 bg-white/80 px-4 backdrop-blur-2xl lg:hidden">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Відкрити меню"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <p className="truncate px-2 text-sm font-semibold tracking-[-0.01em] text-slate-900">
+          {activeItem?.label ?? "Панель керівника"}
+        </p>
+        <img src="/name.svg" alt="Gromada-Audit" className="h-7" />
+      </header>
 
       <aside
         className={cn(
@@ -143,7 +175,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col lg:pl-72">
+      <div className="flex flex-1 flex-col pt-16 lg:pt-0 lg:pl-72">
         <main className="flex-1">
           <AnimatePresence mode="wait">
             <PageTransition key={location.pathname}>

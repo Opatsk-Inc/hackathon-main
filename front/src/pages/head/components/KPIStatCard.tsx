@@ -55,7 +55,7 @@ export function KPIStatCard({
       />
       <div className={`absolute inset-y-5 left-0 w-1 rounded-full bg-gradient-to-b ${accentStyle.bar}`} />
       <div className="relative flex flex-col gap-1.5 pl-3">
-        <p className="font-heading text-[2.25rem] font-semibold leading-none tracking-[-0.03em] text-slate-900">
+        <p className="font-heading text-[1.85rem] font-semibold leading-none tracking-[-0.03em] text-slate-900 sm:text-[2.25rem]">
           <motion.span>{value}</motion.span>
         </p>
         <p className="text-sm font-medium text-slate-500">{title}</p>
