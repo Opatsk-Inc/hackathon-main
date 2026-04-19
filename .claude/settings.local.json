@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(python3 -)",
+      "Bash(git commit -m ' *)",
+      "Bash(git add *)",
+      "Bash(npx vite *)"
     ]
   }
 }
