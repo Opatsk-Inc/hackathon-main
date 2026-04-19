@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/components/PageTransition";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -49,6 +51,7 @@ interface HeadDesktopLayoutProps {
 export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
@@ -148,9 +151,13 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
       </aside>
 
       <div className="flex flex-1 flex-col lg:pl-72">
-
-
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+          <AnimatePresence mode="wait">
+            <PageTransition key={location.pathname}>
+              {children}
+            </PageTransition>
+          </AnimatePresence>
+        </main>
       </div>
     </div>
   );
