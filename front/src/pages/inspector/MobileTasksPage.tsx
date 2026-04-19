@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useSearchParams } from "react-router-dom"
 import { AdminService } from "@/lib/api/admin.service"
@@ -47,7 +47,7 @@ export function MobileTasksPage() {
   const autoTaskId = searchParams.get("taskId")
 
   const { data: apiTasks = [] } = useQuery({
-    queryKey: ['myTasks'],
+    queryKey: ["myTasks"],
     queryFn: AdminService.getMyTasks,
   })
 
@@ -56,11 +56,11 @@ export function MobileTasksPage() {
     .map((t: any) => ({
       id: t.id,
       address: t.address,
-      cadastralNumber: t.taxId ?? '',
-      discrepancy: t.description ?? '',
+      cadastralNumber: t.taxId ?? "",
+      discrepancy: t.description ?? "",
       lat: t.lat,
       lng: t.lng,
-      distance: '',
+      distance: "",
     }))
 
   const [viewMode, setViewMode] = useState<"map" | "list">("map")
@@ -79,7 +79,7 @@ export function MobileTasksPage() {
   const mapRef = useRef<MapRef>(null)
   const previousLocationRef = useRef<[number, number] | null>(null)
 
-  type ViewMode = "map" | "list";
+  type ViewMode = "map" | "list"
 
   // Відстеження геолокації користувача
   useEffect(() => {
@@ -130,7 +130,7 @@ export function MobileTasksPage() {
     return () => navigator.geolocation.clearWatch(watchId)
   }, [isNavigating])
 
-  const handleNavigate = async (task: Task) => {
+  const handleNavigate = useCallback(async (task: Task) => {
     if (!userLocation) {
       alert("Не вдалося визначити ваше місцезнаходження")
       return
@@ -178,7 +178,7 @@ export function MobileTasksPage() {
     } finally {
       setIsLoadingRoute(false)
     }
-  }
+  }, [userLocation])
 
   const confirmRoute = () => {
     setShowRoutePreview(false)
@@ -213,10 +213,10 @@ export function MobileTasksPage() {
     if (autoTaskId && tasks.length > 0 && userLocation) {
       const targetTask = tasks.find((t) => t.id === autoTaskId)
       if (targetTask) {
-        handleNavigate(targetTask)
+        setTimeout(() => handleNavigate(targetTask), 0)
       }
     }
-  }, [autoTaskId, tasks.length, userLocation])
+  }, [autoTaskId, tasks, userLocation, handleNavigate])
 
   return (
     <InspectorMobileLayout title="Мої завдання">
@@ -241,7 +241,7 @@ export function MobileTasksPage() {
                   >
                     <MarkerContent>
                       <div className="relative">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 shadow-xl transition-transform hover:scale-110 border-2 border-white">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-red-500 shadow-xl transition-transform hover:scale-110">
                           <MapPin className="h-6 w-6 text-white" />
                         </div>
                         <div className="absolute -bottom-1 left-1/2 h-2 w-2 -translate-x-1/2 rounded-full bg-red-500/50 blur-sm" />
@@ -258,24 +258,25 @@ export function MobileTasksPage() {
                   >
                     <MarkerContent>
                       <div className="relative">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 border-4 border-white shadow-xl">
-                          <div className="h-3 w-3 rounded-full bg-white animate-pulse" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full border-4 border-white bg-blue-500 shadow-xl">
+                          <div className="h-3 w-3 animate-pulse rounded-full bg-white" />
                         </div>
-                        <div className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping" />
+                        <div className="absolute inset-0 animate-ping rounded-full bg-blue-500/30" />
                       </div>
                     </MarkerContent>
                   </MapMarker>
                 )}
 
                 {/* Маршрут */}
-                {(showRoutePreview || isNavigating) && routeCoordinates.length > 0 && (
-                  <MapRoute
-                    coordinates={routeCoordinates}
-                    color="#3B82F6"
-                    width={5}
-                    opacity={0.9}
-                  />
-                )}
+                {(showRoutePreview || isNavigating) &&
+                  routeCoordinates.length > 0 && (
+                    <MapRoute
+                      coordinates={routeCoordinates}
+                      color="#3B82F6"
+                      width={5}
+                      opacity={0.9}
+                    />
+                  )}
 
                 <MapControls showZoom showLocate position="bottom-right" />
               </MapComponent>
@@ -283,9 +284,11 @@ export function MobileTasksPage() {
 
             {/* Floating View Toggle */}
             <div className="absolute top-4 left-4 z-10">
-              <div className="flex gap-2 bg-background/95 backdrop-blur-sm rounded-full p-1 shadow-xl border">
+              <div className="flex gap-2 rounded-full border bg-background/95 p-1 shadow-xl backdrop-blur-sm">
                 <Button
-                  variant={(viewMode as ViewMode) === "map" ? "default" : "ghost"}
+                  variant={
+                    (viewMode as ViewMode) === "map" ? "default" : "ghost"
+                  }
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("map")}
@@ -293,7 +296,9 @@ export function MobileTasksPage() {
                   <Map className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={(viewMode as ViewMode) === "list" ? "default" : "ghost"}
+                  variant={
+                    (viewMode as ViewMode) === "list" ? "default" : "ghost"
+                  }
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("list")}
@@ -306,7 +311,7 @@ export function MobileTasksPage() {
             {/* Task Counter Badge */}
             {!isNavigating && !showRoutePreview && (
               <div className="absolute top-4 right-4 z-10">
-                <div className="bg-primary text-primary-foreground rounded-full px-4 py-2 shadow-xl font-semibold text-sm flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-xl">
                   <Layers className="h-4 w-4" />
                   {tasks.length} завдань
                 </div>
@@ -315,15 +320,19 @@ export function MobileTasksPage() {
 
             {/* Route Preview Card */}
             {showRoutePreview && previewTask && (
-              <div className="absolute bottom-6 left-4 right-4 z-10">
-                <Card className="p-5 shadow-2xl border-2">
-                  <div className="flex items-start gap-3 mb-4">
+              <div className="absolute right-4 bottom-6 left-4 z-10">
+                <Card className="border-2 p-5 shadow-2xl">
+                  <div className="mb-4 flex items-start gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
                       <Navigation className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{previewTask.address}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{previewTask.discrepancy}</p>
+                      <h3 className="text-lg font-semibold">
+                        {previewTask.address}
+                      </h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {previewTask.discrepancy}
+                      </p>
                     </div>
                   </div>
                   <div className="flex gap-3">
@@ -350,14 +359,14 @@ export function MobileTasksPage() {
 
             {/* Navigation Active Bar */}
             {isNavigating && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-                <div className="bg-destructive text-destructive-foreground rounded-full px-6 py-3 shadow-2xl flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
+              <div className="absolute top-4 left-1/2 z-10 -translate-x-1/2">
+                <div className="text-destructive-foreground flex items-center gap-3 rounded-full bg-destructive px-6 py-3 shadow-2xl">
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-white" />
                   <span className="font-semibold">Навігація активна</span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 rounded-full hover:bg-white/20"
+                    className="h-8 w-8 rounded-full p-0 hover:bg-white/20"
                     onClick={stopNavigation}
                   >
                     <X className="h-4 w-4" />
@@ -373,9 +382,11 @@ export function MobileTasksPage() {
           <div className="h-full overflow-y-auto bg-muted/30 p-4">
             {/* Floating View Toggle */}
             <div className="fixed top-[4.5rem] left-4 z-10">
-              <div className="flex gap-2 bg-background/95 backdrop-blur-sm rounded-full p-1 shadow-xl border">
+              <div className="flex gap-2 rounded-full border bg-background/95 p-1 shadow-xl backdrop-blur-sm">
                 <Button
-                  variant={(viewMode as ViewMode) === "map" ? "default" : "ghost"}
+                  variant={
+                    (viewMode as ViewMode) === "map" ? "default" : "ghost"
+                  }
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("map")}
@@ -383,7 +394,9 @@ export function MobileTasksPage() {
                   <Map className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={(viewMode as ViewMode) === "list" ? "default" : "ghost"}
+                  variant={
+                    (viewMode as ViewMode) === "list" ? "default" : "ghost"
+                  }
                   size="sm"
                   className="rounded-full"
                   onClick={() => setViewMode("list")}
@@ -397,21 +410,21 @@ export function MobileTasksPage() {
               {tasks.map((task, index) => (
                 <Card
                   key={task.id}
-                  className="cursor-pointer p-4 transition-all hover:shadow-lg hover:scale-[1.02] border-l-4 border-l-primary"
+                  className="cursor-pointer border-l-4 border-l-primary p-4 transition-all hover:scale-[1.02] hover:shadow-lg"
                   onClick={() => setSelectedTask(task)}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 font-bold text-primary">
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{task.address}</h3>
-                      <p className="font-mono text-xs text-muted-foreground mt-1">
+                      <h3 className="text-lg font-semibold">{task.address}</h3>
+                      <p className="mt-1 font-mono text-xs text-muted-foreground">
                         {task.cadastralNumber}
                       </p>
-                      <p className="text-sm mt-2">{task.discrepancy}</p>
-                      <div className="flex items-center gap-4 mt-3">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                      <p className="mt-2 text-sm">{task.discrepancy}</p>
+                      <div className="mt-3 flex items-center gap-4">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           {task.distance}
                         </span>
@@ -428,7 +441,10 @@ export function MobileTasksPage() {
         )}
 
         {/* Task Detail Drawer */}
-        <Drawer open={!!selectedTask} onOpenChange={(open) => !open && setSelectedTask(null)}>
+        <Drawer
+          open={!!selectedTask}
+          onOpenChange={(open) => !open && setSelectedTask(null)}
+        >
           <DrawerContent>
             <div className="mx-auto w-full max-w-md">
               <DrawerHeader>
@@ -441,7 +457,7 @@ export function MobileTasksPage() {
               </DrawerHeader>
 
               <div className="space-y-4 p-6">
-                <Card className="bg-muted/50 p-4 border-l-4 border-l-primary">
+                <Card className="border-l-4 border-l-primary bg-muted/50 p-4">
                   <h4 className="mb-2 text-sm font-semibold text-muted-foreground">
                     Виявлена розбіжність
                   </h4>
@@ -461,7 +477,7 @@ export function MobileTasksPage() {
                 <Button
                   variant="secondary"
                   size="lg"
-                  className="w-full gap-2 text-base min-h-[56px]"
+                  className="min-h-[56px] w-full gap-2 text-base"
                 >
                   <Camera className="h-6 w-6" />
                   Додати фото з місця
@@ -471,7 +487,7 @@ export function MobileTasksPage() {
                   <Button
                     variant="destructive"
                     size="lg"
-                    className="flex-1 gap-2 text-base min-h-[56px]"
+                    className="min-h-[56px] flex-1 gap-2 text-base"
                     onClick={() => setSelectedTask(null)}
                   >
                     <X className="h-5 w-5" />
@@ -479,7 +495,7 @@ export function MobileTasksPage() {
                   </Button>
                   <Button
                     size="lg"
-                    className="flex-1 gap-2 text-base min-h-[56px] shadow-lg"
+                    className="min-h-[56px] flex-1 gap-2 text-base shadow-lg"
                     onClick={() => setSelectedTask(null)}
                   >
                     <Check className="h-5 w-5" />

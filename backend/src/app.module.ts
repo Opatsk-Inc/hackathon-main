@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { DocumentModule } from './document/document.module';
 import { MobileModule } from './mobile/mobile.module';
 import { HromadaModule } from './hromada/hromada.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { HromadaModule } from './hromada/hromada.module';
     DocumentModule,
     MobileModule,
     HromadaModule,
+    RecommendationsModule,
   ],
   providers: [PrismaService],
   controllers: [AppController],
