@@ -93,7 +93,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         <p className="truncate px-2 text-sm font-semibold tracking-[-0.01em] text-slate-900">
           {activeItem?.label ?? "Панель керівника"}
         </p>
-        <img src="/name.svg" alt="Gromada-Audit" className="h-7" />
+        <div className="h-9 w-9 shrink-0" aria-hidden="true" />
       </header>
 
       <aside

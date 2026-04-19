@@ -161,6 +161,12 @@
 /* ─── Base layer ────────────────────────────────────────────────────────── */
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   * {
     @apply border-border outline-ring/50;
     font-family: var(--font-sans);
