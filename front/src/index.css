@@ -299,6 +299,15 @@
       radial-gradient(520px 380px at 8% 92%, rgba(217, 119, 6, 0.16), transparent 68%);
   }
 
+  .auth-page-bg {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(76% 70% at 8% 14%, rgba(251, 191, 36, 0.26) 0%, rgba(251, 191, 36, 0.08) 42%, transparent 72%),
+      radial-gradient(74% 68% at 92% 18%, rgba(96, 165, 250, 0.28) 0%, rgba(96, 165, 250, 0.1) 44%, transparent 72%),
+      linear-gradient(180deg, rgba(255, 247, 231, 0.9) 0%, rgba(234, 245, 255, 0.82) 56%, rgba(233, 244, 255, 0.88) 100%);
+  }
+
   .text-atmo-heading { color: var(--ink-900); }
   .text-atmo-muted { color: var(--ink-500); }
 }

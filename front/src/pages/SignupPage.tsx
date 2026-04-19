@@ -82,11 +82,8 @@ export function SignupPage() {
   const displayError = localError || serverError
 
   return (
-    <div className="flex min-h-screen">
+    <div className="auth-page-bg flex min-h-screen">
       <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
-        <div className="pointer-events-none absolute -left-16 top-24 h-[26rem] w-[26rem] rounded-full bg-sky-400/25 blur-[110px]" />
-        <div className="pointer-events-none absolute bottom-8 right-10 h-[28rem] w-[28rem] rounded-full bg-amber-400/25 blur-[110px]" />
-
         <div className="relative z-10 flex flex-col justify-center px-16 text-slate-900">
           <div className="mb-10 flex items-center gap-3">
             <img src="/name.svg" alt="Gromada Audit" className="h-8" />

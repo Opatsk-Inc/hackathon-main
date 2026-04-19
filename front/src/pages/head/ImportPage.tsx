@@ -190,11 +190,11 @@ export function ImportPage() {
             <div className="flex justify-end pt-2">
               <Button
                 size="lg"
-                className="w-full gap-2 sm:w-auto"
+                className="h-auto w-full gap-2 whitespace-normal py-2 text-center leading-tight max-[480px]:px-3 max-[480px]:text-[13px] sm:h-12 sm:w-auto sm:whitespace-nowrap"
                 disabled={!file || importMutation.isPending}
                 onClick={() => importMutation.mutate()}
               >
-                <Sparkles className="h-4 w-4" />
+                <Sparkles className="h-4 w-4 shrink-0" />
                 {importMutation.isPending ? "Завантаження..." : "Завантажити та розпочати аналіз"}
               </Button>
             </div>
