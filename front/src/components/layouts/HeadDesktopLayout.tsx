@@ -80,7 +80,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         />
       )}
 
-      <div className="fixed left-4 top-4 z-40 lg:hidden">
+      <div className="fixed left-4 top-[10px] z-40 lg:hidden">
         <div className="absolute inset-0 rounded-full bg-white/55 blur-xl" aria-hidden="true" />
         <Button
           variant="ghost"
@@ -101,7 +101,6 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
       >
         <div className="flex h-full flex-col">
           <div className="flex h-20 items-center justify-between border-b border-white/60 px-6">
-            <img src="/name.svg" alt="Gromada-Audit" className="h-10" />
             <Button
               variant="ghost"
               size="icon-sm"
@@ -110,6 +109,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
             >
               <X className="h-5 w-5" />
             </Button>
+            <img src="/name.svg" alt="Gromada-Audit" className="h-10" />
           </div>
 
           <nav className="flex-1 space-y-1 p-4">
@@ -172,7 +172,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col lg:pl-72">
+      <div className="flex flex-1 flex-col pt-[76px] lg:pt-0 lg:pl-72">
         <main className="flex-1">
           <AnimatePresence mode="wait">
             <PageTransition key={location.pathname}>
