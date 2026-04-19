@@ -187,12 +187,13 @@
     min-height: 100vh;
     background-color: var(--sky-50);
     background-image:
-      radial-gradient(ellipse 78% 68% at 4% -8%, rgba(217, 119, 6, 0.48) 0%, rgba(217, 119, 6, 0.18) 32%, transparent 58%),
-      radial-gradient(ellipse 110% 90% at 100% 8%, rgba(147, 197, 253, 0.72) 0%, rgba(147, 197, 253, 0.22) 48%, transparent 70%),
-      radial-gradient(ellipse 90% 85% at 50% 110%, rgba(240, 249, 255, 1) 0%, rgba(224, 242, 254, 0.7) 55%, transparent 80%),
-      linear-gradient(168deg, #fff3e0 0%, #e0f2fe 48%, #f0f9ff 100%);
+      radial-gradient(ellipse 92% 74% at 0% -12%, rgba(217, 119, 6, 0.34) 0%, rgba(217, 119, 6, 0.12) 34%, transparent 64%),
+      radial-gradient(ellipse 92% 74% at 100% -12%, rgba(59, 130, 246, 0.34) 0%, rgba(59, 130, 246, 0.12) 34%, transparent 64%),
+      radial-gradient(ellipse 96% 84% at 50% 112%, rgba(240, 249, 255, 1) 0%, rgba(224, 242, 254, 0.68) 56%, transparent 82%),
+      linear-gradient(180deg, #fff7ea 0%, #edf5ff 52%, #f2f8ff 100%);
     background-attachment: fixed;
     background-size: cover;
+    background-repeat: no-repeat;
   }
 
   h1, h2, h3, h4, h5, h6 {

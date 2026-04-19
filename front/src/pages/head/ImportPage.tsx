@@ -80,29 +80,29 @@ export function ImportPage() {
 
   return (
     <HeadDesktopLayout currentPath="/head/import">
-      <div className="mx-auto w-full max-w-screen-full space-y-4 p-3 max-[600px]:space-y-4 max-[600px]:p-2.5 sm:space-y-6 sm:p-6">
+      <div className="mx-auto w-full max-w-screen-full space-y-4 p-3 max-[600px]:space-y-4 max-[600px]:p-2.5 max-[480px]:p-2 sm:space-y-6 sm:p-6">
         <div>
-          <h1 className="font-heading text-[clamp(1.8rem,8.5vw,2.4rem)] font-semibold leading-[1.05] tracking-[-0.02em] text-slate-900">
+          <h1 className="font-heading text-[clamp(1.8rem,8.5vw,2.4rem)] font-semibold leading-[1.05] tracking-[-0.02em] text-slate-900 max-[480px]:text-[clamp(1.4rem,8vw,1.85rem)]">
             Імпорт даних
           </h1>
-          <p className="max-w-2xl text-sm leading-relaxed text-slate-500 max-[600px]:text-[13px] max-[600px]:leading-snug">
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-500 max-[600px]:text-[13px] max-[600px]:leading-snug max-[480px]:text-[12px]">
             Завантажте реєстр нерухомості для проведення аудиту
           </p>
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-white/60 bg-white/60 shadow-[0_1px_2px_rgba(11,28,54,0.04),0_18px_40px_rgba(11,28,54,0.08)] backdrop-blur-2xl">
-          <div className="border-b border-white/60 p-6 max-[600px]:p-4">
+          <div className="border-b border-white/60 p-6 max-[600px]:p-4 max-[480px]:p-3.5">
             <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
               Реєстр нерухомості
             </h3>
-            <p className="mt-0.5 text-sm text-slate-500 max-[600px]:text-[13px]">
+            <p className="mt-0.5 text-sm text-slate-500 max-[600px]:text-[13px] max-[480px]:text-[12px]">
               Завантажте файл з даними про нерухомість для звірки
             </p>
           </div>
-          <div className="space-y-6 p-6 max-[600px]:space-y-4 max-[600px]:p-4">
+          <div className="space-y-6 p-6 max-[600px]:space-y-4 max-[600px]:p-4 max-[480px]:p-3.5">
             {!file ? (
               <div
-                className={`group/drop flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center transition-all max-[600px]:p-6 max-[400px]:p-4 ${
+                className={`group/drop flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-12 text-center transition-all max-[600px]:p-6 max-[480px]:rounded-xl max-[480px]:p-4 max-[400px]:p-3 ${
                   isDragging
                     ? "border-amber-400 bg-amber-50/80 shadow-[0_20px_60px_rgba(217,119,6,0.14)]"
                     : "border-amber-200/80 bg-white/50 hover:border-amber-300 hover:bg-amber-50/40"
@@ -121,13 +121,13 @@ export function ImportPage() {
                 >
                   <Upload className="h-7 w-7 max-[600px]:h-6 max-[600px]:w-6" />
                 </div>
-                <p className="mb-1 max-w-[20ch] text-sm font-semibold text-slate-900 max-[600px]:text-[15px] max-[600px]:leading-tight">
+                <p className="mb-1 max-w-[20ch] text-sm font-semibold text-slate-900 max-[600px]:text-[15px] max-[600px]:leading-tight max-[480px]:text-[14px]">
                   Перетягніть файл сюди або натисніть для вибору
                 </p>
-                <p className="text-xs text-slate-500 max-[600px]:text-[11px]">Підтримувані формати: CSV, XLSX</p>
+                <p className="text-xs text-slate-500 max-[600px]:text-[11px] max-[480px]:text-[10px]">Підтримувані формати: CSV, XLSX</p>
                 <Button
                   type="button"
-                  className="mt-6 max-[600px]:mt-4"
+                  className="mt-6 max-[600px]:mt-4 max-[480px]:h-9 max-[480px]:px-5 max-[480px]:text-sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     fileInputRef.current?.click();
