@@ -50,7 +50,6 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const activeItem = NAV_ITEMS.find((item) => item.href === currentPath);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -81,20 +80,18 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         />
       )}
 
-      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/35 bg-gradient-to-r from-[#fff7ea]/78 via-white/66 to-[#eaf4ff]/78 px-4 backdrop-blur-xl lg:hidden">
+      <div className="fixed left-4 top-4 z-40 lg:hidden">
+        <div className="absolute inset-0 rounded-full bg-white/55 blur-xl" aria-hidden="true" />
         <Button
           variant="ghost"
           size="icon-sm"
           onClick={() => setSidebarOpen(true)}
           aria-label="Відкрити меню"
+          className="relative h-12 w-12 rounded-full border border-white/70 bg-white/40 text-slate-800 shadow-[0_14px_36px_rgba(11,28,54,0.16)] backdrop-blur-2xl"
         >
           <Menu className="h-5 w-5" />
         </Button>
-        <p className="truncate px-2 text-sm font-semibold tracking-[-0.01em] text-slate-900">
-          {activeItem?.label ?? "Панель керівника"}
-        </p>
-        <div className="h-9 w-9 shrink-0" aria-hidden="true" />
-      </header>
+      </div>
 
       <aside
         className={cn(
@@ -175,7 +172,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col pt-16 lg:pt-0 lg:pl-72">
+      <div className="flex flex-1 flex-col lg:pl-72">
         <main className="flex-1">
           <AnimatePresence mode="wait">
             <PageTransition key={location.pathname}>
