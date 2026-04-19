@@ -42,25 +42,25 @@ export function DashboardPage() {
 
   return (
     <HeadDesktopLayout currentPath="/head/dashboard">
-      <div className="mx-auto w-full space-y-4 p-4 sm:space-y-6 sm:p-6 md:p-8">
-        <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/55 p-4 sm:p-6 md:p-8 shadow-[0_1px_2px_rgba(11,28,54,0.04),0_24px_60px_rgba(11,28,54,0.10)] backdrop-blur-2xl">
+      <div className="mx-auto w-full space-y-4 p-3 max-[600px]:space-y-4 max-[600px]:p-2.5 sm:space-y-6 sm:p-6 md:p-8">
+        <div className="relative overflow-hidden rounded-3xl border border-white/60 bg-white/55 p-4 max-[600px]:rounded-2xl max-[600px]:p-3.5 max-[400px]:p-3 sm:p-6 md:p-8 shadow-[0_1px_2px_rgba(11,28,54,0.04),0_24px_60px_rgba(11,28,54,0.10)] backdrop-blur-2xl">
           <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-amber-400/20 blur-3xl" />
           <div className="pointer-events-none absolute -bottom-24 -left-10 h-56 w-56 rounded-full bg-sky-400/20 blur-3xl" />
 
-          <div className="relative flex flex-col gap-4 sm:gap-5 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-1.5 sm:space-y-2">
-              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/70 bg-amber-50/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700 backdrop-blur-xl">
+          <div className="relative flex flex-col gap-4 max-[600px]:gap-3 sm:gap-5 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1.5 max-[600px]:space-y-1 sm:space-y-2">
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-200/70 bg-amber-50/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700 backdrop-blur-xl max-[600px]:gap-1.5 max-[600px]:px-2.5 max-[600px]:py-0.5 max-[600px]:text-[10px] max-[600px]:tracking-[0.08em]">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                 Панель керівника
               </span>
-              <h1 className="font-heading text-[1.9rem] font-semibold leading-[1.08] tracking-[-0.03em] text-slate-900 sm:text-4xl md:text-5xl">
+              <h1 className="max-w-[17ch] break-words font-heading text-[clamp(1.52rem,8.4vw,2.3rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-slate-900 sm:max-w-none sm:text-4xl md:text-5xl">
                 Огляд аудиту {user?.name ? `громади ${user.name}` : "громади"}
               </h1>
-              <p className="max-w-xl text-sm leading-relaxed text-slate-500 md:text-base">
+              <p className="max-w-xl text-sm leading-relaxed text-slate-500 max-[600px]:text-[13px] max-[600px]:leading-snug md:text-base">
                 Аналітика податкових розбіжностей, фінансових втрат та призначених інспекцій
               </p>
             </div>
-            <Button size="lg" className="w-full gap-2 sm:w-auto" onClick={() => navigate("/head/import")}>
+            <Button size="lg" className="w-full gap-2 max-[600px]:h-10 max-[600px]:text-base sm:w-auto" onClick={() => navigate("/head/import")}>
               <Plus className="h-5 w-5" />
               Новий аудит
             </Button>
