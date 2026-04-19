@@ -171,11 +171,11 @@ function AssignPanel({
           <Loader2 className="h-3 w-3 animate-spin" /> Завантаження списку...
         </div>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            className="flex-1 rounded-xl border border-white/70 bg-white/85 px-3 py-1.5 text-xs text-slate-800 backdrop-blur-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20"
+            className="min-w-0 flex-1 rounded-xl border border-white/70 bg-white/85 px-3 py-1.5 text-xs text-slate-800 backdrop-blur-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20"
           >
             <option value="">— Оберіть інспектора —</option>
             {inspectors.map((ins) => (
@@ -184,7 +184,12 @@ function AssignPanel({
               </option>
             ))}
           </select>
-          <Button size="sm" disabled={!selectedId || assignMutation.isPending} onClick={handleAssign} className="shrink-0">
+          <Button
+            size="sm"
+            disabled={!selectedId || assignMutation.isPending}
+            onClick={handleAssign}
+            className="h-9 w-full shrink-0 sm:h-8 sm:w-auto"
+          >
             {assignMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Викликати"}
           </Button>
         </div>

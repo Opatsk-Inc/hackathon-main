@@ -81,7 +81,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
         />
       )}
 
-      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/60 bg-white/80 px-4 backdrop-blur-2xl lg:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/35 bg-gradient-to-r from-[#fff7ea]/78 via-white/66 to-[#eaf4ff]/78 px-4 backdrop-blur-xl lg:hidden">
         <Button
           variant="ghost"
           size="icon-sm"
