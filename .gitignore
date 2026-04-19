@@ -1,3 +1,4 @@
 .planning/
 .github
 tsconfig.build.tsbuildinfo
+.claude/settings.local.json
