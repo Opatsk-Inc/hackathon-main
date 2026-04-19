@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 const ITEMS_PER_PAGE = 10;
+const INSPECTOR_APP_URL = import.meta.env.VITE_APP_URL || "https://akr.notfounds.dev";
 
 type SortField = 'potentialFine' | 'riskLevel' | null;
 type SortDirection = 'asc' | 'desc';
@@ -125,7 +126,7 @@ function AssignPanel({
       }
 
       const inspector = inspectors.find((i) => i.id === selectedId);
-      const link = `${window.location.origin}/inspector/task/${anomalyId}?token=${inspector?.magicToken || ''}`;
+      const link = `${INSPECTOR_APP_URL}/inspector/task/${anomalyId}?token=${inspector?.magicToken || ''}`;
       setMagicLink(link);
       setDone(true);
       onAssigned(selectedId, inspector?.name ?? selectedId, link);
@@ -248,7 +249,7 @@ function AnomalyModal({
         .then((list) => {
           const inspector = list.find((i) => i.id === a.inspectorId);
           if (inspector?.magicToken) {
-            setMagicLink(`${window.location.origin}/inspector/task/${a.id}?token=${inspector.magicToken}`);
+            setMagicLink(`${INSPECTOR_APP_URL}/inspector/task/${a.id}?token=${inspector.magicToken}`);
           }
         })
         .catch((err) => console.error("Failed to load inspectors:", err));

@@ -33,6 +33,8 @@ interface Task {
   }
 }
 
+const INSPECTOR_API_URL = import.meta.env.VITE_API_URL || "https://api.notfounds.dev"
+
 const RISK_CONFIG: Record<string, { label: string; cls: string; dot: string }> = {
   CRITICAL: {
     label: "Критичний",
@@ -84,7 +86,7 @@ export function DirectTaskPage() {
 
         // Викликаємо новий ендпоінт, який не вимагає JWT
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:1488'}/api/inspector/task/${anomalyId}?token=${encodeURIComponent(urlToken)}`
+          `${INSPECTOR_API_URL}/api/inspector/task/${anomalyId}?token=${encodeURIComponent(urlToken)}`
         )
 
         if (!response.ok) {

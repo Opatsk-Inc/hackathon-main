@@ -1,18 +1,17 @@
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import {
+  Menu,
+  X,
   FileSearch,
   MapPin,
   TrendingUp,
   Users,
   CheckCircle,
-  Lock,
   Sparkles,
-  Menu,
-  X,
 } from "lucide-react"
 import { PageTransition } from "@/components/PageTransition"
-import { motion, useInView, useMotionValue, useSpring, AnimatePresence } from "framer-motion"
+import { motion, useInView, useMotionValue, useSpring } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 
 function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: string }) {
@@ -41,11 +40,90 @@ function AnimatedCounter({ value, suffix = "" }: { value: number; suffix?: strin
 export function HomePage() {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false)
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleEscape)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEscape)
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="fixed left-4 right-4 top-[10px] z-40 flex items-center justify-between md:hidden">
+        <button
+          type="button"
+          className="rounded-2xl bg-white/40 px-2 py-1 backdrop-blur-xl"
+          onClick={() => navigate("/")}
+          aria-label="На головну"
+        >
+          <img src="/name.svg" alt="AKR" className="h-10" />
+        </button>
+
+        <div ref={mobileMenuRef} className="relative">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Меню"
+            className="h-12 w-12 rounded-full border border-white/70 bg-white/40 backdrop-blur-2xl"
+            onClick={() => setMobileMenuOpen((v) => !v)}
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </Button>
+
+          {mobileMenuOpen ? (
+            <div className="absolute right-0 top-full mt-2 w-[220px] overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-3 shadow-[0_24px_60px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
+              <button
+                type="button"
+                className="w-full rounded-xl px-3 py-2 text-left text-base text-slate-900 transition-colors hover:bg-slate-100/70"
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  navigate("/legal")
+                }}
+              >
+                Правова база
+              </button>
+              <button
+                type="button"
+                className="mt-1 w-full rounded-xl px-3 py-2 text-left text-base text-slate-900 transition-colors hover:bg-slate-100/70"
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  navigate("/login")
+                }}
+              >
+                Увійти
+              </button>
+              <button
+                type="button"
+                className="mt-2 w-full rounded-full bg-amber-600 px-3 py-2 text-left text-base font-medium text-white shadow-[0_10px_28px_rgba(217,119,6,0.28)]"
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  navigate("/register")
+                }}
+              >
+                Реєстрація
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:block">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <div
             className="flex cursor-pointer items-center gap-2"
@@ -65,58 +143,11 @@ export function HomePage() {
             <Button onClick={() => navigate("/register")}>Реєстрація</Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
         </div>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="border-t bg-background/95 backdrop-blur md:hidden overflow-hidden"
-            >
-              <div className="container mx-auto max-w-7xl px-4 py-4 flex flex-col gap-2">
-                {[
-                  { label: "Правова база", path: "/legal" },
-                  { label: "Увійти", path: "/login", variant: "ghost" as const },
-                  { label: "Реєстрація", path: "/register", variant: "default" as const }
-                ].map((item, i) => (
-                  <motion.div
-                    key={item.path}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.3, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <Button
-                      variant={item.variant || "ghost"}
-                      className="w-full justify-start"
-                      onClick={() => {
-                        navigate(item.path)
-                        setMobileMenuOpen(false)
-                      }}
-                    >
-                      {item.label}
-                    </Button>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </header>
 
       <PageTransition>
+        <div className="pt-[76px] md:pt-0">
 
         {/* Hero Section */}
         <section className="container mx-auto max-w-7xl px-4 py-12 md:py-16">
@@ -407,6 +438,7 @@ export function HomePage() {
             </p>
           </div>
         </footer>
+        </div>
       </PageTransition>
     </div>
   )
