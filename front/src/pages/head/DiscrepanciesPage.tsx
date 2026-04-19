@@ -362,12 +362,14 @@ function AnomalyModal({
             </div>
           )}
 
-          {showAssign && <AssignPanel anomalyId={a.id} onAssigned={handleAssigned} />}
+          {showAssign && !assignedName && <AssignPanel anomalyId={a.id} onAssigned={handleAssigned} />}
 
           {assignedName && (
             <div className="flex items-center gap-2 rounded-xl border border-emerald-200/70 bg-emerald-50/70 px-3 py-2">
               <UserCheck className="h-4 w-4 text-emerald-600" />
-              <p className="text-xs font-semibold text-emerald-700">Призначено: {assignedName}</p>
+              <p className="text-xs font-semibold text-emerald-700">
+                Інспектора призначено ({assignedName}). Завдання відправлено.
+              </p>
             </div>
           )}
 
