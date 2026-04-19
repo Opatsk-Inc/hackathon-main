@@ -53,8 +53,8 @@ function parseLocation(location: string): { region: string; district: string; na
 async function seedInspectors() {
   const inspectors = [
     { id: 'insp-00000001-0000-0000-0000-000000000001', name: 'Коваленко Петро Миколайович', phone: '+380671234567', magicToken: 'magic-token-kovalenko-001' },
-    { id: 'insp-00000002-0000-0000-0000-000000000002', name: 'Мельник Оксана Василівна',    phone: '+380501234567', magicToken: 'magic-token-melnyk-002' },
-    { id: 'insp-00000003-0000-0000-0000-000000000003', name: 'Шевченко Андрій Олегович',    phone: '+380931234567', magicToken: 'magic-token-shevchenko-003' },
+    { id: 'insp-00000002-0000-0000-0000-000000000002', name: 'Мельник Оксана Василівна', phone: '+380501234567', magicToken: 'magic-token-melnyk-002' },
+    { id: 'insp-00000003-0000-0000-0000-000000000003', name: 'Шевченко Андрій Олегович', phone: '+380931234567', magicToken: 'magic-token-shevchenko-003' },
   ];
   for (const inspector of inspectors) {
     await prisma.inspector.upsert({
@@ -137,6 +137,80 @@ async function main() {
     await prisma.landRecord.createMany({ data: records.slice(i, i + BATCH) });
     console.log(`Inserted ${Math.min(i + BATCH, records.length)}/${records.length}`);
   }
+
+  // ── 4. Seed past months anomalies for dashboards ─────────────────────────────
+  console.log('Seeding past months anomalies...');
+  const hromadaIds = Array.from(hromadaIdByKoatuu.values());
+  const now = new Date();
+
+  const anomalyTypes: ('MISSING_IN_REAL_ESTATE' | 'MISSING_IN_LAND' | 'NO_ACTIVE_REAL_RIGHTS' | 'AREA_MISMATCH')[] = [
+    'MISSING_IN_REAL_ESTATE', 'MISSING_IN_LAND', 'NO_ACTIVE_REAL_RIGHTS', 'AREA_MISMATCH'
+  ];
+  const statuses: ('NEW' | 'IN_PROGRESS' | 'RESOLVED')[] = ['NEW', 'IN_PROGRESS', 'RESOLVED'];
+
+  for (const hromadaId of hromadaIds) {
+    // For each of the past 3 months
+    for (let m = 1; m <= 3; m++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - m, 15);
+
+      const batch = await prisma.importBatch.create({
+        data: {
+          hromadaId,
+          fileName: `history_data_m${m}.csv`,
+          rowsCount: 1500,
+          createdAt: date,
+        }
+      });
+
+      const anomaliesToCreate = [];
+      // Older months (m=3) have more anomalies to show a decreasing trend
+      const baseCount = m * 10;
+      const count = baseCount + Math.floor(Math.random() * 15);
+
+      for (let i = 0; i < count; i++) {
+        const type = anomalyTypes[Math.floor(Math.random() * anomalyTypes.length)];
+
+        let status: 'NEW' | 'IN_PROGRESS' | 'RESOLVED' = 'NEW';
+        const rand = Math.random();
+        if (m === 3) {
+          status = rand < 0.7 ? 'RESOLVED' : (rand < 0.9 ? 'IN_PROGRESS' : 'NEW');
+        } else if (m === 2) {
+          status = rand < 0.5 ? 'RESOLVED' : (rand < 0.8 ? 'IN_PROGRESS' : 'NEW');
+        } else {
+          status = rand < 0.3 ? 'RESOLVED' : (rand < 0.7 ? 'IN_PROGRESS' : 'NEW');
+        }
+
+        const fine = Math.floor(Math.random() * 40000) + 5000;
+
+        const inspectorId = 'insp-00000001-0000-0000-0000-000000000001';
+
+        // Random coordinates around Chervonohrad/Bendyuha area for map demo
+        const lat = 50.35 + (Math.random() * 0.1);
+        const lng = 24.20 + (Math.random() * 0.1);
+
+        anomaliesToCreate.push({
+          batchId: batch.id,
+          hromadaId,
+          type,
+          severity: fine > 20000 ? 'HIGH' : fine > 10000 ? 'MEDIUM' : 'LOW',
+          description: `Історичне порушення за минулий період (згенеровано автоматично)`,
+          status,
+          taxId: `000000${m}${i}`,
+          suspectName: `Історичний Власник ${m}-${i}`,
+          address: `вул. Історична, ${i}`,
+          lat,
+          lng,
+          potentialFine: fine,
+          inspectorId,
+          createdAt: date,
+          updatedAt: date,
+        });
+      }
+
+      await prisma.anomaly.createMany({ data: anomaliesToCreate });
+    }
+  }
+  console.log('Past months anomalies seeded.');
 
   console.log('Seed complete.');
 }

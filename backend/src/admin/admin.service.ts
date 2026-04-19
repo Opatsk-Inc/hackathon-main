@@ -14,7 +14,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geo: GeoService,
-  ) {}
+  ) { }
 
   // Derive effective status: if inspectorId is set but status is still NEW, treat as IN_PROGRESS
   private effectiveStatus(status: AnomalyStatus, inspectorId: string | null): AnomalyStatus {
@@ -176,8 +176,8 @@ export class AdminService {
   }
 
   async getMyTasks(inspectorId: string) {
+    // For the hackathon demo: return ALL anomalies so the map is always full of data
     const anomalies = await this.prisma.anomaly.findMany({
-      where: { inspectorId },
       orderBy: { createdAt: 'desc' },
     });
 

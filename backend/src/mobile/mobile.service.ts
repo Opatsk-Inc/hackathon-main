@@ -10,8 +10,8 @@ export class MobileService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getAssignedTasks(inspectorId: string): Promise<MobileTaskResponseDto[]> {
+    // For the hackathon demo: return ALL anomalies so the map is always full of data for the inspector
     const raw = await this.prisma.anomaly.findMany({
-      where: { inspectorId, status: { not: AnomalyStatus.RESOLVED } },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,

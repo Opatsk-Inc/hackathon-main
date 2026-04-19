@@ -269,7 +269,7 @@ function AnomalyModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_40px_100px_rgba(11,28,54,0.28)] backdrop-blur-3xl"
+        className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_40px_100px_rgba(11,28,54,0.28)] backdrop-blur-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
