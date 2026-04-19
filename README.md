@@ -1,146 +1,191 @@
-# Land Registry Audit System
+# AKR - Land vs Real Estate Audit Platform
 
-Automated platform for Ukrainian local governments to detect property tax discrepancies by cross-referencing land cadastre and real estate registries.
+AKR is a B2G platform for municipalities to detect tax anomalies by cross-matching land cadastre and real estate registry data.
 
-## Overview
-
-The system identifies tax violations by matching two datasets:
-- **Land Cadastre**: Land plots with ownership details
-- **Real Estate Registry**: Buildings and structures
-
-It detects owners with land but no buildings, buildings without land, expired ownership rights, and area mismatches.
-
-## Architecture
-
-### Backend
-- **Stack**: NestJS, TypeScript, PostgreSQL, Prisma ORM
-- **Algorithm**: Three-tier cascade matching (Tax ID → Fuzzy Name → Address)
-- **Performance**: O(n) complexity via indexed lookups, handles 10K+ rows efficiently
-
-### Frontend
-- **Stack**: React 19, TypeScript, Vite, Tailwind CSS v4
-- **UI**: Shadcn UI, Radix UI components
-- **State**: TanStack Query (async), Zustand (global state)
-- **Users**: Desktop dashboard for analysts, mobile PWA for field inspectors
-
-## Key Features
-
-### Matching Algorithm
-
-**Tier 1: Tax ID Match**
-- Exact match on normalized IPN/ЄДРПОУ
-- Highest confidence, O(1) lookup
-
-**Tier 2: Fuzzy Name Match**
-- Composite scoring: Levenshtein + bigram + token-set + initials
-- Handles Cyrillic variants, apostrophes, abbreviated patronymics
-- Threshold: 0.82 (configurable)
-- Prefix-bucketed indexing for performance
-
-**Tier 3: Address Match**
-- Normalizes Ukrainian addresses (street types, building numbers)
-- Token-based similarity with building number validation
-- Threshold: 0.72
-
-### Anomaly Types
-
-1. **MISSING_IN_REAL_ESTATE**: Landowner has no registered buildings
-2. **MISSING_IN_LAND**: Property owner has no registered land
-3. **NO_ACTIVE_REAL_RIGHTS**: Ownership rights expired
-4. **AREA_MISMATCH**: Area discrepancies between registries
-
-Each includes severity (HIGH/MEDIUM/LOW), potential fine calculation, and GPS coordinates.
-
-### Spatial Filtering
-
-Configurable settlement filters prevent false positives from out-of-scope properties:
-```typescript
-const TARGET_SETTLEMENT = 'бендюга';
-const EXCLUDE_SETTLEMENTS = ['сокаль', 'львів', 'червоноград'];
-```
+The system is designed for two user roles:
+- Head/analyst (desktop dashboard): imports data, reviews anomalies, assigns tasks
+- Inspector (mobile flow): receives a magic link, verifies anomalies in the field
 
 ## Quick Start
 
-### Backend
+### 1) Prerequisites
+- Node.js 20+
+- npm 10+
+- PostgreSQL 15+ (or compatible)
+
+### 2) Backend (NestJS)
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# Configure DATABASE_URL, JWT_SECRET
+
+# edit .env: DATABASE_URL, JWT_SECRET, PORT, etc.
 npm run migrate:dev
 npm run start:dev
 ```
 
-### Frontend
+Backend will run on `http://localhost:8080` by default.
+
+Swagger is available at:
+- `http://localhost:8080/api`
+
+### 3) Frontend (React + Vite)
 ```bash
 cd front
 npm install
 npm run dev
 ```
 
-## Configuration
+Frontend will run on Vite default port (usually `http://localhost:5173`).
 
-### Spatial Context
-Edit `backend/src/import/import.service.ts`:
-```typescript
-const TARGET_SETTLEMENT = 'бендюга';
-const EXCLUDE_SETTLEMENTS = ['сокаль', 'львів'];
-const IGNORE_OBJECT_TYPES = ['квартира'];
-const IGNORE_EDRPOU = new Set(['1748150820']);
+### 4) Open the app
+- Public landing: `/`
+- Auth: `/login`, `/signup`
+- Head dashboard: `/head/dashboard`
+
+## What the Product Does
+
+AKR compares two datasets:
+- Land cadastre records
+- Real estate records
+
+It highlights mismatch categories such as:
+- Land owner without a linked building
+- Building owner without linked land data
+- Expired ownership rights
+- Area mismatch
+
+Each anomaly can be prioritized, assigned to inspectors, and resolved through the mobile workflow.
+
+## Repository Structure
+
+```text
+hackathon-main/
+	backend/                 # NestJS API + Prisma
+		src/
+			import/              # ingestion + matching
+			admin/               # head dashboard APIs
+			mobile/              # inspector APIs
+			recommendations/     # AI suggestions
+		prisma/                # schema, migrations, seed
+
+	front/                   # React app (Vite)
+		src/
+			pages/               # route pages
+			features/            # domain slices
+			components/          # shared UI
+			lib/                 # API client, hooks, constants
+
+	docker-compose.coolify.yml
+	COOLIFY.md
 ```
 
-### Matching Thresholds
-Edit `backend/src/import/matching.ts`:
-```typescript
-const MATCH_THRESHOLD = 0.82;        // Name matching
-export const ADDRESS_THRESHOLD = 0.72; // Address matching
+## Local Development Workflow
+
+### Backend useful scripts
+```bash
+cd backend
+npm run start:dev
+npm run build
+npm run lint
+npm run prisma:studio
+npm run migrate:dev
+npm run migrate:reset
 ```
 
-## API Endpoints
+### Frontend useful scripts
+```bash
+cd front
+npm run dev
+npm run build
+npm run lint
+npm run typecheck
+npm run preview
+```
 
-### Authentication
-- `POST /auth/login` - Authenticate hromada user
+## Environment Variables
 
-### Import
-- `POST /import/real-estate` - Upload and process real estate registry
+### Backend (`backend/.env`)
+Minimal required values:
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `PORT` (default `8080`)
+- `EXPIRATION_TIME` (default `7d`)
+- `GROQ_API_KEY` (if using AI recommendations)
 
-### Dashboard
-- `GET /admin/dashboard` - Metrics and statistics
-- `GET /admin/anomalies` - List anomalies with filtering
-- `POST /admin/assign-task` - Assign to inspector
+### Frontend runtime
+The frontend can read API URL from runtime env injection (`front/public/env.js` in Docker flow).
 
-### Mobile
-- `GET /mobile/tasks/:token` - Get assigned tasks (magic link)
-- `POST /mobile/resolve/:id` - Submit inspection result
+For production links (inspector magic links), project code supports:
+- `VITE_APP_URL` (example: `https://akr.notfounds.dev`)
+- `VITE_API_URL` (example: `https://api.notfounds.dev`)
 
-### AI
-- `GET /recommendations/:anomalyId` - Get AI recommendation (Groq)
+## Coolify Deployment
 
-## File Formats
+This project includes a dedicated Coolify compose setup.
 
-### Land Cadastre (CSV/XLSX)
-Required columns: `ІПН/ЄДРПОУ`, `Власник`, `Адреса`, `Площа`, `Кадастровий номер`
+Use:
+- `docker-compose.coolify.yml`
+- `.env.coolify.example`
+- `COOLIFY.md`
 
-### Real Estate (CSV/XLSX)
-Required columns: `ІПН/ЄДРПОУ`, `Власник`, `Адреса`, `Площа`, `Тип об'єкта`
+High-level flow:
+1. Set up app in Coolify with compose path `docker-compose.coolify.yml`
+2. Configure env vars from `.env.coolify.example`
+3. Set backend and frontend domains in Coolify UI
+4. Deploy
 
-## Performance
+## API Surface (high-level)
 
-- Handles 10,000+ row datasets in 15-30 seconds
-- O(n) matching complexity via prefix-bucketed indexes
-- Batch processing: 500 rows per transaction
-- Automatic geocoding with coordinate jittering
+Main groups used by frontend:
+- Auth
+- Import
+- Admin dashboard and anomalies
+- Inspector task flow (magic link + task resolve)
+- Recommendations
+
+For exact contracts, use Swagger:
+- `/api` on the running backend instance
+
+## Troubleshooting
+
+### Frontend cannot call backend
+- Check backend is running on expected URL/port
+- Check CORS origins in backend bootstrap config
+- Confirm `VITE_API_URL` or runtime env is correct in production
+
+### Magic links contain wrong domain
+- Set `VITE_APP_URL` in frontend environment to your public domain
+
+### Prisma errors on startup
+- Verify `DATABASE_URL`
+- Run migrations:
+```bash
+cd backend
+npm run migrate:dev
+```
+
+### Build fails on TypeScript unused variables
+- Run lint/typecheck and remove stale imports/unused params
 
 ## Tech Stack
 
-**Backend**: NestJS 11, TypeScript 5, PostgreSQL 14, Prisma 7, Passport JWT, Helmet, Papa Parse, XLSX
+Backend:
+- NestJS 11
+- Prisma 7
+- PostgreSQL
+- Passport JWT
+- Swagger
 
-**Frontend**: React 19, Vite 7, TypeScript 5.9, Tailwind CSS v4, TanStack Query v5, Zustand v5, Shadcn UI, Radix UI, Recharts, MapLibre GL
+Frontend:
+- React 19
+- Vite 7
+- TypeScript
+- Tailwind CSS v4
+- TanStack Query
+- Zustand
+- Recharts
 
 ## License
 
-Proprietary - Developed for Ukrainian local government use
-
-## Team
-
-Built by Team Programatyvna Shlaypa during hackathon
+Proprietary.
