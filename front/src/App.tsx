@@ -13,6 +13,7 @@ import { LoginPage } from "@/pages/LoginPage"
 import { SignupPage } from "@/pages/SignupPage"
 import { CheckoutPage } from "@/pages/CheckoutPage"
 import { SuccessPage } from "@/pages/SuccessPage"
+import { LegalPage } from "@/pages/LegalPage"
 import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { InspectorRoute } from "@/components/InspectorRoute"
 
@@ -28,6 +29,7 @@ function AnimatedRoutes() {
       <Route path="/register" element={<SignupPage />} />
       <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/success" element={<SuccessPage />} />
+      <Route path="/legal" element={<LegalPage />} />
 
       {/* Protected Head (Desktop) Routes */}
       <Route element={<ProtectedRoute />}>

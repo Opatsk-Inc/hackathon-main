@@ -17,10 +17,13 @@ export function HomePage() {
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <img src="/name.svg" alt="Gromada Audit" className="h-10" />
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
+            <img src="/name.svg" alt="AKR" className="h-10" />
           </div>
           <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => navigate("/legal")}>
+              Правова база
+            </Button>
             <Button variant="ghost" onClick={() => navigate("/login")}>
               Увійти
             </Button>
@@ -160,7 +163,7 @@ export function HomePage() {
         <div className="mx-auto max-w-4xl rounded-2xl border bg-card p-8 text-center shadow-lg md:p-12">
           <h2 className="text-3xl font-bold">Готові почати?</h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Приєднуйтесь до громад, які вже використовують Gromada-Audit для
+            Приєднуйтесь до громад, які вже використовують AKR для
             підвищення ефективності податкового контролю
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
@@ -182,7 +185,7 @@ export function HomePage() {
       <footer className="border-t py-8">
         <div className="container mx-auto max-w-7xl px-4 text-center text-sm text-muted-foreground">
           <p>
-            © 2026 Gromada-Audit. Система виявлення податкових розбіжностей для
+            © 2026 AKR. Система виявлення податкових розбіжностей для
             громад України.
           </p>
         </div>
