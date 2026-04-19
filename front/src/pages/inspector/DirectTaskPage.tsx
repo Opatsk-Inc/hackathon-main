@@ -7,6 +7,7 @@ import { LoadingOverlay } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Navigation, AlertCircle, MapPin } from "lucide-react"
+import { AiRecommendation } from "@/components/AiRecommendation"
 
 interface Task {
   id: string
@@ -127,52 +128,44 @@ export function DirectTaskPage() {
               <MapPin className="h-6 w-6 text-primary" />
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">{task.address}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{task.address}</h1>
               {task.suspectName && (
-                <p className="text-sm text-muted-foreground mt-1">{task.suspectName}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{task.suspectName}</p>
               )}
               {task.taxId && (
-                <p className="font-mono text-xs text-muted-foreground mt-1">ІПН: {task.taxId}</p>
+                <p className="font-mono text-xs text-gray-700 dark:text-gray-300 mt-1">ІПН: {task.taxId}</p>
               )}
             </div>
           </div>
 
           <Card className="bg-muted/50 p-4 border-l-4 border-l-destructive">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+            <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-2">
               Виявлена розбіжність
             </h3>
-            <p className="text-base">{task.description}</p>
+            <p className="text-base text-gray-900 dark:text-gray-100">{task.description}</p>
           </Card>
 
           {task.enrichment && (
-            <>
-              <Card className="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 p-4">
-                <p className="text-xs font-bold text-red-700 dark:text-red-400 mb-1">
-                  ⚖ Кримінальна відповідальність
-                </p>
-                <p className="text-sm font-bold text-red-800 dark:text-red-300 mb-2">
-                  {task.enrichment.criminalArticle}
-                </p>
-                <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">
-                  {task.enrichment.legalBasis}
-                </p>
-              </Card>
-
-              <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800 p-4">
-                <p className="text-xs font-bold text-blue-700 dark:text-blue-400 mb-2">
-                  📋 Рекомендовані дії
-                </p>
-                <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">
-                  {task.enrichment.inspectorAction}
-                </p>
-              </Card>
-            </>
+            <Card className="bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 p-4">
+              <p className="text-xs font-bold text-red-800 dark:text-red-400 mb-1">
+                ⚖ Кримінальна відповідальність
+              </p>
+              <p className="text-sm font-bold text-red-900 dark:text-red-300 mb-2">
+                {task.enrichment.criminalArticle}
+              </p>
+              <p className="text-xs text-red-800 dark:text-red-400 leading-relaxed">
+                {task.enrichment.legalBasis}
+              </p>
+            </Card>
           )}
+
+          {/* AI Рекомендації */}
+          <AiRecommendation anomalyId={task.id} />
 
           {task.potentialFine && (
             <Card className="bg-amber-50 dark:bg-amber-950/20 p-4">
-              <p className="text-xs text-muted-foreground">Потенційний штраф</p>
-              <p className="text-xl font-bold text-amber-700 dark:text-amber-400">
+              <p className="text-xs text-gray-700 dark:text-muted-foreground">Потенційний штраф</p>
+              <p className="text-xl font-bold text-amber-800 dark:text-amber-400">
                 {task.potentialFine.toLocaleString("uk-UA")} ₴
               </p>
             </Card>
@@ -189,7 +182,7 @@ export function DirectTaskPage() {
           </Button>
 
           {(!task.lat || !task.lng) && (
-            <p className="text-xs text-center text-muted-foreground">
+            <p className="text-xs text-center text-gray-700 dark:text-gray-400">
               Координати завдання ще не визначені
             </p>
           )}

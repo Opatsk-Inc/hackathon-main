@@ -80,17 +80,17 @@ export function AiRecommendation({ anomalyId }: AiRecommendationProps) {
     <div className="rounded-xl border border-purple-200 bg-purple-50 dark:border-purple-800 dark:bg-purple-950/20 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400 shrink-0" />
-        <p className="text-xs font-bold text-purple-700 dark:text-purple-400">
+        <p className="text-xs font-bold text-purple-800 dark:text-purple-400">
           AI Рекомендації інструктору
         </p>
       </div>
-      <div className="text-sm text-purple-900 dark:text-purple-200 leading-relaxed whitespace-pre-wrap">
+      <div className="text-sm text-purple-950 dark:text-purple-200 leading-relaxed whitespace-pre-wrap">
         {recommendation}
       </div>
       <Button
         variant="ghost"
         size="sm"
-        className="w-full text-xs"
+        className="w-full text-xs text-purple-700 hover:text-purple-900 hover:bg-purple-100"
         onClick={fetchRecommendation}
       >
         Оновити рекомендації
