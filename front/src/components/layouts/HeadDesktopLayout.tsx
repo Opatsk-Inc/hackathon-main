@@ -148,60 +148,7 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
       </aside>
 
       <div className="flex flex-1 flex-col lg:pl-72">
-        <header className="sticky top-0 z-30 flex h-20 items-center gap-4 border-b border-white/50 bg-white/55 px-6 backdrop-blur-2xl">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
 
-          <div className="flex flex-1 items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                Gromada-Audit
-              </span>
-              <h2 className="font-heading text-xl font-semibold tracking-[-0.02em] text-slate-900">
-                {pageTitle}
-              </h2>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Button variant="ghost" size="icon-sm" className="relative text-slate-500 hover:text-slate-900">
-                <Bell className="h-5 w-5" />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_0_3px_rgba(255,255,255,0.9)]" />
-              </Button>
-              <Button variant="ghost" size="icon-sm" className="text-slate-500 hover:text-slate-900">
-                <User className="h-5 w-5" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    title="Вийти"
-                    className="text-slate-500 hover:text-red-600"
-                  >
-                    <LogOut className="h-5 w-5" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Вийти з системи?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Ви впевнені, що хочете вийти? Всі незбережені зміни буде втрачено.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Скасувати</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleLogout}>Вийти</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </header>
 
         <main className="flex-1">{children}</main>
       </div>

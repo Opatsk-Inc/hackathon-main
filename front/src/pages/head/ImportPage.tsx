@@ -80,7 +80,7 @@ export function ImportPage() {
 
   return (
     <HeadDesktopLayout currentPath="/head/import">
-      <div className="mx-auto w-full max-w-screen-2xl space-y-6 p-6">
+      <div className="mx-auto w-full max-w-screen-full space-y-6 p-6">
         <div>
           <h1 className="font-heading text-3xl font-semibold tracking-[-0.02em] text-slate-900">
             Імпорт даних
