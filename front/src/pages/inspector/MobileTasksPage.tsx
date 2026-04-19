@@ -28,6 +28,7 @@ import {
   X,
   Check,
   Layers,
+  Loader2,
 } from "lucide-react"
 import type { MapRef } from "@/components/ui/map"
 import maplibregl from "maplibre-gl"
@@ -77,26 +78,32 @@ export function MobileTasksPage() {
   const [isLoadingRoute, setIsLoadingRoute] = useState(false)
   const [userHeading, setUserHeading] = useState<number>(0)
   const mapRef = useRef<MapRef>(null)
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   const resolveMutation = useMutation({
-    mutationFn: async ({ taskId, confirmed }: { taskId: string, confirmed: boolean }) => {
+    mutationFn: async ({
+      taskId,
+      confirmed,
+    }: {
+      taskId: string
+      confirmed: boolean
+    }) => {
       return ApiClient.patch(`/api/mobile/tasks/${taskId}/resolve`, {
         status: confirmed ? "RESOLVED" : "CANCELLED",
         comment: "",
-      });
+      })
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myTasks'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
-      queryClient.invalidateQueries({ queryKey: ['discrepancies'] });
-      setSelectedTask(null);
-    }
-  });
+      queryClient.invalidateQueries({ queryKey: ["myTasks"] })
+      queryClient.invalidateQueries({ queryKey: ["dashboard-metrics"] })
+      queryClient.invalidateQueries({ queryKey: ["discrepancies"] })
+      setSelectedTask(null)
+    },
+  })
 
   const handleResolve = (confirmed: boolean) => {
-    if (!selectedTask) return;
-    resolveMutation.mutate({ taskId: selectedTask.id, confirmed });
-  };
+    if (!selectedTask) return
+    resolveMutation.mutate({ taskId: selectedTask.id, confirmed })
+  }
 
   const previousLocationRef = useRef<[number, number] | null>(null)
 
@@ -147,55 +154,58 @@ export function MobileTasksPage() {
     return () => navigator.geolocation.clearWatch(watchId)
   }, [isNavigating])
 
-  const handleNavigate = useCallback(async (task: Task) => {
-    if (!userLocation) {
-      alert("Не вдалося визначити ваше місцезнаходження")
-      return
-    }
-
-    setSelectedTask(null)
-    setViewMode("map")
-    setIsLoadingRoute(true)
-    setPreviewTask(task)
-
-    try {
-      const response = await fetch(
-        `https://router.project-osrm.org/route/v1/driving/${userLocation[0]},${userLocation[1]};${task.lng},${task.lat}?overview=full&geometries=geojson`
-      )
-      const data = await response.json()
-
-      if (data.routes && data.routes[0]) {
-        const coordinates = data.routes[0].geometry.coordinates as [
-          number,
-          number,
-        ][]
-        setRouteCoordinates(coordinates)
-
-        setTimeout(() => {
-          if (mapRef.current) {
-            const bounds = coordinates.reduce(
-              (bounds, coord) => bounds.extend(coord as [number, number]),
-              new maplibregl.LngLatBounds(coordinates[0], coordinates[0])
-            )
-            mapRef.current.fitBounds(bounds, {
-              padding: { top: 100, bottom: 200, left: 50, right: 50 },
-              duration: 1500,
-            })
-          }
-        }, 100)
-      } else {
-        setRouteCoordinates([userLocation, [task.lng, task.lat]])
+  const handleNavigate = useCallback(
+    async (task: Task) => {
+      if (!userLocation) {
+        alert("Не вдалося визначити ваше місцезнаходження")
+        return
       }
 
-      setShowRoutePreview(true)
-    } catch (error) {
-      console.error("Route error:", error)
-      setRouteCoordinates([userLocation, [task.lng, task.lat]])
-      setShowRoutePreview(true)
-    } finally {
-      setIsLoadingRoute(false)
-    }
-  }, [userLocation])
+      setSelectedTask(null)
+      setViewMode("map")
+      setIsLoadingRoute(true)
+      setPreviewTask(task)
+
+      try {
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${userLocation[0]},${userLocation[1]};${task.lng},${task.lat}?overview=full&geometries=geojson`
+        )
+        const data = await response.json()
+
+        if (data.routes && data.routes[0]) {
+          const coordinates = data.routes[0].geometry.coordinates as [
+            number,
+            number,
+          ][]
+          setRouteCoordinates(coordinates)
+
+          setTimeout(() => {
+            if (mapRef.current) {
+              const bounds = coordinates.reduce(
+                (bounds, coord) => bounds.extend(coord as [number, number]),
+                new maplibregl.LngLatBounds(coordinates[0], coordinates[0])
+              )
+              mapRef.current.fitBounds(bounds, {
+                padding: { top: 100, bottom: 200, left: 50, right: 50 },
+                duration: 1500,
+              })
+            }
+          }, 100)
+        } else {
+          setRouteCoordinates([userLocation, [task.lng, task.lat]])
+        }
+
+        setShowRoutePreview(true)
+      } catch (error) {
+        console.error("Route error:", error)
+        setRouteCoordinates([userLocation, [task.lng, task.lat]])
+        setShowRoutePreview(true)
+      } finally {
+        setIsLoadingRoute(false)
+      }
+    },
+    [userLocation]
+  )
 
   const confirmRoute = () => {
     setShowRoutePreview(false)
@@ -235,7 +245,9 @@ export function MobileTasksPage() {
   }, [autoTaskId, tasks, userLocation, handleNavigate])
 
   const ViewToggle = ({ className = "" }: { className?: string }) => (
-    <div className={`flex gap-1 rounded-full border border-white/70 bg-white/80 p-1 shadow-[0_10px_30px_rgba(11,28,54,0.10)] backdrop-blur-2xl ${className}`}>
+    <div
+      className={`flex gap-1 rounded-full border border-white/70 bg-white/80 p-1 shadow-[0_10px_30px_rgba(11,28,54,0.10)] backdrop-blur-2xl ${className}`}
+    >
       <Button
         variant={(viewMode as ViewMode) === "map" ? "default" : "ghost"}
         size="sm"
@@ -301,25 +313,26 @@ export function MobileTasksPage() {
                   </MapMarker>
                 )}
 
-                {(showRoutePreview || isNavigating) && routeCoordinates.length > 0 && (
-                  <MapRoute
-                    coordinates={routeCoordinates}
-                    color="#d97706"
-                    width={5}
-                    opacity={0.9}
-                  />
-                )}
+                {(showRoutePreview || isNavigating) &&
+                  routeCoordinates.length > 0 && (
+                    <MapRoute
+                      coordinates={routeCoordinates}
+                      color="#d97706"
+                      width={5}
+                      opacity={0.9}
+                    />
+                  )}
 
                 <MapControls showZoom showLocate position="bottom-right" />
               </MapComponent>
             </div>
 
-            <div className="absolute left-4 top-4 z-10">
+            <div className="absolute top-4 left-4 z-10">
               <ViewToggle />
             </div>
 
             {!isNavigating && !showRoutePreview && (
-              <div className="absolute right-4 top-4 z-10">
+              <div className="absolute top-4 right-4 z-10">
                 <div className="flex items-center gap-2 rounded-full border border-white/70 bg-white/85 px-3.5 py-1.5 text-sm font-semibold text-slate-800 shadow-[0_10px_30px_rgba(11,28,54,0.10)] backdrop-blur-2xl">
                   <Layers className="h-4 w-4 text-amber-600" />
                   <span className="tabular-nums">{tasks.length}</span>
@@ -329,17 +342,19 @@ export function MobileTasksPage() {
             )}
 
             {showRoutePreview && previewTask && (
-              <div className="absolute bottom-6 left-4 right-4 z-10">
+              <div className="absolute right-4 bottom-6 left-4 z-10">
                 <div className="rounded-3xl border border-white/70 bg-white/90 p-5 shadow-[0_30px_80px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
                   <div className="mb-4 flex items-start gap-3">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100/80 ring-1 ring-amber-200/70">
                       <Navigation className="h-5 w-5 text-amber-700" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-heading text-base font-semibold leading-tight tracking-[-0.01em] text-slate-900">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-heading text-base leading-tight font-semibold tracking-[-0.01em] text-slate-900">
                         {previewTask.address}
                       </h3>
-                      <p className="mt-1 text-sm text-slate-600 line-clamp-2">{previewTask.discrepancy}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-600">
+                        {previewTask.discrepancy}
+                      </p>
                     </div>
                   </div>
                   <div className="flex gap-3">
@@ -365,10 +380,12 @@ export function MobileTasksPage() {
             )}
 
             {isNavigating && (
-              <div className="absolute left-1/2 top-4 z-10 -translate-x-1/2">
+              <div className="absolute top-4 left-1/2 z-10 -translate-x-1/2">
                 <div className="flex items-center gap-3 rounded-full border border-white/60 bg-rose-500/90 px-5 py-2.5 text-white shadow-[0_18px_40px_rgba(225,29,72,0.35)] backdrop-blur-2xl">
                   <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
-                  <span className="text-sm font-semibold">Навігація активна</span>
+                  <span className="text-sm font-semibold">
+                    Навігація активна
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -385,7 +402,7 @@ export function MobileTasksPage() {
 
         {viewMode === "list" && (
           <div className="h-full overflow-y-auto p-4">
-            <div className="fixed left-4 top-[4.5rem] z-10">
+            <div className="fixed top-[4.5rem] left-4 z-10">
               <ViewToggle />
             </div>
 
@@ -402,11 +419,11 @@ export function MobileTasksPage() {
                     onClick={() => setSelectedTask(task)}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100/80 font-heading text-sm font-semibold text-amber-700 ring-1 ring-amber-200/70 tabular-nums">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100/80 font-heading text-sm font-semibold text-amber-700 tabular-nums ring-1 ring-amber-200/70">
                         {index + 1}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-heading text-base font-semibold leading-tight tracking-[-0.01em] text-slate-900">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-heading text-base leading-tight font-semibold tracking-[-0.01em] text-slate-900">
                           {task.address}
                         </h3>
                         {task.cadastralNumber && (
@@ -414,7 +431,9 @@ export function MobileTasksPage() {
                             {task.cadastralNumber}
                           </p>
                         )}
-                        <p className="mt-2 text-sm text-slate-700 line-clamp-2">{task.discrepancy}</p>
+                        <p className="mt-2 line-clamp-2 text-sm text-slate-700">
+                          {task.discrepancy}
+                        </p>
                         <div className="mt-3 flex items-center justify-between">
                           <span className="inline-flex items-center gap-1 text-xs text-slate-500">
                             <MapPin className="h-3 w-3" />
@@ -434,7 +453,10 @@ export function MobileTasksPage() {
           </div>
         )}
 
-        <Drawer open={!!selectedTask} onOpenChange={(open) => !open && setSelectedTask(null)}>
+        <Drawer
+          open={!!selectedTask}
+          onOpenChange={(open) => !open && setSelectedTask(null)}
+        >
           <DrawerContent>
             <div className="mx-auto w-full max-w-md">
               <DrawerHeader>
@@ -450,7 +472,7 @@ export function MobileTasksPage() {
 
               <div className="space-y-4 p-6">
                 <div className="rounded-2xl border border-white/70 bg-amber-50/70 p-4 ring-1 ring-amber-200/60 backdrop-blur-xl">
-                  <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-amber-700">
+                  <h4 className="text-[11px] font-semibold tracking-[0.1em] text-amber-700 uppercase">
                     Виявлена розбіжність
                   </h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-slate-800">
@@ -485,7 +507,11 @@ export function MobileTasksPage() {
                     disabled={resolveMutation.isPending}
                     onClick={() => handleResolve(false)}
                   >
-                    {resolveMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <X className="h-5 w-5" />}
+                    {resolveMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <X className="h-5 w-5" />
+                    )}
                     Хибне
                   </Button>
                   <Button
@@ -494,7 +520,11 @@ export function MobileTasksPage() {
                     disabled={resolveMutation.isPending}
                     onClick={() => handleResolve(true)}
                   >
-                    {resolveMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
+                    {resolveMutation.isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Check className="h-5 w-5" />
+                    )}
                     Підтвердити
                   </Button>
                 </div>

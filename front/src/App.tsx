@@ -1,30 +1,33 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom"
 import {
   DashboardPage,
   ImportPage,
   DiscrepanciesPage,
   TasksKanbanPage,
-} from "@/pages/head";
-import { MobileTasksPage, TaskInspectionPage } from "@/pages/inspector";
-import { InspectorAuthPage } from "@/pages/inspector/InspectorAuthPage";
-import { DirectTaskPage } from "@/pages/inspector/DirectTaskPage";
-import { LoginPage } from "@/pages/LoginPage";
-import { SignupPage } from "@/pages/SignupPage";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { InspectorRoute } from "@/components/InspectorRoute";
+} from "@/pages/head"
+import { MobileTasksPage, TaskInspectionPage } from "@/pages/inspector"
+import { InspectorAuthPage } from "@/pages/inspector/InspectorAuthPage"
+import { DirectTaskPage } from "@/pages/inspector/DirectTaskPage"
+import { HomePage } from "@/pages/HomePage"
+import { LoginPage } from "@/pages/LoginPage"
+import { SignupPage } from "@/pages/SignupPage"
+import { CheckoutPage } from "@/pages/CheckoutPage"
+import { SuccessPage } from "@/pages/SuccessPage"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
+import { InspectorRoute } from "@/components/InspectorRoute"
 
 function AnimatedRoutes() {
-  const location = useLocation();
+  const location = useLocation()
 
   return (
     <Routes location={location} key={location.pathname}>
-      {/* Public auth routes */}
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-
-      {/* Redirect root to login */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/register" element={<SignupPage />} />
+      <Route path="/checkout" element={<CheckoutPage />} />
+      <Route path="/success" element={<SuccessPage />} />
 
       {/* Protected Head (Desktop) Routes */}
       <Route element={<ProtectedRoute />}>
@@ -47,7 +50,7 @@ function AnimatedRoutes() {
         />
       </Route>
     </Routes>
-  );
+  )
 }
 
 export function App() {
@@ -55,7 +58,7 @@ export function App() {
     <BrowserRouter>
       <AnimatedRoutes />
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App
