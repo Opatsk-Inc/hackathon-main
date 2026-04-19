@@ -5,7 +5,7 @@ export function useDashboardMetrics() {
   return useQuery({
     queryKey: ['dashboard-metrics'],
     queryFn: () => AdminService.getDashboardMetrics(),
-    staleTime: 30000,
-    refetchInterval: 60000,
+    staleTime: 5000,
+    refetchInterval: 30000,
   })
 }

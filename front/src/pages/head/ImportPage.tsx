@@ -32,6 +32,8 @@ export function ImportPage() {
     onSuccess: () => {
       setFile(null);
       queryClient.invalidateQueries({ queryKey: ['batches'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['discrepancies'] });
     },
   });
 

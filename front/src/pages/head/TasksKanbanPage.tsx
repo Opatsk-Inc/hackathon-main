@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { AdminService } from "@/lib/api/admin.service";
+import { useDiscrepancies } from "@/lib/hooks/useDiscrepancies";
 import type { Anomaly } from "@/lib/api/types";
 import {
   MapPin,
@@ -218,25 +219,14 @@ function Column({
 }
 
 export function TasksKanbanPage() {
-  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { data, isLoading, isFetching, refetch } = useDiscrepancies();
+  const anomalies = data?.items ?? [];
 
-  const load = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    else setRefreshing(true);
-    try {
-      const d = await AdminService.getDiscrepancies();
-      setAnomalies(d.items);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const load = useCallback((silent = false) => {
+    refetch();
+  }, [refetch]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  const refreshing = isFetching && !isLoading;
 
   const effectiveStatus = (a: Anomaly) =>
     a.inspectorId && a.status === "NEW" ? "IN_PROGRESS" : a.status;
@@ -267,7 +257,7 @@ export function TasksKanbanPage() {
           </Button>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="p-8 text-center text-sm text-slate-500">Завантаження...</div>
         ) : (
           <div className="grid gap-4 md:grid-cols-3">

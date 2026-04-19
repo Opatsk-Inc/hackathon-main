@@ -14,6 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { ApiClient } from "@/lib/api/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Anomaly } from "@/lib/api/types";
 import { AiRecommendation } from "@/components/AiRecommendation";
 
@@ -60,15 +61,30 @@ export function TaskInspectionPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const resolve = async (confirmed: boolean) => {
-    if (!task) return;
-    setSubmitting(true);
-    await ApiClient.patch(`/api/mobile/tasks/${task.id}/resolve`, {
-      status: confirmed ? "RESOLVED" : "CANCELLED",
-      comment: "",
-    }).catch(() => null);
-    setSubmitting(false);
-    window.history.back();
+  const queryClient = useQueryClient();
+
+  const resolveMutation = useMutation({
+    mutationFn: async ({ confirmed, comment = "" }: { confirmed: boolean; comment?: string }) => {
+      if (!task) return;
+      return ApiClient.patch(`/api/mobile/tasks/${task.id}/resolve`, {
+        status: confirmed ? "RESOLVED" : "CANCELLED",
+        comment,
+      });
+    },
+    onSuccess: () => {
+      // Invalidate queries to reflect changes on dashboard and task lists
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['discrepancies'] });
+      queryClient.invalidateQueries({ queryKey: ['myTasks'] });
+      window.history.back();
+    },
+    onError: (e) => {
+      console.error("Failed to resolve task:", e);
+    }
+  });
+
+  const resolve = (confirmed: boolean) => {
+    resolveMutation.mutate({ confirmed });
   };
 
   if (loading) {
@@ -226,7 +242,7 @@ export function TaskInspectionPage() {
           <Button
             className="w-full gap-2 bg-emerald-600 text-white shadow-[0_12px_30px_rgba(5,150,105,0.28)] hover:bg-emerald-500 hover:shadow-[0_16px_38px_rgba(5,150,105,0.34)]"
             size="lg"
-            disabled={submitting}
+            disabled={resolveMutation.isPending}
             onClick={() => resolve(true)}
           >
             <CheckCircle className="h-5 w-5" />
@@ -236,7 +252,7 @@ export function TaskInspectionPage() {
             variant="outline"
             className="w-full gap-2 border-rose-200/80 bg-white/80 text-rose-700 hover:bg-rose-50/80 hover:text-rose-800"
             size="lg"
-            disabled={submitting}
+            disabled={resolveMutation.isPending}
             onClick={() => resolve(false)}
           >
             <XCircle className="h-5 w-5" />

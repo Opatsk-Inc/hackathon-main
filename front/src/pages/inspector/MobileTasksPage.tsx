@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams } from "react-router-dom"
 import { AdminService } from "@/lib/api/admin.service"
+import { ApiClient } from "@/lib/api/client"
 import { InspectorMobileLayout } from "@/components/layouts"
 import { Button } from "@/components/ui/button"
 import {
@@ -76,6 +77,27 @@ export function MobileTasksPage() {
   const [isLoadingRoute, setIsLoadingRoute] = useState(false)
   const [userHeading, setUserHeading] = useState<number>(0)
   const mapRef = useRef<MapRef>(null)
+  const queryClient = useQueryClient();
+  const resolveMutation = useMutation({
+    mutationFn: async ({ taskId, confirmed }: { taskId: string, confirmed: boolean }) => {
+      return ApiClient.patch(`/api/mobile/tasks/${taskId}/resolve`, {
+        status: confirmed ? "RESOLVED" : "CANCELLED",
+        comment: "",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myTasks'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      queryClient.invalidateQueries({ queryKey: ['discrepancies'] });
+      setSelectedTask(null);
+    }
+  });
+
+  const handleResolve = (confirmed: boolean) => {
+    if (!selectedTask) return;
+    resolveMutation.mutate({ taskId: selectedTask.id, confirmed });
+  };
+
   const previousLocationRef = useRef<[number, number] | null>(null)
 
   type ViewMode = "map" | "list"
@@ -460,17 +482,19 @@ export function MobileTasksPage() {
                     variant="outline"
                     size="lg"
                     className="min-h-[56px] flex-1 gap-2 border-rose-200/80 bg-white/80 text-base text-rose-700 hover:bg-rose-50/80 hover:text-rose-800"
-                    onClick={() => setSelectedTask(null)}
+                    disabled={resolveMutation.isPending}
+                    onClick={() => handleResolve(false)}
                   >
-                    <X className="h-5 w-5" />
+                    {resolveMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <X className="h-5 w-5" />}
                     Хибне
                   </Button>
                   <Button
                     size="lg"
                     className="min-h-[56px] flex-1 gap-2 bg-emerald-600 text-base text-white shadow-[0_12px_30px_rgba(5,150,105,0.28)] hover:bg-emerald-500 hover:shadow-[0_16px_38px_rgba(5,150,105,0.34)]"
-                    onClick={() => setSelectedTask(null)}
+                    disabled={resolveMutation.isPending}
+                    onClick={() => handleResolve(true)}
                   >
-                    <Check className="h-5 w-5" />
+                    {resolveMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
                     Підтвердити
                   </Button>
                 </div>

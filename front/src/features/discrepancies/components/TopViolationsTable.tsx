@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-table";
 import { useQuery } from "@tanstack/react-query";
 import { AdminService } from "@/lib/api/admin.service";
+import { useDiscrepancies } from "@/lib/hooks/useDiscrepancies";
 import type { Anomaly } from "@/lib/api/types";
 import { useMemo, useState } from "react";
 import { X, Scale, ClipboardList, Coins } from "lucide-react";
@@ -151,10 +152,7 @@ function AnomalyModal({ a, onClose }: { a: Anomaly; onClose: () => void }) {
 export function TopViolationsTable() {
   const [selected, setSelected] = useState<Anomaly | null>(null);
 
-  const { data: anomaliesData, isLoading } = useQuery({
-    queryKey: ['discrepancies'],
-    queryFn: () => AdminService.getDiscrepancies(),
-  });
+  const { data: anomaliesData, isLoading } = useDiscrepancies();
 
   const topViolations = useMemo(() => {
     if (!anomaliesData?.items) return [];

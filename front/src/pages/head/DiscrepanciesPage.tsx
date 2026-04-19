@@ -3,6 +3,8 @@ import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
 import { AdminService } from "@/lib/api/admin.service";
 import type { Anomaly, Inspector } from "@/lib/api/types";
+import { useDiscrepancies } from "@/lib/hooks/useDiscrepancies";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ChevronLeft,
   ChevronRight,
@@ -111,11 +113,14 @@ function AssignPanel({
       .finally(() => setLoadingList(false));
   }, []);
 
-  const handleAssign = async () => {
-    if (!selectedId) return;
-    setAssigning(true);
-    try {
-      const result = await AdminService.assignTask([anomalyId], selectedId);
+  const queryClient = useQueryClient();
+
+  const assignMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedId) return;
+      return AdminService.assignTask([anomalyId], selectedId);
+    },
+    onSuccess: (result) => {
       if (result?.assigned === 0) {
         console.warn("assignTask returned 0 updated rows — possible hromadaId mismatch");
       }
@@ -125,11 +130,18 @@ function AssignPanel({
       setMagicLink(link);
       setDone(true);
       onAssigned(selectedId, inspector?.name ?? selectedId, link);
-    } catch (e) {
+      
+      // Invalidate queries to reflect changes
+      queryClient.invalidateQueries({ queryKey: ['discrepancies'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    },
+    onError: (e) => {
       console.error("Failed to assign inspector:", e);
-    } finally {
-      setAssigning(false);
     }
+  });
+
+  const handleAssign = () => {
+    assignMutation.mutate();
   };
 
   const copyToClipboard = () => {
@@ -173,8 +185,8 @@ function AssignPanel({
               </option>
             ))}
           </select>
-          <Button size="sm" disabled={!selectedId || assigning} onClick={handleAssign} className="shrink-0">
-            {assigning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Викликати"}
+          <Button size="sm" disabled={!selectedId || assignMutation.isPending} onClick={handleAssign} className="shrink-0">
+            {assignMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Викликати"}
           </Button>
         </div>
       )}
@@ -369,36 +381,23 @@ function AnomalyModal({
 }
 
 export function DiscrepanciesPage() {
-  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: discrepanciesData, isLoading, isError, refetch } = useDiscrepancies();
   const [selected, setSelected] = useState<Anomaly | null>(null);
   const [filter, setFilter] = useState<string>("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
-  const loadAnomalies = useCallback(() => {
-    AdminService.getDiscrepancies()
-      .then((d) => {
-        setAnomalies(d.items);
-        setTotal(d.total);
-      })
-      .catch(() => setError("Не вдалося завантажити дані"))
-      .finally(() => setLoading(false));
-  }, []);
+  const anomalies = discrepanciesData?.items ?? [];
+  const total = discrepanciesData?.total ?? 0;
+  const error = isError ? "Не вдалося завантажити дані" : null;
 
-  useEffect(() => {
-    loadAnomalies();
-  }, [loadAnomalies]);
+  const loadAnomalies = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const handleAssigned = useCallback((anomalyId: string, inspectorId: string) => {
-    setAnomalies((prev) =>
-      prev.map((a) =>
-        a.id === anomalyId ? { ...a, status: "IN_PROGRESS", inspectorId } : a
-      )
-    );
+    // React Query will handle the refetch, but we update the modal state locally if it's open
     setSelected((prev) =>
       prev?.id === anomalyId ? { ...prev, status: "IN_PROGRESS", inspectorId } : prev
     );
@@ -499,7 +498,7 @@ export function DiscrepanciesPage() {
             </div>
           </div>
 
-          {loading ? (
+          {isLoading ? (
             <div className="p-10 text-center text-sm text-slate-500">Завантаження...</div>
           ) : error ? (
             <div className="p-10 text-center text-sm text-rose-600">{error}</div>
