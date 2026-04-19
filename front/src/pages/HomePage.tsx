@@ -67,7 +67,7 @@ export function HomePage() {
       <div className="fixed left-4 right-4 top-[10px] z-40 flex items-center justify-between md:hidden">
         <button
           type="button"
-          className="rounded-2xl bg-white/40 px-2 py-1 backdrop-blur-xl"
+          className="rounded-2xl bg-white/25 px-2 py-1 backdrop-blur-xl"
           onClick={() => navigate("/")}
           aria-label="На головну"
         >
@@ -79,14 +79,14 @@ export function HomePage() {
             variant="ghost"
             size="icon-sm"
             aria-label="Меню"
-            className="h-12 w-12 rounded-full border border-white/70 bg-white/40 backdrop-blur-2xl"
+            className="h-12 w-12 rounded-full bg-white/30 backdrop-blur-2xl"
             onClick={() => setMobileMenuOpen((v) => !v)}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </Button>
 
           {mobileMenuOpen ? (
-            <div className="absolute right-0 top-full mt-2 w-[220px] overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-3 shadow-[0_24px_60px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
+            <div className="absolute right-0 top-full mt-2 w-[220px] overflow-hidden rounded-3xl bg-white/90 p-3 shadow-[0_24px_60px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
               <button
                 type="button"
                 className="w-full rounded-xl px-3 py-2 text-left text-base text-slate-900 transition-colors hover:bg-slate-100/70"
@@ -123,7 +123,7 @@ export function HomePage() {
       </div>
 
       {/* Header */}
-      <header className="hidden border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:block">
+      <header className="hidden md:block">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <div
             className="flex cursor-pointer items-center gap-2"
