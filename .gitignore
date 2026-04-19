@@ -1,2 +1,3 @@
 .planning/
 .github
+tsconfig.build.tsbuildinfo
