@@ -73,19 +73,24 @@ export function DirectTaskPage() {
     if (didRun.current) return
     didRun.current = true
 
-    const token = searchParams.get("token")
-    if (!token) {
-      setError("Відсутній токен авторизації")
-      setLoading(false)
-      return
-    }
-
     const load = async () => {
       try {
-        // Authenticate via magic link using the shared ApiClient (correct base URL)
-        const { accessToken, inspector } = await AuthService.inspectorMagicLink(token)
-        // Store session so InspectorRoute and ApiClient both see the token
-        setSession(accessToken, inspector)
+        const urlToken = searchParams.get("token")
+
+        // Якщо є токен в URL — авторизуємось через magic link
+        if (urlToken) {
+          const { accessToken, inspector } = await AuthService.inspectorMagicLink(urlToken)
+          setSession(accessToken, inspector)
+        }
+        // Інакше перевіряємо, чи є токен в localStorage (вже авторизований)
+        else {
+          const storedToken = localStorage.getItem("inspector_token")
+          if (!storedToken) {
+            setError("Відсутній токен авторизації")
+            setLoading(false)
+            return
+          }
+        }
 
         const tasks = await AdminService.getMyTasks()
         const targetTask = tasks.find((t: any) => t.id === anomalyId)
@@ -110,7 +115,7 @@ export function DirectTaskPage() {
     }
 
     load()
-  }, [anomalyId, searchParams])
+  }, [anomalyId, searchParams, setSession])
 
   const handleNavigate = () => {
     if (!task?.lat || !task?.lng) {
