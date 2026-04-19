@@ -4,12 +4,15 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class RecommendationsService {
-  private groq: Groq;
+  private _groq: Groq | null = null;
 
-  constructor(private prisma: PrismaService) {
-    this.groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY,
-    });
+  constructor(private prisma: PrismaService) {}
+
+  private get groq(): Groq {
+    if (!this._groq) {
+      this._groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    }
+    return this._groq;
   }
 
   async generateRecommendation(anomalyId: string): Promise<string> {

@@ -17,7 +17,10 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === 'production',
+    }),
 
     UserModule,
     AuthModule,
