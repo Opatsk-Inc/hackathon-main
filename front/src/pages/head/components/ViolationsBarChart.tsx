@@ -4,7 +4,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from "recharts"
 import type { AnomalyTypeCount } from "@/lib/api/types"
 
 const TYPE_LABELS: Record<string, string> = {
@@ -15,11 +15,11 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const chartColors = [
-  "#3b82f6",  // Синій
-  "#0d9488",  // Бірюзовий
-  "#f97316",  // Помаранчевий
-  "#16a34a",  // Зелений
-  "#8b5cf6",  // Фіолетовий
+  "#d97706", // amber-600 primary
+  "#2563eb", // sky-600 secondary
+  "#059669", // emerald-600
+  "#7c3aed", // violet-600
+  "#e11d48", // rose-600
 ]
 
 interface ViolationsBarChartProps {
@@ -28,36 +28,28 @@ interface ViolationsBarChartProps {
 }
 
 export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps) {
-  const sortDirection = null
-
   const chartData = React.useMemo(() => {
     if (!data || data.length === 0) return []
 
-    let items = data.map((item, index) => ({
+    return data.map((item, index) => ({
       type: item.type,
       name: TYPE_LABELS[item.type] || item.type,
       value: item.count,
       fill: chartColors[index % chartColors.length],
     }))
-
-    if (sortDirection === 'asc') {
-      items = items.sort((a, b) => a.value - b.value)
-    } else if (sortDirection === 'desc') {
-      items = items.sort((a, b) => b.value - a.value)
-    }
-
-    return items
   }, [data])
 
   if (isLoading || chartData.length === 0) {
     return (
       <div className="panel-glass flex flex-col rounded-2xl">
         <div className="p-6 pb-4">
-          <h3 className="text-lg font-semibold text-[#10213f]">Структура порушень</h3>
-          <p className="text-sm text-[#5d728f]">Завантаження...</p>
+          <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
+            Структура порушень
+          </h3>
+          <p className="text-sm text-slate-500">Завантаження...</p>
         </div>
-        <div className="flex items-center justify-center h-[400px]">
-          <div className="animate-pulse text-[#5d728f]">Завантаження даних...</div>
+        <div className="flex h-[400px] items-center justify-center">
+          <div className="animate-pulse text-slate-400">Завантаження даних...</div>
         </div>
       </div>
     )
@@ -74,35 +66,65 @@ export function ViolationsBarChart({ data, isLoading }: ViolationsBarChartProps)
   return (
     <div className="panel-glass flex flex-col rounded-2xl">
       <div className="p-6 pb-4">
-        <h3 className="text-lg font-semibold text-[#10213f]">Структура порушень</h3>
-        <p className="text-sm text-[#5d728f]">Розподіл за типами</p>
+        <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
+          Структура порушень
+        </h3>
+        <p className="text-sm text-slate-500">Розподіл за типами</p>
       </div>
 
       <div className="px-6 pb-6">
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <BarChart data={chartData} margin={{ left: 50, right: 50 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="name"
-              tick={false}
-              axisLine={false}
+          <BarChart data={chartData} margin={{ left: 10, right: 10, top: 10 }}>
+            <defs>
+              {chartData.map((item, idx) => (
+                <linearGradient
+                  key={idx}
+                  id={`bar-gradient-${idx}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor={item.fill} stopOpacity={0.95} />
+                  <stop offset="100%" stopColor={item.fill} stopOpacity={0.55} />
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="4 6"
+              stroke="rgba(11,28,54,0.08)"
             />
-            <YAxis
-              className="text-xs"
-              tick={false}
-              axisLine={false}
-            />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="value" radius={[8, 8, 0, 0]} />
+            <XAxis dataKey="name" tick={false} axisLine={false} />
+            <YAxis tick={false} axisLine={false} />
+            <ChartTooltip cursor={{ fill: "rgba(217,119,6,0.08)" }} content={<ChartTooltipContent />} />
+            <Bar
+              dataKey="value"
+              radius={[12, 12, 0, 0]}
+              animationDuration={900}
+              animationEasing="ease-out"
+            >
+              {chartData.map((_, idx) => (
+                <Cell key={idx} fill={`url(#bar-gradient-${idx})`} />
+              ))}
+            </Bar>
           </BarChart>
         </ChartContainer>
 
-        {/* Компактний список під графіком */}
         <div className="mt-6 space-y-2">
           {chartData.map((item, idx) => (
-            <div key={idx} className="flex items-center justify-between text-sm">
-              <span className="font-medium text-[#2d4467]">{item.name}</span>
-              <span className="font-semibold tabular-nums" style={{ color: item.fill }}>
+            <div
+              key={idx}
+              className="flex items-center justify-between rounded-xl border border-transparent px-3 py-2 text-sm transition-colors hover:border-white/70 hover:bg-white/60"
+            >
+              <div className="flex items-center gap-2.5">
+                <span
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: item.fill, boxShadow: `0 0 0 3px ${item.fill}1a` }}
+                />
+                <span className="font-medium text-slate-700">{item.name}</span>
+              </div>
+              <span className="font-mono font-semibold tabular-nums text-slate-900">
                 {item.value.toLocaleString("uk-UA")}
               </span>
             </div>

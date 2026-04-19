@@ -159,7 +159,7 @@ function ChartTooltipContent({
 
     if (labelFormatter) {
       return (
-        <div className={cn("font-medium", labelClassName)}>
+        <div className={cn("text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500", labelClassName)}>
           {labelFormatter(value, payload)}
         </div>
       )
@@ -169,7 +169,16 @@ function ChartTooltipContent({
       return null
     }
 
-    return <div className={cn("font-medium", labelClassName)}>{value}</div>
+    return (
+      <div
+        className={cn(
+          "text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500",
+          labelClassName
+        )}
+      >
+        {value}
+      </div>
+    )
   }, [
     label,
     labelFormatter,
@@ -189,7 +198,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "grid min-w-32 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+        "grid min-w-36 items-start gap-1.5 rounded-2xl border border-white/70 bg-white/85 px-3 py-2 text-xs text-slate-700 shadow-[0_18px_40px_rgba(11,28,54,0.18)] backdrop-blur-2xl",
         className
       )}
     >
@@ -220,10 +229,10 @@ function ChartTooltipContent({
                       !hideIndicator && (
                         <div
                           className={cn(
-                            "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
+                            "shrink-0 rounded-full border-(--color-border) bg-(--color-bg)",
                             {
                               "h-2.5 w-2.5": indicator === "dot",
-                              "w-1": indicator === "line",
+                              "w-1 rounded-sm": indicator === "line",
                               "w-0 border-[1.5px] border-dashed bg-transparent":
                                 indicator === "dashed",
                               "my-0.5": nestLabel && indicator === "dashed",
@@ -246,12 +255,12 @@ function ChartTooltipContent({
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
+                        <span className="text-[13px] text-slate-500">
                           {itemConfig?.label ?? item.name}
                         </span>
                       </div>
                       {item.value != null && (
-                        <span className="font-mono font-medium text-foreground tabular-nums">
+                        <span className="font-mono text-[13px] font-semibold text-slate-900 tabular-nums">
                           {typeof item.value === "number"
                             ? item.value.toLocaleString()
                             : String(item.value)}

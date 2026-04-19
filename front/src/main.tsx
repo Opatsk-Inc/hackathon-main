@@ -7,7 +7,7 @@ import "./index.css"
 const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
-  <ThemeProvider>
+  <ThemeProvider defaultTheme="light">
     <QueryClientProvider client={queryClient}>
       <App />
     </QueryClientProvider>

@@ -26,76 +26,75 @@ export function LoginPage() {
     : null
 
   return (
-    <div className="atmo-shell min-h-screen bg-background flex">
-      {/* Left decorative panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0f1f38]/40 via-[#16325b]/25 to-transparent" />
-        <div className="absolute inset-0 opacity-75">
-          <div className="absolute -top-20 -left-24 w-[34rem] h-[34rem] rounded-full bg-[#f5a365]/18 blur-[120px]" />
-          <div className="absolute bottom-[-5rem] right-[-4rem] w-[28rem] h-[28rem] rounded-full bg-[#79c0b5]/16 blur-[110px]" />
-        </div>
-        <div className="relative z-10 flex flex-col justify-center px-16 text-[var(--brand-cream)]">
-          <div className="mb-8 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#f38c3d] flex items-center justify-center shadow-lg shadow-[#f38c3d]/25">
-              <Shield className="w-6 h-6 text-white" />
+    <div className="flex min-h-screen">
+      <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
+        <div className="pointer-events-none absolute -left-24 -top-24 h-[34rem] w-[34rem] rounded-full bg-amber-400/35 blur-[120px]" />
+        <div className="pointer-events-none absolute -bottom-24 -right-16 h-[28rem] w-[28rem] rounded-full bg-sky-400/30 blur-[110px]" />
+
+        <div className="relative z-10 flex flex-col justify-center px-16 text-slate-900">
+          <div className="mb-10 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-600 shadow-[0_18px_40px_rgba(217,119,6,0.38)]">
+              <Shield className="h-6 w-6 text-white" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-atmo-heading">Gromada Audit</span>
+            <span className="font-heading text-2xl font-semibold tracking-[-0.02em]">
+              Gromada Audit
+            </span>
           </div>
-          <h2 className="text-5xl font-bold leading-[1.05] mb-4 text-atmo-heading">
+          <h2 className="mb-5 font-heading text-5xl font-semibold leading-[1.05] tracking-[-0.03em] text-slate-900">
             Civic intelligence<br />
             для податкового<br />
             аудиту громади
           </h2>
-          <p className="text-atmo-muted text-lg leading-relaxed max-w-xl">
-            Виявляйте аномалії у реєстрах нерухомості та земельного кадастру автоматично,
-            фокусуйтеся на найбільш ризикових кейсах і скорочуйте час перевірок.
+          <p className="max-w-xl text-lg leading-relaxed text-slate-600">
+            Виявляйте аномалії у реєстрах нерухомості та земельного кадастру автоматично, фокусуйтеся
+            на найбільш ризикових кейсах і скорочуйте час перевірок.
           </p>
 
-          <div className="mt-12 grid grid-cols-2 gap-4 max-w-2xl">
+          <div className="mt-12 grid max-w-2xl grid-cols-2 gap-4">
             {[
               { label: 'Автоматичний аналіз', desc: 'CSV та XLSX файли' },
-              { label: 'Геокодування', desc: 'Координати об\'єктів' },
+              { label: 'Геокодування', desc: "Координати об'єктів" },
               { label: 'Звіти в реальному часі', desc: 'Дашборд метрик' },
               { label: 'Мобільні інспектори', desc: 'Виїзні перевірки' },
             ].map((item) => (
               <div
                 key={item.label}
-                className="rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur-sm"
+                className="rounded-2xl border border-white/70 bg-white/60 p-4 shadow-[0_1px_2px_rgba(11,28,54,0.04),0_10px_24px_rgba(11,28,54,0.06)] backdrop-blur-xl"
               >
-                <p className="font-semibold text-sm text-atmo-heading">{item.label}</p>
-                <p className="text-xs text-atmo-muted mt-0.5">{item.desc}</p>
+                <p className="text-sm font-semibold text-slate-900">{item.label}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Right form panel */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12">
-        <div className="panel-strong w-full max-w-md rounded-3xl p-8 md:p-10">
-          {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 justify-center mb-8">
-            <div className="w-9 h-9 rounded-lg bg-[#10213f] flex items-center justify-center">
-              <Shield className="w-5 h-5 text-[#f8fbff]" />
+      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+        <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/80 p-8 shadow-[0_30px_80px_rgba(11,28,54,0.18)] backdrop-blur-3xl md:p-10">
+          <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600">
+              <Shield className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground">Gromada Audit</span>
+            <span className="font-heading text-xl font-semibold text-slate-900">Gromada Audit</span>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground leading-[1.05]">Увійти</h1>
-            <p className="text-muted-foreground mt-2">Введіть облікові дані вашої громади</p>
+            <h1 className="font-heading text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-slate-900">
+              Увійти
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">Введіть облікові дані вашої громади</p>
           </div>
 
           {errorMessage && (
-            <div className="mb-6 flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mb-6 flex items-center gap-3 rounded-2xl border border-rose-200/80 bg-rose-50/80 p-4 text-sm text-rose-700 backdrop-blur-xl">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               {errorMessage}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label htmlFor="login-email" className="text-sm font-medium text-foreground">
+              <label htmlFor="login-email" className="text-sm font-medium text-slate-800">
                 Email
               </label>
               <input
@@ -106,12 +105,12 @@ export function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="hromada@example.com"
-                className="w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-[#5f7391] focus:ring-2 focus:ring-[#5f7391]/20"
+                className="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none backdrop-blur-xl transition-all focus:border-amber-300 focus:ring-4 focus:ring-amber-500/20"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="login-password" className="text-sm font-medium text-foreground">
+              <label htmlFor="login-password" className="text-sm font-medium text-slate-800">
                 Пароль
               </label>
               <div className="relative">
@@ -124,15 +123,15 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Мінімум 8 символів"
-                  className="w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 pr-12 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-[#5f7391] focus:ring-2 focus:ring-[#5f7391]/20"
+                  className="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 pr-12 text-sm text-slate-900 placeholder:text-slate-400 outline-none backdrop-blur-xl transition-all focus:border-amber-300 focus:ring-4 focus:ring-amber-500/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700"
                   aria-label={showPassword ? 'Приховати пароль' : 'Показати пароль'}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
@@ -141,27 +140,27 @@ export function LoginPage() {
               id="login-submit"
               type="submit"
               disabled={login.isPending}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#10213f] px-4 py-3 text-sm font-semibold text-[#f8fbff] transition-all hover:bg-[#1c365f] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#10213f]/30"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(217,119,6,0.3)] transition-all hover:bg-amber-500 hover:shadow-[0_16px_38px_rgba(217,119,6,0.36)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {login.isPending ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   Вхід...
                 </span>
               ) : (
                 <>
-                  <LogIn className="w-4 h-4" />
+                  <LogIn className="h-4 w-4" />
                   Увійти
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mt-8 text-center text-sm text-slate-500">
             Немає акаунту?{' '}
             <Link
               to="/signup"
-              className="font-semibold text-[#2f6fe8] hover:text-[#1f55b5] transition-colors underline underline-offset-4"
+              className="font-semibold text-sky-600 underline-offset-4 transition-colors hover:text-sky-700 hover:underline"
             >
               Зареєструватись
             </Link>

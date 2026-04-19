@@ -31,7 +31,6 @@ export function SignupPage() {
     )
   }, [hromadas, search])
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -83,43 +82,43 @@ export function SignupPage() {
   const displayError = localError || serverError
 
   return (
-    <div className="atmo-shell min-h-screen bg-background flex">
-      {/* Left decorative panel */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-[var(--brand-slate)]">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-32 right-10 w-80 h-80 rounded-full bg-[var(--brand-brown)] blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-64 h-64 rounded-full bg-[var(--brand-dark)] blur-3xl" />
-        </div>
-        <div className="relative z-10 flex flex-col justify-center px-16 text-[var(--brand-cream)]">
-          <div className="mb-8 flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[var(--brand-brown)] flex items-center justify-center">
-              <Shield className="w-6 h-6 text-white" />
+    <div className="flex min-h-screen">
+      <div className="relative hidden overflow-hidden lg:flex lg:w-1/2">
+        <div className="pointer-events-none absolute -left-16 top-24 h-[26rem] w-[26rem] rounded-full bg-sky-400/25 blur-[110px]" />
+        <div className="pointer-events-none absolute bottom-8 right-10 h-[28rem] w-[28rem] rounded-full bg-amber-400/25 blur-[110px]" />
+
+        <div className="relative z-10 flex flex-col justify-center px-16 text-slate-900">
+          <div className="mb-10 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-600 shadow-[0_18px_40px_rgba(217,119,6,0.38)]">
+              <Shield className="h-6 w-6 text-white" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Gromada Audit</span>
+            <span className="font-heading text-2xl font-semibold tracking-[-0.02em]">
+              Gromada Audit
+            </span>
           </div>
 
-          <h2 className="text-4xl font-bold leading-tight mb-4">
+          <h2 className="mb-4 font-heading text-4xl font-semibold leading-tight tracking-[-0.03em]">
             Приєднайтесь<br />
             до системи<br />
             контролю
           </h2>
-          <p className="text-[var(--brand-cream)]/60 text-lg leading-relaxed">
+          <p className="max-w-xl text-lg leading-relaxed text-slate-600">
             Зареєструйте свою громаду та отримайте доступ до повного інструментарію аудиту
           </p>
 
-          <div className="mt-12 space-y-4">
+          <div className="mt-12 space-y-5">
             {[
               { step: '01', title: 'Оберіть громаду', desc: 'Знайдіть вашу громаду в реєстрі' },
               { step: '02', title: 'Введіть дані', desc: 'Email та надійний пароль' },
               { step: '03', title: 'Починайте аудит', desc: 'Завантажуйте реєстри та виявляйте розбіжності' },
             ].map((item) => (
               <div key={item.step} className="flex items-start gap-4">
-                <span className="text-3xl font-bold text-[var(--brand-brown)]/40 leading-none mt-1">
+                <span className="mt-1 font-heading text-3xl font-semibold leading-none text-amber-600/60">
                   {item.step}
                 </span>
                 <div>
-                  <p className="font-semibold text-sm text-[var(--brand-cream)]">{item.title}</p>
-                  <p className="text-xs text-[var(--brand-cream)]/50 mt-0.5">{item.desc}</p>
+                  <p className="text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -127,45 +126,44 @@ export function SignupPage() {
         </div>
       </div>
 
-      {/* Right form panel */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
-        <div className="panel-strong w-full max-w-md rounded-3xl p-8 md:p-10">
-          {/* Mobile logo */}
-          <div className="flex lg:hidden items-center gap-2 justify-center mb-8">
-            <div className="w-9 h-9 rounded-lg bg-[var(--brand-dark)] flex items-center justify-center">
-              <Shield className="w-5 h-5 text-[var(--brand-cream)]" />
+      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-12">
+        <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/80 p-8 shadow-[0_30px_80px_rgba(11,28,54,0.18)] backdrop-blur-3xl md:p-10">
+          <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600">
+              <Shield className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-foreground">Gromada Audit</span>
+            <span className="font-heading text-xl font-semibold text-slate-900">Gromada Audit</span>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-foreground leading-[1.05]">Реєстрація</h1>
-            <p className="text-muted-foreground mt-2">Створіть акаунт для вашої громади</p>
+            <h1 className="font-heading text-4xl font-semibold leading-[1.05] tracking-[-0.02em] text-slate-900">
+              Реєстрація
+            </h1>
+            <p className="mt-2 text-sm text-slate-500">Створіть акаунт для вашої громади</p>
           </div>
 
           {displayError && (
-            <div className="mb-6 flex items-center gap-3 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-destructive text-sm">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="mb-6 flex items-center gap-3 rounded-2xl border border-rose-200/80 bg-rose-50/80 p-4 text-sm text-rose-700 backdrop-blur-xl">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               {displayError}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Hromada selector */}
             <div className="space-y-2" ref={dropdownRef}>
-              <label className="text-sm font-medium text-foreground">
-                Громада <span className="text-destructive">*</span>
+              <label className="text-sm font-medium text-slate-800">
+                Громада <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <div
-                  className={`flex items-center gap-2 rounded-xl border bg-white/55 px-4 py-3 cursor-text transition-all ${
+                  className={`flex cursor-text items-center gap-2 rounded-xl border bg-white/70 px-4 py-3 backdrop-blur-xl transition-all ${
                     dropdownOpen
-                      ? 'border-[#5f7391] ring-2 ring-[#5f7391]/20'
-                      : 'border-white/60'
+                      ? 'border-amber-300 ring-4 ring-amber-500/20'
+                      : 'border-white/70'
                   }`}
                   onClick={() => setDropdownOpen(true)}
                 >
-                  <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <Search className="h-4 w-4 shrink-0 text-slate-400" />
                   <input
                     id="signup-hromada"
                     type="text"
@@ -177,18 +175,18 @@ export function SignupPage() {
                       setDropdownOpen(true)
                     }}
                     onFocus={() => setDropdownOpen(true)}
-                    className="flex-1 bg-transparent text-sm text-[#10213f] placeholder:text-[#627692] outline-none"
+                    className="flex-1 bg-transparent text-sm text-slate-900 placeholder:text-slate-400 outline-none"
                     autoComplete="off"
                   />
-                  {hromada && <Check className="w-4 h-4 text-green-600 shrink-0" />}
-                  {!hromada && <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                  {hromada && <Check className="h-4 w-4 shrink-0 text-emerald-600" />}
+                  {!hromada && <ChevronDown className="h-4 w-4 shrink-0 text-slate-400" />}
                 </div>
 
                 {dropdownOpen && (
-                  <div className="absolute z-50 mt-2 w-full rounded-xl border border-white/60 bg-white/95 shadow-xl overflow-hidden">
+                  <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-white/70 bg-white/95 shadow-[0_24px_60px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
                     <div className="max-h-60 overflow-y-auto">
                       {filtered.length === 0 ? (
-                        <div className="px-4 py-8 text-center text-sm text-[#627692]">
+                        <div className="px-4 py-8 text-center text-sm text-slate-500">
                           Громаду не знайдено
                         </div>
                       ) : (
@@ -198,22 +196,20 @@ export function SignupPage() {
                             type="button"
                             disabled={!!h.email}
                             onClick={() => !h.email && handleSelect(h)}
-                            className={`w-full text-left px-4 py-3 transition-colors flex items-center justify-between gap-2 ${
-                              hromada?.id === h.id ? 'bg-[#e9f2ff]' : ''
-                            } ${h.email ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#eef4ff]'}`}
+                            className={`flex w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors ${
+                              hromada?.id === h.id ? 'bg-amber-50/80' : ''
+                            } ${h.email ? 'cursor-not-allowed opacity-60' : 'hover:bg-amber-50/60'}`}
                           >
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-[#10213f] truncate">{h.name}</p>
-                              <p className="text-xs text-[#627692] truncate">
+                              <p className="truncate text-sm font-medium text-slate-900">{h.name}</p>
+                              <p className="truncate text-xs text-slate-500">
                                 {h.region} · {h.district}
                               </p>
                             </div>
                             {h.email && (
-                              <div className="flex flex-col items-end gap-1">
-                                <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider bg-destructive/10 text-destructive rounded-md px-2 py-0.5 border border-destructive/20">
-                                  зайнята
-                                </span>
-                              </div>
+                              <span className="shrink-0 rounded-full bg-rose-50/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-700 ring-1 ring-rose-200/80">
+                                зайнята
+                              </span>
                             )}
                           </button>
                         ))
@@ -223,16 +219,15 @@ export function SignupPage() {
                 )}
               </div>
               {hromada && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-slate-500">
                   {hromada.region} · {hromada.district} · KOATUU: {hromada.koatuu}
                 </p>
               )}
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
-              <label htmlFor="signup-email" className="text-sm font-medium text-foreground">
-                Email <span className="text-destructive">*</span>
+              <label htmlFor="signup-email" className="text-sm font-medium text-slate-800">
+                Email <span className="text-rose-500">*</span>
               </label>
               <input
                 id="signup-email"
@@ -242,14 +237,13 @@ export function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="hromada@example.com"
-                className="w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 text-sm text-[#10213f] placeholder:text-[#627692] outline-none transition-all focus:border-[#5f7391] focus:ring-2 focus:ring-[#5f7391]/20"
+                className="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none backdrop-blur-xl transition-all focus:border-amber-300 focus:ring-4 focus:ring-amber-500/20"
               />
             </div>
 
-            {/* Password */}
             <div className="space-y-2">
-              <label htmlFor="signup-password" className="text-sm font-medium text-foreground">
-                Пароль <span className="text-destructive">*</span>
+              <label htmlFor="signup-password" className="text-sm font-medium text-slate-800">
+                Пароль <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -261,22 +255,21 @@ export function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Мінімум 8 символів"
-                  className="w-full rounded-xl border border-white/60 bg-white/55 px-4 py-3 pr-12 text-sm text-[#10213f] placeholder:text-[#627692] outline-none transition-all focus:border-[#5f7391] focus:ring-2 focus:ring-[#5f7391]/20"
+                  className="w-full rounded-xl border border-white/70 bg-white/70 px-4 py-3 pr-12 text-sm text-slate-900 placeholder:text-slate-400 outline-none backdrop-blur-xl transition-all focus:border-amber-300 focus:ring-4 focus:ring-amber-500/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Confirm password */}
             <div className="space-y-2">
-              <label htmlFor="signup-confirm-password" className="text-sm font-medium text-foreground">
-                Підтвердження пароля <span className="text-destructive">*</span>
+              <label htmlFor="signup-confirm-password" className="text-sm font-medium text-slate-800">
+                Підтвердження пароля <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
                 <input
@@ -287,22 +280,22 @@ export function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Повторіть пароль"
-                  className={`w-full rounded-xl border bg-white/55 px-4 py-3 pr-12 text-sm text-[#10213f] placeholder:text-[#627692] outline-none transition-all focus:ring-2 ${
+                  className={`w-full rounded-xl border bg-white/70 px-4 py-3 pr-12 text-sm text-slate-900 placeholder:text-slate-400 outline-none backdrop-blur-xl transition-all focus:ring-4 ${
                     confirmPassword && confirmPassword !== password
-                      ? 'border-destructive focus:border-destructive focus:ring-destructive/20'
-                      : 'border-white/60 focus:border-[#5f7391] focus:ring-[#5f7391]/20'
+                      ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-500/20'
+                      : 'border-white/70 focus:border-amber-300 focus:ring-amber-500/20'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-700"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               {confirmPassword && confirmPassword !== password && (
-                <p className="text-xs text-destructive">Паролі не збігаються</p>
+                <p className="text-xs text-rose-600">Паролі не збігаються</p>
               )}
             </div>
 
@@ -310,27 +303,27 @@ export function SignupPage() {
               id="signup-submit"
               type="submit"
               disabled={signup.isPending}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#10213f] px-4 py-3 text-sm font-semibold text-[#f8fbff] transition-all hover:bg-[#1c365f] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-[#10213f]/30"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-600 px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(217,119,6,0.3)] transition-all hover:bg-amber-500 hover:shadow-[0_16px_38px_rgba(217,119,6,0.36)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {signup.isPending ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   Реєстрація...
                 </span>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4" />
+                  <UserPlus className="h-4 w-4" />
                   Зареєструватись
                 </>
               )}
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-muted-foreground">
+          <p className="mt-8 text-center text-sm text-slate-500">
             Вже маєте акаунт?{' '}
             <Link
               to="/login"
-              className="font-semibold text-[var(--brand-slate)] hover:text-[var(--brand-dark)] transition-colors underline underline-offset-4"
+              className="font-semibold text-sky-600 underline-offset-4 transition-colors hover:text-sky-700 hover:underline"
             >
               Увійти
             </Link>

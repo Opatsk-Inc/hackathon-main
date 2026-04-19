@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { TrendingUp } from "lucide-react"
+import { TrendingUp, TrendingDown } from "lucide-react"
 import {
   ChartContainer,
   ChartTooltip,
@@ -23,7 +23,6 @@ export function InspectionAreaChart() {
     const now = new Date();
     const monthsCount = 6;
 
-    // Initialize months
     const monthsMap = new Map<string, { created: number; inspected: number }>();
     for (let i = monthsCount - 1; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -31,7 +30,6 @@ export function InspectionAreaChart() {
       monthsMap.set(key, { created: 0, inspected: 0 });
     }
 
-    // Count anomalies
     for (const anomaly of anomaliesData.items) {
       const createdDate = new Date(anomaly.createdAt);
       const createdKey = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
@@ -41,7 +39,6 @@ export function InspectionAreaChart() {
       }
 
       if (anomaly.status === 'RESOLVED') {
-        // Use createdAt as fallback since we don't have updatedAt
         const resolvedKey = createdKey;
         if (monthsMap.has(resolvedKey)) {
           monthsMap.get(resolvedKey)!.inspected++;
@@ -49,7 +46,6 @@ export function InspectionAreaChart() {
       }
     }
 
-    // Convert to array
     return Array.from(monthsMap.entries()).map(([key, data]) => {
       const [, month] = key.split('-');
       const monthIndex = parseInt(month) - 1;
@@ -68,12 +64,17 @@ export function InspectionAreaChart() {
     if (previous === 0) return 0;
     return Number(((current - previous) / previous * 100).toFixed(1));
   }, [inspectionData]);
+
+  const positive = growthRate >= 0;
+
   return (
     <div className="panel-glass rounded-2xl">
       <div className="p-6">
-        <h3 className="mb-1 text-lg font-semibold text-[#10213f]">Динаміка інспекцій</h3>
-        <p className="text-sm text-[#5d728f]">
-          Показує тренд створених та перевірених завдань за останні 6 місяців
+        <h3 className="mb-1 font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
+          Динаміка інспекцій
+        </h3>
+        <p className="text-sm text-slate-500">
+          Тренд створених та перевірених завдань за останні 6 місяців
         </p>
       </div>
       <div className="px-6 pb-6">
@@ -81,62 +82,44 @@ export function InspectionAreaChart() {
           config={{
             created: {
               label: "Створено завдань",
-              color: "hsl(var(--chart-1))",
+              color: "#d97706",
             },
             inspected: {
               label: "Перевірено інспектором",
-              color: "hsl(var(--chart-2))",
+              color: "#2563eb",
             },
           }}
           className="h-[300px] w-full"
         >
           <AreaChart
             data={inspectionData}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
+            margin={{ left: 12, right: 12, top: 10 }}
             accessibilityLayer
           >
             <CartesianGrid
               vertical={false}
-              strokeDasharray="3 3"
-              opacity={0.3}
+              strokeDasharray="4 6"
+              stroke="rgba(11,28,54,0.08)"
             />
             <XAxis
               dataKey="month"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={10}
+              tick={{ fill: "#64748b", fontSize: 12 }}
             />
             <ChartTooltip
-              cursor={false}
+              cursor={{ stroke: "rgba(217,119,6,0.35)", strokeWidth: 1, strokeDasharray: "4 4" }}
               content={<ChartTooltipContent indicator="dot" />}
             />
             <defs>
               <linearGradient id="fillCreated" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="#f97316"
-                  stopOpacity={0.3}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="#f97316"
-                  stopOpacity={0}
-                />
+                <stop offset="0%" stopColor="#d97706" stopOpacity={0.42} />
+                <stop offset="100%" stopColor="#d97706" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="fillInspected" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="#0d9488"
-                  stopOpacity={0.3}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="#0d9488"
-                  stopOpacity={0}
-                />
+                <stop offset="0%" stopColor="#2563eb" stopOpacity={0.36} />
+                <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
               </linearGradient>
             </defs>
             <Area
@@ -144,30 +127,38 @@ export function InspectionAreaChart() {
               type="monotone"
               fill="url(#fillInspected)"
               fillOpacity={1}
-              stroke="#0d9488"
-              strokeWidth={2}
+              stroke="#2563eb"
+              strokeWidth={2.5}
               stackId="a"
+              animationDuration={900}
+              animationEasing="ease-out"
+              activeDot={{ r: 5, strokeWidth: 2, stroke: "#ffffff", fill: "#2563eb" }}
             />
             <Area
               dataKey="created"
               type="monotone"
               fill="url(#fillCreated)"
               fillOpacity={1}
-              stroke="#f97316"
-              strokeWidth={2}
+              stroke="#d97706"
+              strokeWidth={2.5}
               stackId="a"
+              animationDuration={900}
+              animationEasing="ease-out"
+              activeDot={{ r: 5, strokeWidth: 2, stroke: "#ffffff", fill: "#d97706" }}
             />
           </AreaChart>
         </ChartContainer>
       </div>
-      <div className="border-t border-white/45 px-6 py-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-[#2d4467]">
-          {growthRate > 0 ? 'Зростання' : 'Зменшення'} на {Math.abs(Number(growthRate))}% цього місяця
-          <TrendingUp className="h-4 w-4 text-emerald-600" />
+      <div className="border-t border-white/55 px-6 py-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+          {positive ? "Зростання" : "Зменшення"} на {Math.abs(Number(growthRate))}% цього місяця
+          {positive ? (
+            <TrendingUp className="h-4 w-4 text-emerald-600" />
+          ) : (
+            <TrendingDown className="h-4 w-4 text-rose-600" />
+          )}
         </div>
-        <div className="mt-1 text-xs text-[#5d728f]">
-          Порівняно з попереднім періодом
-        </div>
+        <div className="mt-1 text-xs text-slate-500">Порівняно з попереднім періодом</div>
       </div>
     </div>
   )

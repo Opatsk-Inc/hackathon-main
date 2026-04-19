@@ -34,22 +34,31 @@ export function InspectorAuthPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-sm rounded-2xl border border-destructive/30 bg-destructive/10 p-8 text-center">
-          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-destructive" />
-          <h2 className="mb-2 text-lg font-semibold text-destructive">Помилка входу</h2>
-          <p className="text-sm text-muted-foreground">{error}</p>
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="w-full max-w-sm rounded-3xl border border-rose-200/80 bg-white/85 p-8 text-center shadow-[0_30px_80px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
+          <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100/80 ring-1 ring-rose-200/70">
+            <AlertCircle className="h-7 w-7 text-rose-600" />
+          </div>
+          <h2 className="font-heading mb-2 text-lg font-semibold tracking-[-0.01em] text-rose-700">
+            Помилка входу
+          </h2>
+          <p className="text-sm text-slate-600">{error}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <ShieldCheck className="mx-auto mb-4 h-12 w-12 text-primary animate-pulse" />
-        <p className="text-sm text-muted-foreground">Авторизація...</p>
-        <Loader2 className="mx-auto mt-3 h-5 w-5 animate-spin text-muted-foreground" />
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-3xl border border-white/70 bg-white/80 p-8 text-center shadow-[0_30px_80px_rgba(11,28,54,0.18)] backdrop-blur-3xl">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100/80 ring-1 ring-amber-200/70">
+          <ShieldCheck className="h-7 w-7 animate-pulse text-amber-700" />
+        </div>
+        <p className="font-heading mb-2 text-base font-semibold tracking-[-0.01em] text-slate-900">
+          Авторизація
+        </p>
+        <p className="text-sm text-slate-500">Перевіряємо ваш токен...</p>
+        <Loader2 className="mx-auto mt-4 h-5 w-5 animate-spin text-amber-600" />
       </div>
     </div>
   )

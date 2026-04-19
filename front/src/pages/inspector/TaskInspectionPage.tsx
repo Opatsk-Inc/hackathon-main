@@ -2,7 +2,17 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { InspectorMobileLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
-import { MapPin, Camera, CheckCircle, XCircle, Scale, AlertTriangle } from "lucide-react";
+import {
+  MapPin,
+  Camera,
+  CheckCircle,
+  XCircle,
+  Scale,
+  ClipboardList,
+  Coins,
+  Clock,
+  Loader2,
+} from "lucide-react";
 import { ApiClient } from "@/lib/api/client";
 import type { Anomaly } from "@/lib/api/types";
 import { AiRecommendation } from "@/components/AiRecommendation";
@@ -14,18 +24,27 @@ const TYPE_LABELS: Record<string, string> = {
   AREA_MISMATCH: "Розбіжність площ",
 };
 
-const RISK_COLORS: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800 border-red-300",
-  HIGH: "bg-orange-100 text-orange-800 border-orange-300",
-  MEDIUM: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  LOW: "bg-green-100 text-green-700 border-green-300",
-};
-
-const RISK_LABELS: Record<string, string> = {
-  CRITICAL: "Критичний",
-  HIGH: "Високий",
-  MEDIUM: "Середній",
-  LOW: "Низький",
+const RISK_CONFIG: Record<string, { label: string; cls: string; dot: string }> = {
+  CRITICAL: {
+    label: "Критичний",
+    cls: "bg-rose-50/90 text-rose-700 ring-1 ring-rose-200/80",
+    dot: "bg-rose-500",
+  },
+  HIGH: {
+    label: "Високий",
+    cls: "bg-amber-50/90 text-amber-800 ring-1 ring-amber-200/80",
+    dot: "bg-amber-500",
+  },
+  MEDIUM: {
+    label: "Середній",
+    cls: "bg-yellow-50/90 text-yellow-800 ring-1 ring-yellow-200/80",
+    dot: "bg-yellow-500",
+  },
+  LOW: {
+    label: "Низький",
+    cls: "bg-emerald-50/90 text-emerald-700 ring-1 ring-emerald-200/80",
+    dot: "bg-emerald-500",
+  },
 };
 
 export function TaskInspectionPage() {
@@ -55,7 +74,10 @@ export function TaskInspectionPage() {
   if (loading) {
     return (
       <InspectorMobileLayout title="Перевірка" showBackButton onBack={() => window.history.back()}>
-        <div className="p-8 text-center text-sm text-muted-foreground">Завантаження...</div>
+        <div className="flex flex-col items-center justify-center gap-3 p-12 text-slate-500">
+          <Loader2 className="h-6 w-6 animate-spin text-amber-600" />
+          <p className="text-sm">Завантаження...</p>
+        </div>
       </InspectorMobileLayout>
     );
   }
@@ -63,128 +85,161 @@ export function TaskInspectionPage() {
   if (!task) {
     return (
       <InspectorMobileLayout title="Перевірка" showBackButton onBack={() => window.history.back()}>
-        <div className="p-8 text-center text-sm text-red-500">Завдання не знайдено</div>
+        <div className="p-8 text-center text-sm text-rose-600">Завдання не знайдено</div>
       </InspectorMobileLayout>
     );
   }
 
-  const riskColor = RISK_COLORS[task.enrichment?.riskLevel] ?? RISK_COLORS.LOW;
+  const risk = RISK_CONFIG[task.enrichment?.riskLevel] ?? RISK_CONFIG.LOW;
 
   return (
     <InspectorMobileLayout
       title="Перевірка об'єкту"
+      subtitle="Деталі завдання"
       showBackButton
       onBack={() => window.history.back()}
     >
       <div className="space-y-4 p-4">
+        <div className="relative overflow-hidden rounded-2xl border border-white/70 bg-white/75 p-5 shadow-[0_14px_36px_rgba(11,28,54,0.08)] backdrop-blur-2xl">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-400/15 blur-3xl" />
 
-        {/* Заголовок */}
-        <div className="rounded-xl border bg-card p-4 shadow-sm space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className={`rounded-full border px-2 py-0.5 text-xs font-bold ${riskColor}`}>
-              {RISK_LABELS[task.enrichment?.riskLevel] ?? task.enrichment?.riskLevel}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Термін: {task.enrichment?.urgencyDays ?? "—"} дн.
-            </span>
-          </div>
-          <h2 className="font-bold text-base leading-tight">{task.suspectName}</h2>
-          <p className="text-sm text-muted-foreground">{task.address}</p>
-          <div className="flex flex-wrap gap-2 text-xs pt-1">
-            <span className="rounded-md bg-muted px-2 py-0.5">{TYPE_LABELS[task.type] ?? task.type}</span>
-            {task.taxId && <span className="rounded-md bg-muted px-2 py-0.5">ІПН: {task.taxId}</span>}
+          <div className="relative space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${risk.cls}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${risk.dot}`} />
+                {risk.label}
+              </span>
+              <span className="inline-flex items-center gap-1 text-xs text-slate-500 tabular-nums">
+                <Clock className="h-3 w-3" />
+                {task.enrichment?.urgencyDays ?? "—"} дн.
+              </span>
+            </div>
+
+            <div>
+              <h2 className="font-heading text-lg font-semibold leading-tight tracking-[-0.01em] text-slate-900">
+                {task.suspectName}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">{task.address}</p>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-0.5 text-xs text-slate-700 ring-1 ring-slate-200/70">
+                {TYPE_LABELS[task.type] ?? task.type}
+              </span>
+              {task.taxId && (
+                <span className="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-0.5 font-mono text-xs text-slate-700 ring-1 ring-slate-200/70">
+                  ІПН: {task.taxId}
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Кримінальна відповідальність */}
         {task.enrichment && (
-          <div className="rounded-xl border border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20 p-4 space-y-2">
+          <div className="rounded-2xl border border-rose-200/80 bg-rose-50/70 p-4 backdrop-blur-xl">
             <div className="flex items-center gap-2">
-              <Scale className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0" />
-              <p className="text-xs font-bold text-red-700 dark:text-red-400">Кримінальна відповідальність</p>
+              <Scale className="h-4 w-4 shrink-0 text-rose-600" />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-rose-700">
+                Кримінальна відповідальність
+              </p>
             </div>
-            <p className="text-sm font-bold text-red-800 dark:text-red-300">{task.enrichment.criminalArticle}</p>
-            <p className="text-xs text-red-700 dark:text-red-400 leading-relaxed">{task.enrichment.legalBasis}</p>
+            <p className="mt-2 text-sm font-semibold text-rose-800">
+              {task.enrichment.criminalArticle}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-rose-700/90">
+              {task.enrichment.legalBasis}
+            </p>
           </div>
         )}
 
-        {/* Рекомендовані дії */}
         {task.enrichment && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20 p-4 space-y-2">
+          <div className="rounded-2xl border border-sky-200/80 bg-sky-50/70 p-4 backdrop-blur-xl">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
-              <p className="text-xs font-bold text-blue-700 dark:text-blue-400">Рекомендовані дії</p>
+              <ClipboardList className="h-4 w-4 shrink-0 text-sky-600" />
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-sky-700">
+                Рекомендовані дії
+              </p>
             </div>
-            <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed">{task.enrichment.inspectorAction}</p>
-            <div className={`mt-2 rounded-lg p-2 text-center text-xs font-bold ${
-              task.enrichment.shouldVisit
-                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-            }`}>
-              {task.enrichment.shouldVisit ? "ПОТРІБЕН ВИЇЗД НА ОБ'ЄКТ" : "ДОКУМЕНТАЛЬНА ПЕРЕВІРКА"}
+            <p className="mt-2 text-xs leading-relaxed text-sky-900">
+              {task.enrichment.inspectorAction}
+            </p>
+            <div
+              className={`mt-3 rounded-xl px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.08em] ${
+                task.enrichment.shouldVisit
+                  ? "bg-rose-100/80 text-rose-700 ring-1 ring-rose-200/70"
+                  : "bg-slate-100/80 text-slate-600 ring-1 ring-slate-200/70"
+              }`}
+            >
+              {task.enrichment.shouldVisit ? "Потрібен виїзд на об'єкт" : "Документальна перевірка"}
             </div>
           </div>
         )}
 
-        {/* AI Рекомендації */}
         <AiRecommendation anomalyId={task.id} />
 
-        {/* Карта */}
         {task.lat && task.lng ? (
-          <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3">
-            <h3 className="font-semibold text-sm">Карта</h3>
-            <div className="flex h-40 items-center justify-center rounded-lg bg-muted">
-              <MapPin className="h-10 w-10 text-muted-foreground" />
+          <div className="rounded-2xl border border-white/70 bg-white/75 p-4 shadow-[0_14px_36px_rgba(11,28,54,0.06)] backdrop-blur-2xl">
+            <p className="font-heading text-sm font-semibold tracking-[-0.01em] text-slate-900">
+              Карта
+            </p>
+            <div className="mt-3 flex h-40 items-center justify-center rounded-xl border border-white/60 bg-slate-100/60 backdrop-blur-xl">
+              <MapPin className="h-10 w-10 text-slate-400" />
             </div>
             <Button
               variant="outline"
-              className="w-full text-sm"
+              className="mt-3 w-full gap-2"
               onClick={() => window.open(`https://maps.google.com/?q=${task.lat},${task.lng}`, "_blank")}
             >
-              <MapPin className="mr-2 h-4 w-4" />
+              <MapPin className="h-4 w-4" />
               Відкрити в навігації
             </Button>
           </div>
         ) : null}
 
-        {/* Штраф */}
         {task.potentialFine ? (
-          <div className="rounded-xl border bg-amber-50 dark:bg-amber-950/20 p-4">
-            <p className="text-xs text-muted-foreground">Потенційний штраф</p>
-            <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">
+          <div className="flex items-center justify-between rounded-2xl border border-amber-200/80 bg-amber-50/70 p-4 backdrop-blur-xl">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100/90 ring-1 ring-amber-200/70">
+                <Coins className="h-4 w-4 text-amber-700" />
+              </div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-amber-700">
+                Потенційний штраф
+              </p>
+            </div>
+            <p className="font-heading text-xl font-semibold tracking-[-0.02em] tabular-nums text-amber-800">
               {task.potentialFine.toLocaleString("uk-UA")} ₴
             </p>
           </div>
         ) : null}
 
-        {/* Фото */}
-        <div className="rounded-xl border bg-card p-4 shadow-sm">
-          <h3 className="font-semibold text-sm mb-3">Фото</h3>
-          <Button variant="outline" className="w-full">
-            <Camera className="mr-2 h-4 w-4" />
+        <div className="rounded-2xl border border-white/70 bg-white/75 p-4 shadow-[0_14px_36px_rgba(11,28,54,0.06)] backdrop-blur-2xl">
+          <p className="font-heading text-sm font-semibold tracking-[-0.01em] text-slate-900">
+            Фото
+          </p>
+          <Button variant="outline" className="mt-3 w-full gap-2">
+            <Camera className="h-4 w-4" />
             Зробити фото
           </Button>
         </div>
 
-        {/* Кнопки */}
-        <div className="space-y-2 pb-4">
+        <div className="space-y-2.5 pb-4 pt-1">
           <Button
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
+            className="w-full gap-2 bg-emerald-600 text-white shadow-[0_12px_30px_rgba(5,150,105,0.28)] hover:bg-emerald-500 hover:shadow-[0_16px_38px_rgba(5,150,105,0.34)]"
             size="lg"
             disabled={submitting}
             onClick={() => resolve(true)}
           >
-            <CheckCircle className="mr-2 h-5 w-5" />
+            <CheckCircle className="h-5 w-5" />
             Підтвердити порушення
           </Button>
           <Button
             variant="outline"
-            className="w-full"
+            className="w-full gap-2 border-rose-200/80 bg-white/80 text-rose-700 hover:bg-rose-50/80 hover:text-rose-800"
             size="lg"
             disabled={submitting}
             onClick={() => resolve(false)}
           >
-            <XCircle className="mr-2 h-5 w-5" />
+            <XCircle className="h-5 w-5" />
             Відхилити
           </Button>
         </div>

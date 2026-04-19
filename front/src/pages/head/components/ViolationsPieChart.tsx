@@ -5,15 +5,15 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from "recharts"
 import type { AnomalyTypeCount } from "@/lib/api/types"
 
 const chartColors = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+  "#d97706",
+  "#2563eb",
+  "#059669",
+  "#7c3aed",
+  "#e11d48",
 ]
 
 interface ViolationsPieChartProps {
@@ -33,13 +33,15 @@ export function ViolationsPieChart({ data, isLoading }: ViolationsPieChartProps)
 
   if (isLoading || violationData.length === 0) {
     return (
-      <div className="flex flex-col rounded-2xl border border-border bg-card">
+      <div className="panel-glass flex flex-col rounded-2xl">
         <div className="p-6 pb-4">
-          <h3 className="text-lg font-semibold">Структура порушень</h3>
-          <p className="text-sm text-muted-foreground">Завантаження...</p>
+          <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
+            Структура порушень
+          </h3>
+          <p className="text-sm text-slate-500">Завантаження...</p>
         </div>
-        <div className="flex items-center justify-center h-[400px]">
-          <div className="animate-pulse text-muted-foreground">Завантаження даних...</div>
+        <div className="flex h-[400px] items-center justify-center">
+          <div className="animate-pulse text-slate-400">Завантаження даних...</div>
         </div>
       </div>
     )
@@ -54,37 +56,67 @@ export function ViolationsPieChart({ data, isLoading }: ViolationsPieChartProps)
   }, {} as Record<string, { label: string; color: string }>)
 
   return (
-    <div className="flex flex-col rounded-2xl border border-border bg-card">
+    <div className="panel-glass flex flex-col rounded-2xl">
       <div className="p-6 pb-4">
-        <h3 className="text-lg font-semibold">Структура порушень</h3>
-        <p className="text-sm text-muted-foreground">Розподіл за типами</p>
+        <h3 className="font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
+          Структура порушень
+        </h3>
+        <p className="text-sm text-slate-500">Розподіл за типами</p>
       </div>
       <div className="px-6 pb-6">
         <ChartContainer config={violationChartConfig} className="h-[300px] w-full">
-          <BarChart data={violationData}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+          <BarChart data={violationData} margin={{ left: 10, right: 10, top: 10 }}>
+            <defs>
+              {violationData.map((item, idx) => (
+                <linearGradient
+                  key={idx}
+                  id={`pie-gradient-${idx}`}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop offset="0%" stopColor={item.fill} stopOpacity={0.95} />
+                  <stop offset="100%" stopColor={item.fill} stopOpacity={0.55} />
+                </linearGradient>
+              ))}
+            </defs>
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="4 6"
+              stroke="rgba(11,28,54,0.08)"
+            />
             <XAxis
               dataKey="name"
-              className="text-xs"
-              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: "#64748b", fontSize: 12 }}
             />
             <YAxis
-              className="text-xs"
-              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: "#94a3b8", fontSize: 11 }}
             />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Bar dataKey="value" radius={[8, 8, 0, 0]} />
+            <ChartTooltip cursor={{ fill: "rgba(37,99,235,0.08)" }} content={<ChartTooltipContent />} />
+            <Bar
+              dataKey="value"
+              radius={[12, 12, 0, 0]}
+              animationDuration={900}
+              animationEasing="ease-out"
+            >
+              {violationData.map((_, idx) => (
+                <Cell key={idx} fill={`url(#pie-gradient-${idx})`} />
+              ))}
+            </Bar>
           </BarChart>
         </ChartContainer>
       </div>
-      <div className="mt-auto border-t px-6 py-4">
-        <div className="flex items-center gap-2 text-sm font-medium">
+      <div className="mt-auto border-t border-white/55 px-6 py-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
           Всього типів порушень: {violationData.length}
-          <TrendingUp className="h-4 w-4 text-[#A27B5C]" />
+          <TrendingUp className="h-4 w-4 text-amber-600" />
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          Розподіл за типами аномалій
-        </div>
+        <div className="mt-1 text-xs text-slate-500">Розподіл за типами аномалій</div>
       </div>
     </div>
   )
