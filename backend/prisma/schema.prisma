@@ -238,10 +238,22 @@ model Anomaly {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  batch   ImportBatch @relation(fields: [batchId], references: [id])
-  hromada Hromada?    @relation(fields: [hromadaId], references: [id])
+  batch          ImportBatch       @relation(fields: [batchId], references: [id])
+  hromada        Hromada?          @relation(fields: [hromadaId], references: [id])
+  recommendation AiRecommendation?
 
   @@index([batchId, taxId, suspectName])
   @@index([hromadaId])
   @@map("anomaly")
+}
+
+model AiRecommendation {
+  id        String   @id @default(uuid())
+  anomalyId String   @unique
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  anomaly Anomaly @relation(fields: [anomalyId], references: [id], onDelete: Cascade)
+
+  @@map("ai_recommendation")
 }

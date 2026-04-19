@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Camera, CheckCircle, XCircle, Scale, AlertTriangle } from "lucide-react";
 import { ApiClient } from "@/lib/api/client";
 import type { Anomaly } from "@/lib/api/types";
+import { AiRecommendation } from "@/components/AiRecommendation";
 
 const TYPE_LABELS: Record<string, string> = {
   MISSING_IN_REAL_ESTATE: "Відсутність нерухомості",
@@ -124,6 +125,9 @@ export function TaskInspectionPage() {
             </div>
           </div>
         )}
+
+        {/* AI Рекомендації */}
+        <AiRecommendation anomalyId={task.id} />
 
         {/* Карта */}
         {task.lat && task.lng ? (
