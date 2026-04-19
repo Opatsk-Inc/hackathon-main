@@ -5,8 +5,6 @@ import {
   flexRender,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { useQuery } from "@tanstack/react-query";
-import { AdminService } from "@/lib/api/admin.service";
 import { useDiscrepancies } from "@/lib/hooks/useDiscrepancies";
 import type { Anomaly } from "@/lib/api/types";
 import { useMemo, useState } from "react";

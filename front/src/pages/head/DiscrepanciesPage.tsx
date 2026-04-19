@@ -102,7 +102,6 @@ function AssignPanel({
   const [inspectors, setInspectors] = useState<Inspector[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState("");
-  const [assigning, setAssigning] = useState(false);
   const [done, setDone] = useState(false);
   const [magicLink, setMagicLink] = useState("");
   const [copied, setCopied] = useState(false);

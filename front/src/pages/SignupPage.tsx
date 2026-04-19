@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Eye, EyeOff, UserPlus, Shield, AlertCircle, Search, ChevronDown, Check } from 'lucide-react'
+import { Eye, EyeOff, UserPlus, AlertCircle, Search, ChevronDown, Check } from 'lucide-react'
 import { useSignup, useHromadas } from '@/features/auth'
 import type { Hromada } from '@/lib/api/auth.service'
 
@@ -89,12 +89,7 @@ export function SignupPage() {
 
         <div className="relative z-10 flex flex-col justify-center px-16 text-slate-900">
           <div className="mb-10 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-600 shadow-[0_18px_40px_rgba(217,119,6,0.38)]">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
-            <span className="font-heading text-2xl font-semibold tracking-[-0.02em]">
-              Gromada Audit
-            </span>
+            <img src="/name.svg" alt="Gromada Audit" className="h-8" />
           </div>
 
           <h2 className="mb-4 font-heading text-4xl font-semibold leading-tight tracking-[-0.03em]">
@@ -130,9 +125,9 @@ export function SignupPage() {
         <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/80 p-8 shadow-[0_30px_80px_rgba(11,28,54,0.18)] backdrop-blur-3xl md:p-10">
           <div className="mb-8 flex items-center justify-center gap-2 lg:hidden">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600">
-              <Shield className="h-5 w-5 text-white" />
+              <img src="/logo.svg" className="h-5 w-5" alt="Logo" />
             </div>
-            <span className="font-heading text-xl font-semibold text-slate-900">Gromada Audit</span>
+            <img src="/name.svg" alt="Gromada Audit" className="h-6" />
           </div>
 
           <div className="mb-8">

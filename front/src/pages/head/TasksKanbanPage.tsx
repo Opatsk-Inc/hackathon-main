@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
-import { AdminService } from "@/lib/api/admin.service";
 import { useDiscrepancies } from "@/lib/hooks/useDiscrepancies";
 import type { Anomaly } from "@/lib/api/types";
 import {
@@ -222,7 +221,7 @@ export function TasksKanbanPage() {
   const { data, isLoading, isFetching, refetch } = useDiscrepancies();
   const anomalies = data?.items ?? [];
 
-  const load = useCallback((silent = false) => {
+  const load = useCallback(() => {
     refetch();
   }, [refetch]);
 
@@ -248,7 +247,7 @@ export function TasksKanbanPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => load(true)}
+            onClick={() => load()}
             disabled={refreshing}
             className="gap-2"
           >

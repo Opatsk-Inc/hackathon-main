@@ -22,10 +22,7 @@ import {
   Upload,
   AlertTriangle,
   CheckSquare,
-  Menu,
   X,
-  Bell,
-  User,
   LogOut,
 } from "lucide-react";
 
@@ -36,12 +33,12 @@ const NAV_ITEMS = [
   { label: "Завдання", href: "/head/tasks", icon: CheckSquare },
 ];
 
-const PAGE_TITLES: Record<string, string> = {
-  "/head/dashboard": "Огляд громади",
-  "/head/import": "Імпорт даних",
-  "/head/discrepancies": "Розбіжності",
-  "/head/tasks": "Завдання та ревізії",
-};
+// const PAGE_TITLES: Record<string, string> = {
+//   "/head/dashboard": "Огляд громади",
+//   "/head/import": "Імпорт даних",
+//   "/head/discrepancies": "Розбіжності",
+//   "/head/tasks": "Завдання та ревізії",
+// };
 
 interface HeadDesktopLayoutProps {
   children: React.ReactNode;
@@ -57,8 +54,6 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
     localStorage.removeItem("auth_token");
     navigate("/login");
   };
-
-  const pageTitle = (currentPath && PAGE_TITLES[currentPath]) ?? "Панель керування";
 
   return (
     <div className="relative flex min-h-screen">
@@ -144,8 +139,6 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-
-            <div className="px-3 text-xs text-slate-400">© 2026 Gromada-Audit</div>
           </div>
         </div>
       </aside>
