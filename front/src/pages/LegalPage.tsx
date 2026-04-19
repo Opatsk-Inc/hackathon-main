@@ -1,10 +1,13 @@
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Scale, FileText, AlertCircle } from "lucide-react"
+import { Scale, FileText, AlertCircle, Menu, X } from "lucide-react"
 import { PageTransition } from "@/components/PageTransition"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export function LegalPage() {
   const navigate = useNavigate()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -12,9 +15,11 @@ export function LegalPage() {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/")}>
-            <img src="/name.svg" alt="AKR" className="h-10" />
+            <img src="/name.svg" alt="AKR" className="h-8 sm:h-10" />
           </div>
-          <div className="flex items-center gap-3">
+
+          {/* Desktop Navigation */}
+          <div className="hidden items-center gap-3 md:flex">
             <Button variant="ghost" onClick={() => navigate("/")}>
               Головна
             </Button>
@@ -23,7 +28,56 @@ export function LegalPage() {
             </Button>
             <Button onClick={() => navigate("/register")}>Реєстрація</Button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden p-2"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="border-t bg-background/95 backdrop-blur md:hidden overflow-hidden"
+            >
+              <div className="container mx-auto max-w-7xl px-4 py-4 flex flex-col gap-2">
+                {[
+                  { label: "Головна", path: "/" },
+                  { label: "Увійти", path: "/login", variant: "ghost" as const },
+                  { label: "Реєстрація", path: "/register", variant: "default" as const }
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3, delay: i * 0.05, ease: [0.22, 1, 0.36, 1] }}
+                  >
+                    <Button
+                      variant={item.variant || "ghost"}
+                      className="w-full justify-start"
+                      onClick={() => {
+                        navigate(item.path)
+                        setMobileMenuOpen(false)
+                      }}
+                    >
+                      {item.label}
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <PageTransition>

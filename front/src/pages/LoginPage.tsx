@@ -45,7 +45,7 @@ export function LoginPage() {
           <div className="mt-12 grid max-w-2xl grid-cols-2 gap-4">
             {[
               { label: 'Автоматичний аналіз', desc: 'CSV та XLSX файли' },
-              { label: 'Геокодування', desc: "Координати об'єктів" },
+              { label: 'AI-поради інспекторам', desc: 'Рекомендації в полі' },
               { label: 'Звіти в реальному часі', desc: 'Дашборд метрик' },
               { label: 'Мобільні інспектори', desc: 'Виїзні перевірки' },
             ].map((item) => (

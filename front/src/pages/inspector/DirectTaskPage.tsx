@@ -214,18 +214,6 @@ export function DirectTaskPage() {
                     {task.enrichment.legalBasis}
                   </p>
                 </div>
-
-                <div className="rounded-2xl border border-sky-200/80 bg-sky-50/70 p-4 backdrop-blur-xl">
-                  <div className="flex items-center gap-2">
-                    <ClipboardList className="h-4 w-4 shrink-0 text-sky-600" />
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-sky-700">
-                      Рекомендовані дії
-                    </p>
-                  </div>
-                  <p className="mt-2 text-xs leading-relaxed text-sky-900">
-                    {task.enrichment.inspectorAction}
-                  </p>
-                </div>
               </div>
             )}
 

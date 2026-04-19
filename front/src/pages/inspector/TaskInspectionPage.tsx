@@ -167,29 +167,6 @@ export function TaskInspectionPage() {
           </div>
         )}
 
-        {task.enrichment && (
-          <div className="rounded-2xl border border-sky-200/80 bg-sky-50/70 p-4 backdrop-blur-xl">
-            <div className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4 shrink-0 text-sky-600" />
-              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-sky-700">
-                Рекомендовані дії
-              </p>
-            </div>
-            <p className="mt-2 text-xs leading-relaxed text-sky-900">
-              {task.enrichment.inspectorAction}
-            </p>
-            <div
-              className={`mt-3 rounded-xl px-3 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.08em] ${
-                task.enrichment.shouldVisit
-                  ? "bg-rose-100/80 text-rose-700 ring-1 ring-rose-200/70"
-                  : "bg-slate-100/80 text-slate-600 ring-1 ring-slate-200/70"
-              }`}
-            >
-              {task.enrichment.shouldVisit ? "Потрібен виїзд на об'єкт" : "Документальна перевірка"}
-            </div>
-          </div>
-        )}
-
         <AiRecommendation anomalyId={task.id} />
 
         {task.lat && task.lng ? (
