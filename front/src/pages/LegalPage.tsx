@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Scale, FileText, AlertCircle } from "lucide-react"
+import { PageTransition } from "@/components/PageTransition"
 
 export function LegalPage() {
   const navigate = useNavigate()
@@ -24,6 +25,8 @@ export function LegalPage() {
           </div>
         </div>
       </header>
+
+      <PageTransition>
 
       {/* Content */}
       <div className="container mx-auto max-w-5xl px-4 py-12">
@@ -240,6 +243,7 @@ export function LegalPage() {
           </p>
         </div>
       </footer>
+      </PageTransition>
     </div>
   )
 }
