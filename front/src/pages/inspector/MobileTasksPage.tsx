@@ -28,6 +28,7 @@ import {
   X,
   Check,
   Layers,
+  Loader2,
 } from "lucide-react"
 import type { MapRef } from "@/components/ui/map"
 import maplibregl from "maplibre-gl"
