@@ -175,6 +175,26 @@ export class AdminService {
     return { assigned: updated.count };
   }
 
+  async getMyTasks(inspectorId: string) {
+    const anomalies = await this.prisma.anomaly.findMany({
+      where: { inspectorId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return anomalies.map((a) => ({
+      id: a.id,
+      address: a.address,
+      taxId: a.taxId,
+      description: a.description,
+      lat: a.lat,
+      lng: a.lng,
+      suspectName: a.suspectName,
+      potentialFine: a.potentialFine,
+      status: a.status,
+      enrichment: enrichAnomaly(a.type, a.severity, a.potentialFine),
+    }));
+  }
+
   private async geocodeAssignedAnomalies(anomalyIds: string[]) {
     const anomalies = await this.prisma.anomaly.findMany({
       where: { id: { in: anomalyIds }, lat: null },

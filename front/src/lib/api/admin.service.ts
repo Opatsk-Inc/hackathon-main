@@ -24,7 +24,7 @@ export class AdminService {
   }
 
   static getMyTasks(): Promise<any[]> {
-    return ApiClient.get<any[]>('/api/mobile/tasks')
+    return ApiClient.get<any[]>('/api/admin/tasks/my')
   }
 
   static importRealEstate(file: File): Promise<{ message: string; batchId: string }> {

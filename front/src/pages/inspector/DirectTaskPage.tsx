@@ -77,24 +77,23 @@ export function DirectTaskPage() {
       try {
         const urlToken = searchParams.get("token")
 
-        // Якщо є токен в URL — авторизуємось через magic link
-        if (urlToken) {
-          const { accessToken, inspector } = await AuthService.inspectorMagicLink(urlToken)
-          setSession(accessToken, inspector)
-        }
-        // Інакше перевіряємо, чи є токен в localStorage (вже авторизований)
-        else {
-          const storedToken = localStorage.getItem("inspector_token")
-          if (!storedToken) {
-            setError("Відсутній токен авторизації")
-            setLoading(false)
-            return
-          }
+        if (!urlToken) {
+          setError("Відсутній токен авторизації")
+          setLoading(false)
+          return
         }
 
-        const tasks = await AdminService.getMyTasks()
-        const targetTask = tasks.find((t: any) => t.id === anomalyId)
-        if (!targetTask) throw new Error("Завдання не знайдено або не призначено вам")
+        // Викликаємо новий ендпоінт, який не вимагає JWT
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:1488'}/api/inspector/task/${anomalyId}?token=${encodeURIComponent(urlToken)}`
+        )
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(errorText || "Помилка завантаження завдання")
+        }
+
+        const targetTask = await response.json()
 
         setTask({
           id: targetTask.id,
@@ -107,6 +106,10 @@ export function DirectTaskPage() {
           potentialFine: targetTask.potentialFine,
           enrichment: targetTask.enrichment,
         })
+
+        // Після успішного завантаження — авторизуємо інспектора для подальшої роботи
+        const { accessToken, inspector } = await AuthService.inspectorMagicLink(urlToken)
+        setSession(accessToken, inspector)
       } catch (err: any) {
         setError(err.message || "Помилка завантаження завдання")
       } finally {

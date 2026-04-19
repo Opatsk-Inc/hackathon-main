@@ -1,4 +1,13 @@
-import { Controller, Get, Patch, Body, UseGuards, Query, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  UseGuards,
+  Query,
+  Req,
+  UnauthorizedException,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -58,5 +67,12 @@ export class AdminController {
   @ApiResponse({ status: 200, schema: { example: { assigned: 3 } } })
   assignTask(@Usr() user: AuthUser, @Body() dto: AssignTaskRequestDto) {
     return this.adminService.assignTask(user.id, dto);
+  }
+
+  @Get('tasks/my')
+  @ApiOperation({ summary: 'Get tasks assigned to current inspector' })
+  @ApiResponse({ status: 200, description: 'List of assigned tasks' })
+  getMyTasks(@Usr() user: AuthUser) {
+    return this.adminService.getMyTasks(user.id);
   }
 }
