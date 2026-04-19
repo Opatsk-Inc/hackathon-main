@@ -52,7 +52,6 @@ export function TaskInspectionPage() {
   const { id } = useParams<{ id: string }>();
   const [task, setTask] = useState<Anomaly | null>(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!id) return;

@@ -102,7 +102,6 @@ function AssignPanel({
   const [inspectors, setInspectors] = useState<Inspector[]>([]);
   const [loadingList, setLoadingList] = useState(true);
   const [selectedId, setSelectedId] = useState("");
-  const [assigning, setAssigning] = useState(false);
   const [done, setDone] = useState(false);
   const [magicLink, setMagicLink] = useState("");
   const [copied, setCopied] = useState(false);
@@ -172,11 +171,11 @@ function AssignPanel({
           <Loader2 className="h-3 w-3 animate-spin" /> Завантаження списку...
         </div>
       ) : (
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <select
             value={selectedId}
             onChange={(e) => setSelectedId(e.target.value)}
-            className="flex-1 rounded-xl border border-white/70 bg-white/85 px-3 py-1.5 text-xs text-slate-800 backdrop-blur-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20"
+            className="min-w-0 flex-1 rounded-xl border border-white/70 bg-white/85 px-3 py-1.5 text-xs text-slate-800 backdrop-blur-xl focus:outline-none focus:ring-4 focus:ring-amber-500/20"
           >
             <option value="">— Оберіть інспектора —</option>
             {inspectors.map((ins) => (
@@ -185,7 +184,12 @@ function AssignPanel({
               </option>
             ))}
           </select>
-          <Button size="sm" disabled={!selectedId || assignMutation.isPending} onClick={handleAssign} className="shrink-0">
+          <Button
+            size="sm"
+            disabled={!selectedId || assignMutation.isPending}
+            onClick={handleAssign}
+            className="h-9 w-full shrink-0 sm:h-8 sm:w-auto"
+          >
             {assignMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Викликати"}
           </Button>
         </div>
@@ -270,7 +274,7 @@ function AnomalyModal({
       onClick={onClose}
     >
       <div
-        className="max-h-[90vh] w-full max-w-lg space-y-4 overflow-y-auto rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_40px_100px_rgba(11,28,54,0.28)] backdrop-blur-3xl"
+        className="max-h-[90vh] w-full max-w-xl space-y-4 overflow-y-auto rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_40px_100px_rgba(11,28,54,0.28)] backdrop-blur-3xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-3">
@@ -451,8 +455,8 @@ export function DiscrepanciesPage() {
 
   return (
     <HeadDesktopLayout currentPath="/head/discrepancies">
-      <div className="mx-auto w-full space-y-6 p-6">
-        <div className="flex items-center justify-between">
+      <div className="mx-auto w-full space-y-5 p-4 sm:space-y-6 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-heading text-3xl font-semibold tracking-[-0.02em] text-slate-900">
               Розбіжності
@@ -461,7 +465,7 @@ export function DiscrepanciesPage() {
               Виявлені невідповідності між реєстрами ({total})
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={loadAnomalies}>
+          <Button variant="outline" size="sm" onClick={loadAnomalies} className="w-full sm:w-auto">
             Оновити
           </Button>
         </div>
@@ -510,7 +514,39 @@ export function DiscrepanciesPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="space-y-3 p-4 md:hidden">
+                {paginatedData.map((a) => (
+                  <div
+                    key={a.id}
+                    className="space-y-3 rounded-2xl border border-white/70 bg-white/75 p-4 shadow-[0_1px_2px_rgba(11,28,54,0.04),0_10px_24px_rgba(11,28,54,0.06)]"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold leading-tight text-slate-900">{a.suspectName}</p>
+                      {a.taxId ? <p className="font-mono text-xs text-slate-500">{a.taxId}</p> : null}
+                      <p className="text-xs text-slate-500">{a.address}</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center rounded-full bg-slate-100/80 px-2.5 py-0.5 text-xs font-medium text-slate-700 ring-1 ring-slate-200/80">
+                        {TYPE_LABELS[a.type] ?? a.type}
+                      </span>
+                      <RiskBadge level={a.enrichment?.riskLevel ?? "LOW"} />
+                      <StatusBadge status={a.status} />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-mono text-sm font-semibold tabular-nums text-amber-700">
+                        {a.potentialFine ? `${a.potentialFine.toLocaleString("uk-UA")} ₴` : "—"}
+                      </p>
+                      <Button variant="outline" size="sm" onClick={() => setSelected(a)}>
+                        Деталі
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-white/60 bg-white/40">
@@ -591,16 +627,17 @@ export function DiscrepanciesPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-white/60 px-6 py-4">
+                <div className="flex flex-col items-start gap-3 border-t border-white/60 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
                   <p className="text-sm text-slate-500">
                     Сторінка {currentPage} з {totalPages}
                   </p>
-                  <div className="flex gap-2">
+                  <div className="flex w-full gap-2 sm:w-auto">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      className="flex-1 sm:flex-none"
                     >
                       <ChevronLeft className="h-4 w-4" />
                       Назад
@@ -610,6 +647,7 @@ export function DiscrepanciesPage() {
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      className="flex-1 sm:flex-none"
                     >
                       Вперед
                       <ChevronRight className="h-4 w-4" />

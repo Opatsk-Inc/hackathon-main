@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { HeadDesktopLayout } from "@/components/layouts";
 import { Button } from "@/components/ui/button";
-import { AdminService } from "@/lib/api/admin.service";
 import { useDiscrepancies } from "@/lib/hooks/useDiscrepancies";
 import type { Anomaly } from "@/lib/api/types";
 import {
@@ -204,7 +203,7 @@ function Column({
         ref={scrollRef}
         onScroll={handleScroll}
         className="custom-scrollbar space-y-3 overflow-y-auto p-4"
-        style={{ height: "600px", maxHeight: "calc(100vh - 300px)" }}
+        style={{ minHeight: "320px", maxHeight: "calc(100vh - 300px)" }}
       >
         {displayedItems.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-400">
@@ -222,7 +221,7 @@ export function TasksKanbanPage() {
   const { data, isLoading, isFetching, refetch } = useDiscrepancies();
   const anomalies = data?.items ?? [];
 
-  const load = useCallback((silent = false) => {
+  const load = useCallback(() => {
     refetch();
   }, [refetch]);
 
@@ -237,8 +236,8 @@ export function TasksKanbanPage() {
 
   return (
     <HeadDesktopLayout currentPath="/head/tasks">
-      <div className="mx-auto w-full space-y-6 p-6">
-        <div className="flex items-center justify-between">
+      <div className="mx-auto w-full space-y-5 p-4 sm:space-y-6 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="font-heading text-3xl font-semibold tracking-[-0.02em] text-slate-900">
               Завдання
@@ -248,9 +247,9 @@ export function TasksKanbanPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => load(true)}
+            onClick={() => load()}
             disabled={refreshing}
-            className="gap-2"
+            className="w-full gap-2 sm:w-auto"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             Оновити

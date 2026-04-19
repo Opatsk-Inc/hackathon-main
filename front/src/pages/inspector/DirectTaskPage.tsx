@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useSearchParams, useNavigate } from "react-router-dom"
 import { AuthService } from "@/lib/api/auth.service"
-import { AdminService } from "@/lib/api/admin.service"
 import { useInspectorStore } from "@/features/auth/store/inspector.store"
 import { LoadingOverlay } from "@/components/ui/loading-spinner"
 import { Button } from "@/components/ui/button"

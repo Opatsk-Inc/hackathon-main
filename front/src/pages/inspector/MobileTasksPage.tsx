@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams } from "react-router-dom"
 import { AdminService } from "@/lib/api/admin.service"
@@ -52,22 +52,31 @@ export function MobileTasksPage() {
     queryFn: AdminService.getMyTasks,
   })
 
-  const tasks: Task[] = apiTasks
-    .filter((t: any) => t.lat != null && t.lng != null)
-    .map((t: any) => ({
-      id: t.id,
-      address: t.address,
-      cadastralNumber: t.taxId ?? "",
-      discrepancy: t.description ?? "",
-      lat: t.lat,
-      lng: t.lng,
-      distance: "",
-    }))
+  const tasks: Task[] = useMemo(() => {
+    let list = apiTasks;
+    // If a specific task is requested via URL, ONLY show that one to keep the UI clean and fast
+    if (autoTaskId) {
+      list = apiTasks.filter((t: any) => t.id === autoTaskId);
+    }
+
+    return list
+      .filter((t: any) => t.lat != null && t.lng != null)
+      .map((t: any) => ({
+        id: t.id,
+        address: t.address,
+        cadastralNumber: t.taxId ?? "",
+        discrepancy: t.description ?? "",
+        lat: t.lat,
+        lng: t.lng,
+        distance: "",
+      }));
+  }, [apiTasks, autoTaskId]);
 
   const [viewMode, setViewMode] = useState<"map" | "list">("map")
+  const CHERVONOHRAD_CENTER: [number, number] = [24.2274, 50.3845];
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
+    CHERVONOHRAD_CENTER
   )
   const [isNavigating, setIsNavigating] = useState(false)
   const [routeCoordinates, setRouteCoordinates] = useState<[number, number][]>(
@@ -109,103 +118,109 @@ export function MobileTasksPage() {
 
   type ViewMode = "map" | "list"
 
+  const autoNavTriggeredRef = useRef(false)
+
   useEffect(() => {
     if (!navigator.geolocation) return
 
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        const coords: [number, number] = [
-          position.coords.longitude,
-          position.coords.latitude,
-        ]
+    const updateLocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const coords: [number, number] = [
+            position.coords.longitude,
+            position.coords.latitude,
+          ]
 
-        if (previousLocationRef.current && isNavigating) {
-          const [prevLng, prevLat] = previousLocationRef.current
-          const [newLng, newLat] = coords
+          if (previousLocationRef.current && isNavigating) {
+            const [prevLng, prevLat] = previousLocationRef.current
+            const [newLng, newLat] = coords
 
-          const dLng = newLng - prevLng
-          const dLat = newLat - prevLat
-          const bearing = Math.atan2(dLng, dLat) * (180 / Math.PI)
+            const dLng = newLng - prevLng
+            const dLat = newLat - prevLat
+            const bearing = Math.atan2(dLng, dLat) * (180 / Math.PI)
 
-          setUserHeading(bearing)
+            setUserHeading(bearing)
 
-          if (mapRef.current) {
-            mapRef.current.easeTo({
-              center: coords,
-              bearing: bearing,
-              duration: 1000,
-            })
-          }
-        }
-
-        previousLocationRef.current = coords
-        setUserLocation(coords)
-      },
-      (error) => {
-        console.error("Geolocation error:", error)
-      },
-      {
-        enableHighAccuracy: true,
-        maximumAge: 10000,
-        timeout: 5000,
-      }
-    )
-
-    return () => navigator.geolocation.clearWatch(watchId)
-  }, [isNavigating])
-
-  const handleNavigate = useCallback(
-    async (task: Task) => {
-      if (!userLocation) {
-        alert("Не вдалося визначити ваше місцезнаходження")
-        return
-      }
-
-      setSelectedTask(null)
-      setViewMode("map")
-      setIsLoadingRoute(true)
-      setPreviewTask(task)
-
-      try {
-        const response = await fetch(
-          `https://router.project-osrm.org/route/v1/driving/${userLocation[0]},${userLocation[1]};${task.lng},${task.lat}?overview=full&geometries=geojson`
-        )
-        const data = await response.json()
-
-        if (data.routes && data.routes[0]) {
-          const coordinates = data.routes[0].geometry.coordinates as [
-            number,
-            number,
-          ][]
-          setRouteCoordinates(coordinates)
-
-          setTimeout(() => {
             if (mapRef.current) {
-              const bounds = coordinates.reduce(
-                (bounds, coord) => bounds.extend(coord as [number, number]),
-                new maplibregl.LngLatBounds(coordinates[0], coordinates[0])
-              )
-              mapRef.current.fitBounds(bounds, {
-                padding: { top: 100, bottom: 200, left: 50, right: 50 },
-                duration: 1500,
+              mapRef.current.easeTo({
+                center: coords,
+                bearing: bearing,
+                duration: 1000,
               })
             }
-          }, 100)
-        } else {
-          setRouteCoordinates([userLocation, [task.lng, task.lat]])
-        }
+          }
 
-        setShowRoutePreview(true)
-      } catch (error) {
-        console.error("Route error:", error)
+          previousLocationRef.current = coords
+          // setUserLocation(coords) // Stay in Chervonohrad for demo as requested
+        },
+        (error) => {
+          console.error("Geolocation error:", error)
+          if (error.code === 1 && !userLocation) {
+            setUserLocation(CHERVONOHRAD_CENTER)
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      )
+    }
+
+    updateLocation()
+    const intervalId = setInterval(updateLocation, 5000)
+
+    return () => clearInterval(intervalId)
+  }, [isNavigating])
+
+  const handleNavigate = useCallback(async (task: Task) => {
+    if (!userLocation) {
+      alert("Не вдалося визначити ваше місцезнаходження")
+      return
+    }
+
+    setSelectedTask(null)
+    setViewMode("map")
+    setIsLoadingRoute(true)
+    setPreviewTask(task)
+
+    try {
+      const response = await fetch(
+        `https://router.project-osrm.org/route/v1/driving/${CHERVONOHRAD_CENTER[0]},${CHERVONOHRAD_CENTER[1]};${task.lng},${task.lat}?overview=full&geometries=geojson&radiuses=1000;1000&continue_straight=true`
+      )
+      const data = await response.json()
+
+      if (data.routes && data.routes[0]) {
+        const fullCoordinates = data.routes[0].geometry.coordinates as [number, number][];
+        // Balanced simplification: every 5th point for high detail but fast render
+        const simplified = fullCoordinates.filter((_, idx) => idx % 5 === 0 || idx === fullCoordinates.length - 1);
+        setRouteCoordinates(simplified)
+
+        setTimeout(() => {
+          if (mapRef.current) {
+            const bounds = simplified.reduce(
+              (bounds, coord) => bounds.extend(coord as [number, number]),
+              new maplibregl.LngLatBounds(simplified[0], simplified[0])
+            )
+            mapRef.current.fitBounds(bounds, {
+              padding: { top: 100, bottom: 200, left: 50, right: 50 },
+              duration: 1500,
+            })
+          }
+        }, 100)
+      } else {
         setRouteCoordinates([userLocation, [task.lng, task.lat]])
-        setShowRoutePreview(true)
-      } finally {
-        setIsLoadingRoute(false)
       }
-    },
-    [userLocation]
-  )
+
+      setShowRoutePreview(true)
+    } catch (error) {
+      console.error("Route error:", error)
+      setRouteCoordinates([userLocation, [task.lng, task.lat]])
+      setShowRoutePreview(true)
+    } finally {
+      setIsLoadingRoute(false)
+    }
+  }, [userLocation])
 
   const confirmRoute = () => {
     setShowRoutePreview(false)
@@ -236,9 +251,10 @@ export function MobileTasksPage() {
   }
 
   useEffect(() => {
-    if (autoTaskId && tasks.length > 0 && userLocation) {
+    if (autoTaskId && tasks.length > 0 && userLocation && !autoNavTriggeredRef.current) {
       const targetTask = tasks.find((t) => t.id === autoTaskId)
       if (targetTask) {
+        autoNavTriggeredRef.current = true
         setTimeout(() => handleNavigate(targetTask), 0)
       }
     }
@@ -275,11 +291,13 @@ export function MobileTasksPage() {
             <div className="absolute inset-0">
               <MapComponent
                 ref={mapRef}
-                center={userLocation || [30.5234, 50.4501]}
+                center={userLocation || [24.2274, 50.3845]}
                 zoom={isNavigating ? 15 : 12}
                 className="h-full w-full"
               >
-                {tasks.map((task) => (
+                {tasks
+                  .filter((t) => (!isNavigating && !showRoutePreview) || t.id === previewTask?.id)
+                  .map((task) => (
                   <MapMarker
                     key={task.id}
                     longitude={task.lng}

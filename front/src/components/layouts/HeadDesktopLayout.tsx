@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/PageTransition";
@@ -24,8 +24,6 @@ import {
   CheckSquare,
   Menu,
   X,
-  Bell,
-  User,
   LogOut,
 } from "lucide-react";
 
@@ -36,12 +34,12 @@ const NAV_ITEMS = [
   { label: "Завдання", href: "/head/tasks", icon: CheckSquare },
 ];
 
-const PAGE_TITLES: Record<string, string> = {
-  "/head/dashboard": "Огляд громади",
-  "/head/import": "Імпорт даних",
-  "/head/discrepancies": "Розбіжності",
-  "/head/tasks": "Завдання та ревізії",
-};
+// const PAGE_TITLES: Record<string, string> = {
+//   "/head/dashboard": "Огляд громади",
+//   "/head/import": "Імпорт даних",
+//   "/head/discrepancies": "Розбіжності",
+//   "/head/tasks": "Завдання та ревізії",
+// };
 
 interface HeadDesktopLayoutProps {
   children: React.ReactNode;
@@ -53,21 +51,47 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
   const navigate = useNavigate();
   const location = useLocation();
 
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [sidebarOpen]);
+
   const handleLogout = () => {
     localStorage.removeItem("auth_token");
     navigate("/login");
   };
 
-  const pageTitle = (currentPath && PAGE_TITLES[currentPath]) ?? "Панель керування";
-
   return (
-    <div className="relative flex min-h-screen">
+    <div className="relative flex min-h-screen overflow-x-clip">
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/30 backdrop-blur-md lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      <div className="fixed left-4 top-4 z-40 lg:hidden">
+        <div className="absolute inset-0 rounded-full bg-white/55 blur-xl" aria-hidden="true" />
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Відкрити меню"
+          className="relative h-12 w-12 rounded-full border border-white/70 bg-white/40 text-slate-800 shadow-[0_14px_36px_rgba(11,28,54,0.16)] backdrop-blur-2xl"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      </div>
 
       <aside
         className={cn(
@@ -144,8 +168,6 @@ export function HeadDesktopLayout({ children, currentPath }: HeadDesktopLayoutPr
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-
-            <div className="px-3 text-xs text-slate-400">© 2026 Gromada-Audit</div>
           </div>
         </div>
       </aside>

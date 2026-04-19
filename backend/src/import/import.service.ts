@@ -113,7 +113,7 @@ export class ImportService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly geo: GeoService,
-  ) {}
+  ) { }
 
   private parseXlsx(buffer: Buffer): RealEstateRow[] {
     const wb = XLSX.read(buffer, { type: 'buffer', cellDates: true });
@@ -241,6 +241,10 @@ export class ImportService {
     const hromada = await this.prisma.hromada.findUnique({ where: { id: hromadaId } });
     if (!hromada) throw new BadRequestException('Громаду не знайдено');
 
+    // Get a center point for the hromada once to allow jittering coordinates for the map
+    const hromadaCenter = await this.geo.geocodeAddress(`${hromada.name}, ${hromada.region}, Україна`)
+      || { lat: 50.39, lng: 24.23 }; // Fallback to Chervonohrad if geocoding fails
+
     // ── 2. Load land records for this hromada (they define who "belongs" here) ─
     const landRecords = await this.prisma.landRecord.findMany({
       where: { hromadaId },
@@ -288,10 +292,7 @@ export class ImportService {
 
     this.logger.log(`Matched ${rows.length} real estate rows for hromadaId=${hromadaId} (file had ${analyzableRows.length} analyzable rows)`);
 
-    // ── 5. Clear old data for this hromada ────────────────────────────────────
-    await this.prisma.anomaly.deleteMany({ where: { hromadaId } });
-    await this.prisma.realEstateRecord.deleteMany({ where: { batch: { hromadaId } } });
-    await this.prisma.importBatch.deleteMany({ where: { hromadaId } });
+    // ── 5. (Removed clearing of old data so we keep history) ──────────────────
 
     // ── 6. Create new batch ───────────────────────────────────────────────────
     const batch = await this.prisma.importBatch.create({
@@ -357,8 +358,8 @@ export class ImportService {
           taxId: land.taxId,
           suspectName: land.ownerNameRaw,
           address: land.address,
-          lat: null,
-          lng: null,
+          lat: hromadaCenter.lat + (Math.random() - 0.5) * 0.04,
+          lng: hromadaCenter.lng + (Math.random() - 0.5) * 0.04,
           potentialFine,
         });
       }
@@ -379,8 +380,8 @@ export class ImportService {
           taxId: row.taxId,
           suspectName: row.ownerNameRaw,
           address: row.address,
-          lat: null,
-          lng: null,
+          lat: hromadaCenter.lat + (Math.random() - 0.5) * 0.04,
+          lng: hromadaCenter.lng + (Math.random() - 0.5) * 0.04,
           potentialFine: 0,
         });
       }
@@ -418,8 +419,8 @@ export class ImportService {
           taxId: row.taxId,
           suspectName: row.ownerNameRaw,
           address: row.address,
-          lat: null,
-          lng: null,
+          lat: hromadaCenter.lat + (Math.random() - 0.5) * 0.04,
+          lng: hromadaCenter.lng + (Math.random() - 0.5) * 0.04,
           potentialFine,
         });
       }

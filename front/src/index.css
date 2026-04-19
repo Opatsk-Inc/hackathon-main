@@ -161,6 +161,12 @@
 /* ─── Base layer ────────────────────────────────────────────────────────── */
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
   * {
     @apply border-border outline-ring/50;
     font-family: var(--font-sans);
@@ -181,12 +187,13 @@
     min-height: 100vh;
     background-color: var(--sky-50);
     background-image:
-      radial-gradient(ellipse 78% 68% at 4% -8%, rgba(217, 119, 6, 0.48) 0%, rgba(217, 119, 6, 0.18) 32%, transparent 58%),
-      radial-gradient(ellipse 110% 90% at 100% 8%, rgba(147, 197, 253, 0.72) 0%, rgba(147, 197, 253, 0.22) 48%, transparent 70%),
-      radial-gradient(ellipse 90% 85% at 50% 110%, rgba(240, 249, 255, 1) 0%, rgba(224, 242, 254, 0.7) 55%, transparent 80%),
-      linear-gradient(168deg, #fff3e0 0%, #e0f2fe 48%, #f0f9ff 100%);
+      radial-gradient(ellipse 92% 74% at 0% -12%, rgba(217, 119, 6, 0.34) 0%, rgba(217, 119, 6, 0.12) 34%, transparent 64%),
+      radial-gradient(ellipse 92% 74% at 100% -12%, rgba(59, 130, 246, 0.34) 0%, rgba(59, 130, 246, 0.12) 34%, transparent 64%),
+      radial-gradient(ellipse 96% 84% at 50% 112%, rgba(240, 249, 255, 1) 0%, rgba(224, 242, 254, 0.68) 56%, transparent 82%),
+      linear-gradient(180deg, #fff7ea 0%, #edf5ff 52%, #f2f8ff 100%);
     background-attachment: fixed;
     background-size: cover;
+    background-repeat: no-repeat;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -290,6 +297,15 @@
     background:
       radial-gradient(680px 420px at 90% 10%, rgba(147, 197, 253, 0.35), transparent 70%),
       radial-gradient(520px 380px at 8% 92%, rgba(217, 119, 6, 0.16), transparent 68%);
+  }
+
+  .auth-page-bg {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(76% 70% at 8% 14%, rgba(251, 191, 36, 0.26) 0%, rgba(251, 191, 36, 0.08) 42%, transparent 72%),
+      radial-gradient(74% 68% at 92% 18%, rgba(96, 165, 250, 0.28) 0%, rgba(96, 165, 250, 0.1) 44%, transparent 72%),
+      linear-gradient(180deg, rgba(255, 247, 231, 0.9) 0%, rgba(234, 245, 255, 0.82) 56%, rgba(233, 244, 255, 0.88) 100%);
   }
 
   .text-atmo-heading { color: var(--ink-900); }

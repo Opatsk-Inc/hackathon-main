@@ -69,27 +69,27 @@ export function InspectionAreaChart() {
 
   return (
     <div className="panel-glass rounded-2xl">
-      <div className="p-6">
+      <div className="p-6 max-[600px]:p-4">
         <h3 className="mb-1 font-heading text-lg font-semibold tracking-[-0.02em] text-slate-900">
           Динаміка інспекцій
         </h3>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 max-[600px]:text-xs">
           Тренд створених та перевірених завдань за останні 6 місяців
         </p>
       </div>
-      <div className="px-6 pb-6">
+      <div className="px-6 pb-6 max-[600px]:px-4 max-[600px]:pb-4">
         <ChartContainer
           config={{
             created: {
-              label: "Створено завдань",
+              label: "Виявлено розбіжностей",
               color: "#d97706",
             },
             inspected: {
-              label: "Перевірено інспектором",
+              label: "Опрацьовано інспекторами",
               color: "#2563eb",
             },
           }}
-          className="h-[300px] w-full"
+          className="h-[300px] w-full max-[600px]:h-[220px] max-[480px]:h-[185px]"
         >
           <AreaChart
             data={inspectionData}
@@ -148,17 +148,38 @@ export function InspectionAreaChart() {
             />
           </AreaChart>
         </ChartContainer>
-      </div>
-      <div className="border-t border-white/55 px-6 py-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-          {positive ? "Зростання" : "Зменшення"} на {Math.abs(Number(growthRate))}% цього місяця
-          {positive ? (
-            <TrendingUp className="h-4 w-4 text-emerald-600" />
-          ) : (
-            <TrendingDown className="h-4 w-4 text-rose-600" />
-          )}
+
+        <div className="mt-6 space-y-2 max-[600px]:mt-4">
+          <div className="flex items-center justify-between rounded-xl border border-transparent px-3 py-2 text-sm transition-colors hover:border-white/70 hover:bg-white/60">
+            <div className="flex items-center gap-2.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#d97706]" style={{ boxShadow: '0 0 0 3px #d977061a' }} />
+              <span className="font-medium text-slate-700 max-[600px]:text-xs">Виявлено розбіжностей</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between rounded-xl border border-transparent px-3 py-2 text-sm transition-colors hover:border-white/70 hover:bg-white/60">
+            <div className="flex items-center gap-2.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-[#2563eb]" style={{ boxShadow: '0 0 0 3px #2563eb1a' }} />
+              <span className="font-medium text-slate-700 max-[600px]:text-xs">Опрацьовано інспекторами</span>
+            </div>
+          </div>
         </div>
-        <div className="mt-1 text-xs text-slate-500">Порівняно з попереднім періодом</div>
+      </div>
+      <div className="border-t border-white/55 px-6 py-4 max-[600px]:px-4 max-[600px]:py-3">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-800 max-[600px]:text-xs">
+          {positive ? (
+            <span className="inline-flex items-center gap-1.5 text-emerald-600">
+              <TrendingUp className="h-4 w-4" />
+              Зростання ефективності на {Math.abs(Number(growthRate))}%
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-rose-600">
+              <TrendingDown className="h-4 w-4" />
+              Зменшення темпів на {Math.abs(Number(growthRate))}%
+            </span>
+          )}
+          <span className="text-slate-400 font-normal">|</span>
+          <span className="font-normal text-slate-500">Порівняно з минулим місяцем</span>
+        </div>
       </div>
     </div>
   )
